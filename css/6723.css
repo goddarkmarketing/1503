@@ -1,0 +1,138 @@
+@charset "utf-8";
+
+/* ===== Better Together (global webfont) ===== */
+@font-face {
+     font-family: 'BetterTogether';
+     font-style: normal;
+     font-weight: 300;
+     src: url('../fonts/better-together/BetterTogether-Light.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'BetterTogether';
+     font-style: normal;
+     font-weight: 400;
+     src: url('../fonts/better-together/BetterTogether-Regular.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'BetterTogether';
+     font-style: normal;
+     font-weight: 500;
+     src: url('../fonts/better-together/BetterTogether-Medium.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'BetterTogether';
+     font-style: normal;
+     font-weight: 700;
+     src: url('../fonts/better-together/BetterTogether-Bold.woff2') format('woff2');
+     font-display: swap;
+}
+
+/* Re-map every legacy font family used across the site to BetterTogether,
+   so all existing "font-family" rules automatically adopt the new font.
+   Thai glyphs (not present in BetterTogether) fall back to the OS Thai font. */
+@font-face {
+     font-family: 'GmarketSans';
+     font-style: normal;
+     font-weight: 300;
+     src: url('../fonts/better-together/BetterTogether-Light.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'GmarketSans';
+     font-style: normal;
+     font-weight: 400;
+     src: url('../fonts/better-together/BetterTogether-Regular.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'GmarketSans';
+     font-style: normal;
+     font-weight: 500 900;
+     src: url('../fonts/better-together/BetterTogether-Bold.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'GmarketSansBold';
+     font-style: normal;
+     font-weight: 400 900;
+     src: url('../fonts/better-together/BetterTogether-Bold.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'EnjoyStories';
+     font-weight: 400 900;
+     font-style: normal;
+     src: url('../fonts/better-together/BetterTogether-Bold.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'Nanum Gothic';
+     font-style: normal;
+     font-weight: 400 900;
+     src: url('../fonts/better-together/BetterTogether-Regular.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'NanumSquare';
+     font-style: normal;
+     font-weight: 400;
+     src: url('../fonts/better-together/BetterTogether-Regular.woff2') format('woff2');
+     font-display: swap;
+}
+@font-face {
+     font-family: 'NanumSquare';
+     font-style: normal;
+     font-weight: 700;
+     src: url('../fonts/better-together/BetterTogether-Bold.woff2') format('woff2');
+     font-display: swap;
+}
+
+/* Thai-readable fallback stack applied everywhere */
+:root{--font-base:'BetterTogether','Sarabun','Leelawadee UI','Tahoma',sans-serif;}
+
+html{font-size:15px}
+body{text-align: left;font-size:15px;color:#555;line-height:24px;font-family:var(--font-base);letter-spacing:0}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,form,fieldset,p,button,address,table, tbody, tfoot, thead, th, tr, tdvideo, tt{margin:0;padding:0;}
+h1,h2,h3,h4,h5,h6,input,button,textarea,select,table{font-family:var(--font-base);font-size:14px;letter-spacing:0}
+*{font-family:var(--font-base);}
+img,fieldset,iframe{border:0}
+img{max-width: 100%}
+li{list-style:none;word-break:keep-all}
+img,input,select,button,textarea{vertical-align:middle}
+em,address,optgroup{font-style:normal}
+label,button{cursor:pointer}
+label{top:1px;position: relative;}
+button{margin:0;padding:0;background: none;border:none;}
+a{text-decoration:none;}
+a:link,a:visited{color:#555}
+a:hover,a:focus,a:active{text-decoration:underline;color:#555}
+button img{left:-3px;}
+hr{display:none}
+/* legend,caption{ visibility:hidden; font-size:0; width:0; height:0; line-height:0} */
+legend,caption{font-size:0; width:0; height:0; line-height:0;overflow:hidden;text-indent:-9999px}
+
+p{text-align:left;line-height:22px;word-break:keep-all}
+table{width:100%;border-spacing:0;}/* border-collapse: collapse; ff에서 border="0" 인 경우 문제 발생 */
+/* hidden contents */
+/*.skip,.hidden{position:absolute; width:0; height:0; font-size:0; line-height:0; overflow:hidden; visibility:hidden; z-index:-1}*/
+.skip,.hidden{position:absolute; width:1px; height:1px; font-size:0; line-height:0; overflow:hidden; z-index:-1}
+.skip:focus{top:0;left:0;display:inline-block;width:auto;height:auto;padding:0 30px;font-size:14px;line-height:40px;color:#fff;background:#007cc3;z-index:10}
+
+#skip_navi {position:absolute;top:0;height:0px;width:100%;z-index:160;} 
+#skip_navi a {display:block; height:1px; width:1px; margin-bottom:-1px; overflow:hidden; text-align:center;color:#fff;white-space:nowrap;} 
+#skip_navi a:focus, 
+#skip_navi a:active {display:block;top:0;width:100%;height:20px;padding:5px 0;background:#0089d6;}               
+
+/*251230 메인홈 고시공고,입찰공고 추가*/
+#eminwon_board1{width:100%;height: 318px;overflow: auto;}
+@media screen and (max-width:650px){
+#eminwon_board1{height:282px;}
+}        
+
+#eminwon_board2{width:100%; height:318px;}
+@media screen and (max-width:650px){
+#eminwon_board2{height:282px;}
+}                  

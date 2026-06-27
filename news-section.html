@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>หมวดหมู่ข่าวสาร | กล้าดี โบรกเกอร์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   ตัวแปรสี / ค่าพื้นฐาน
+   ========================================================= */
+:root{
+	--blue:        #1f3aa6;
+	--blue-dark:   #15287a;
+	--blue-soft:   #eef1fb;
+	--ink:         #1b2333;
+	--gray:        #6b7280;
+	--gray-light:  #9aa1ad;
+	--line:        #e7e9f0;
+	--bg:          #f4f6fb;
+	--white:       #ffffff;
+	--radius:      20px;
+	--radius-lg:   28px;
+	--shadow-sm:   0 4px 16px rgba(20,40,90,0.06);
+	--shadow-md:   0 12px 32px rgba(20,40,90,0.12);
+	--ease:        0.25s ease;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+	font-family:'Sarabun',-apple-system,BlinkMacSystemFont,sans-serif;
+	color:var(--ink);
+	background:var(--bg);
+	line-height:1.5;
+	-webkit-font-smoothing:antialiased;
+}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+ul{list-style:none;}
+
+/* =========================================================
+   เลย์เอาต์หลัก
+   ========================================================= */
+.news-section{max-width:1221px;margin:0 auto;padding:48px 40px 80px;}
+.news-grid{
+	display:grid;
+	grid-template-columns:minmax(0,1fr) 380px;
+	gap:32px;
+	align-items:stretch;
+}
+
+/* =========================================================
+   คอลัมน์ซ้าย : หมวดหมู่ข่าวสาร
+   ========================================================= */
+.news-main{display:flex;flex-direction:column;min-width:0;}
+
+.news-head{
+	display:flex;
+	align-items:flex-end;
+	justify-content:space-between;
+	gap:20px;
+	flex-wrap:wrap;
+	margin-bottom:18px;
+}
+.news-head__title{font-size:26px;font-weight:700;letter-spacing:-0.3px;}
+.news-head__subtitle{margin-top:4px;font-size:14px;color:var(--gray);font-weight:400;}
+
+/* แถวหมวดหมู่ + ลูกศร */
+.news-bar{
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	gap:16px;
+	padding-bottom:18px;
+	border-bottom:1px solid var(--line);
+	margin-bottom:24px;
+}
+.news-tabs{
+	display:flex;
+	gap:10px;
+	overflow-x:auto;
+	scrollbar-width:none;
+	-ms-overflow-style:none;
+}
+.news-tabs::-webkit-scrollbar{display:none;}
+.news-tab{
+	flex:0 0 auto;
+	padding:9px 22px;
+	font-size:15px;
+	font-weight:500;
+	color:var(--gray);
+	background:var(--white);
+	border:1px solid var(--line);
+	border-radius:50px;
+	white-space:nowrap;
+	transition:var(--ease);
+}
+.news-tab:hover{color:var(--blue);border-color:#c7d0ee;}
+.news-tab.is-active{
+	color:var(--white);
+	background:var(--blue);
+	border-color:var(--blue);
+	box-shadow:0 6px 14px rgba(31,58,166,0.28);
+}
+
+.news-nav{display:flex;gap:8px;flex:0 0 auto;}
+.news-nav__btn{
+	width:40px;height:40px;
+	display:grid;place-items:center;
+	color:var(--blue);
+	background:var(--white);
+	border:1px solid var(--line);
+	border-radius:50%;
+	box-shadow:var(--shadow-sm);
+	transition:var(--ease);
+}
+.news-nav__btn:hover{border-color:var(--blue);background:var(--blue);color:var(--white);}
+.news-nav__btn svg{width:18px;height:18px;}
+
+/* การ์ดข่าว */
+.news-cards{
+	display:grid;
+	grid-template-columns:repeat(3,minmax(0,1fr));
+	gap:22px;
+}
+.news-card{
+	display:flex;
+	flex-direction:column;
+	background:var(--white);
+	border:1px solid var(--line);
+	border-radius:var(--radius);
+	overflow:hidden;
+	transition:var(--ease);
+}
+.news-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-md);border-color:#d7def4;}
+.news-card__media{position:relative;aspect-ratio:16/11;overflow:hidden;}
+.news-card__media img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;}
+.news-card:hover .news-card__media img{transform:scale(1.06);}
+.news-card__badge{
+	position:absolute;left:16px;bottom:-13px;
+	padding:5px 16px;
+	font-size:13px;font-weight:500;color:var(--white);
+	background:var(--blue);
+	border-radius:50px;
+	box-shadow:0 6px 12px rgba(31,58,166,0.3);
+}
+.news-card__body{display:flex;flex-direction:column;flex:1;padding:26px 22px 22px;}
+.news-card__date{
+	display:flex;align-items:center;gap:6px;
+	font-size:13px;color:var(--gray-light);
+	margin-bottom:12px;
+}
+.news-card__date svg{width:15px;height:15px;}
+.news-card__title{
+	font-size:18px;font-weight:600;line-height:1.35;color:var(--ink);
+	margin-bottom:10px;
+	display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+	min-height:2.7em;
+}
+.news-card__desc{
+	font-size:14px;color:var(--gray);line-height:1.6;
+	display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+	margin-bottom:18px;
+}
+.news-card__more{
+	display:inline-flex;align-items:center;gap:7px;
+	margin-top:auto;
+	font-size:14px;font-weight:600;color:var(--blue);
+	transition:gap var(--ease);
+}
+.news-card__more svg{width:15px;height:15px;}
+.news-card:hover .news-card__more{gap:12px;}
+
+/* จุด pagination */
+.news-dots{display:flex;justify-content:center;gap:9px;margin-top:26px;}
+.news-dot{
+	width:9px;height:9px;border-radius:50%;
+	background:#cfd5e6;transition:var(--ease);
+}
+.news-dot.is-active{width:26px;border-radius:5px;background:var(--blue);}
+
+/* =========================================================
+   คอลัมน์ขวา : Hero Card
+   ========================================================= */
+.hero-card{
+	position:relative;
+	border-radius:var(--radius-lg);
+	overflow:hidden;
+	min-height:520px;
+	background:#0b1530;
+	box-shadow:var(--shadow-md);
+}
+.hero-slides{position:absolute;inset:0;}
+.hero-slide{
+	position:absolute;inset:0;
+	opacity:0;visibility:hidden;
+	transition:opacity 0.6s ease;
+}
+.hero-slide.is-active{opacity:1;visibility:visible;}
+.hero-slide img{width:100%;height:100%;object-fit:cover;}
+.hero-slide::after{
+	content:'';position:absolute;inset:0;
+	background:linear-gradient(to top,rgba(8,16,40,0.92) 0%,rgba(8,16,40,0.55) 35%,rgba(8,16,40,0.05) 65%);
+}
+.hero-overlay{
+	position:absolute;left:0;right:0;bottom:0;
+	z-index:2;
+	padding:32px 30px 84px;
+	color:var(--white);
+}
+.hero-overlay__title{
+	font-size:24px;font-weight:700;line-height:1.35;
+	margin-bottom:12px;
+	text-shadow:0 2px 12px rgba(0,0,0,0.3);
+}
+.hero-overlay__desc{
+	font-size:14.5px;line-height:1.65;
+	color:rgba(255,255,255,0.85);
+	margin-bottom:22px;
+	display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.hero-overlay__btn{
+	display:inline-flex;align-items:center;gap:9px;
+	padding:13px 26px;
+	font-size:15px;font-weight:600;color:var(--blue-dark);
+	background:var(--white);
+	border-radius:50px;
+	transition:var(--ease);
+}
+.hero-overlay__btn svg{width:17px;height:17px;}
+.hero-overlay__btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,0.35);gap:14px;}
+
+/* แถบควบคุม Hero */
+.hero-controls{
+	position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+	z-index:3;
+	display:flex;align-items:center;gap:6px;
+	padding:7px 10px;
+	background:rgba(255,255,255,0.95);
+	border-radius:50px;
+	box-shadow:0 8px 20px rgba(0,0,0,0.18);
+	backdrop-filter:blur(6px);
+}
+.hero-counter{
+	display:flex;align-items:center;gap:5px;
+	padding:0 8px;font-size:14px;font-weight:600;color:var(--ink);
+}
+.hero-counter__total{color:var(--gray-light);font-weight:400;}
+.hero-controls__sep{width:1px;height:18px;background:#d6dae6;margin:0 2px;}
+.hero-ctrl{
+	width:30px;height:30px;display:grid;place-items:center;
+	color:#454b5c;border-radius:50%;transition:var(--ease);
+}
+.hero-ctrl:hover{background:var(--blue-soft);color:var(--blue);}
+.hero-ctrl svg{width:16px;height:16px;}
+.hero-ctrl .icon-play{display:none;}
+.hero-ctrl.is-paused .icon-pause{display:none;}
+.hero-ctrl.is-paused .icon-play{display:block;}
+
+/* Grid overlay (thumbnail) */
+.hero-gridview{
+	position:absolute;inset:0;z-index:5;
+	display:none;
+	grid-template-columns:repeat(2,1fr);
+	gap:10px;
+	padding:18px;
+	background:rgba(8,16,40,0.96);
+	overflow:auto;
+}
+.hero-gridview.is-open{display:grid;}
+.hero-gridview__close{
+	position:absolute;top:14px;right:14px;
+	width:34px;height:34px;display:grid;place-items:center;
+	color:var(--white);background:rgba(255,255,255,0.15);
+	border-radius:50%;transition:var(--ease);z-index:1;
+}
+.hero-gridview__close:hover{background:rgba(255,255,255,0.3);}
+.hero-thumb{
+	position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;
+	border:2px solid transparent;transition:var(--ease);
+}
+.hero-thumb img{width:100%;height:100%;object-fit:cover;}
+.hero-thumb.is-active{border-color:var(--white);}
+.hero-thumb:hover{transform:scale(0.97);}
+
+/* =========================================================
+   ปุ่มกลับขึ้นบน
+   ========================================================= */
+.to-top{
+	position:fixed;right:28px;bottom:28px;z-index:50;
+	width:50px;height:50px;display:grid;place-items:center;
+	color:var(--white);background:var(--blue);
+	border-radius:50%;box-shadow:var(--shadow-md);
+	opacity:0;visibility:hidden;transition:var(--ease);
+}
+.to-top.is-show{opacity:1;visibility:visible;}
+.to-top:hover{background:var(--blue-dark);transform:translateY(-3px);}
+.to-top svg{width:20px;height:20px;}
+
+/* =========================================================
+   Responsive : Tablet (≤1024px) — จัดเป็น 2 คอลัมน์
+   ========================================================= */
+@media (max-width:1024px){
+	.news-grid{grid-template-columns:1fr;gap:28px;}
+	.news-cards{grid-template-columns:repeat(2,minmax(0,1fr));}
+	.news-card:nth-child(3){display:none;}
+	.hero-card{min-height:420px;}
+	.hero-overlay{padding:28px 26px 80px;}
+}
+
+/* =========================================================
+   Responsive : Mobile (≤640px) — 1 คอลัมน์ + การ์ดเลื่อนแนวนอน
+   ========================================================= */
+@media (max-width:640px){
+	.news-section{padding:32px 18px 64px;}
+	.news-head__title{font-size:22px;}
+	.news-bar{flex-wrap:nowrap;}
+	.news-nav{display:none;}
+
+	.news-cards{
+		display:flex;
+		grid-template-columns:none;
+		gap:16px;
+		overflow-x:auto;
+		scroll-snap-type:x mandatory;
+		-webkit-overflow-scrolling:touch;
+		scrollbar-width:none;
+		margin:0 -18px;
+		padding:4px 18px 8px;
+	}
+	.news-cards::-webkit-scrollbar{display:none;}
+	.news-card{flex:0 0 82%;scroll-snap-align:start;}
+	.news-card:nth-child(3){display:flex;}
+
+	.hero-card{min-height:440px;}
+	.hero-overlay__title{font-size:21px;}
+	.to-top{right:16px;bottom:16px;width:44px;height:44px;}
+}
+</style>
+</head>
+<body>
+
+<section class="news-section">
+	<div class="news-grid">
+
+		<!-- ================= ซ้าย : หมวดหมู่ข่าวสาร ================= -->
+		<div class="news-main">
+			<div class="news-head">
+				<div>
+					<h2 class="news-head__title">หมวดหมู่ข่าวสาร</h2>
+					<p class="news-head__subtitle">ติดตามข่าวสารและอัปเดตล่าสุดจากเรา</p>
+				</div>
+			</div>
+
+			<div class="news-bar">
+				<div class="news-tabs" id="newsTabs">
+					<button class="news-tab is-active" data-cat="0">ข่าวสารบริษัท</button>
+					<button class="news-tab" data-cat="1">โปรโมชัน</button>
+					<button class="news-tab" data-cat="2">บทความน่ารู้</button>
+					<button class="news-tab" data-cat="3">กิจกรรม</button>
+				</div>
+				<div class="news-nav">
+					<button class="news-nav__btn" id="newsPrev" aria-label="หมวดก่อนหน้า">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+					</button>
+					<button class="news-nav__btn" id="newsNext" aria-label="หมวดถัดไป">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+					</button>
+				</div>
+			</div>
+
+			<div class="news-cards" id="newsCards"><!-- การ์ดถูกสร้างด้วย JS --></div>
+
+			<div class="news-dots" id="newsDots"></div>
+		</div>
+
+		<!-- ================= ขวา : Hero Card ================= -->
+		<div class="hero-card" id="heroCard">
+			<div class="hero-slides" id="heroSlides"><!-- สไลด์ถูกสร้างด้วย JS --></div>
+
+			<div class="hero-overlay">
+				<h3 class="hero-overlay__title" id="heroTitle"></h3>
+				<p class="hero-overlay__desc" id="heroDesc"></p>
+				<a href="#" class="hero-overlay__btn">
+					<span id="heroBtnText">เกี่ยวกับเรา</span>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+				</a>
+			</div>
+
+			<div class="hero-controls">
+				<div class="hero-counter">
+					<span id="heroCurrent">1</span>
+					<span class="hero-counter__total" id="heroTotal">/ 4</span>
+				</div>
+				<span class="hero-controls__sep"></span>
+				<button class="hero-ctrl" id="heroPrev" aria-label="ก่อนหน้า">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+				</button>
+				<button class="hero-ctrl" id="heroNext" aria-label="ถัดไป">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+				</button>
+				<button class="hero-ctrl" id="heroToggle" aria-label="หยุด/เล่น">
+					<svg class="icon-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+					<svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>
+				</button>
+				<button class="hero-ctrl" id="heroGridBtn" aria-label="ดูทั้งหมด">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+				</button>
+			</div>
+
+			<div class="hero-gridview" id="heroGridView">
+				<button class="hero-gridview__close" id="heroGridClose" aria-label="ปิด">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+				</button>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<button class="to-top" id="toTop" aria-label="กลับขึ้นบน">
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+</button>
+
+<script>
+/* =========================================================
+   ข้อมูล (placeholder — เปลี่ยนรูป/ข้อความได้ภายหลัง)
+   ========================================================= */
+const ICON_CAL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>`;
+const ICON_ARROW = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+
+// 4 หมวด × 3 การ์ด
+const NEWS = [
+	{ label:'ข่าวสาร', cards:[
+		{ img:'images/tour_img01.jpg', date:'2026.06.23', title:'เปิดรับสมัครนายหน้าประกันภัยรุ่นใหม่ ประจำปี 2026', desc:'กล้าดี โบรกเกอร์ เปิดรับสมัครนายหน้าทั้งแบบ Full-time และ Part-time ไม่จำเป็นต้องมีประสบการณ์ มีทีมพี่เลี้ยงและการอบรมสอบใบอนุญาตให้ฟรี' },
+		{ img:'images/tour_img02.jpg', date:'2026.06.20', title:'อัปเดตระบบศูนย์นายหน้า ออกกรมธรรม์ได้สะดวกขึ้น', desc:'ปรับปรุงระบบสำหรับนายหน้าในสังกัด ให้สามารถเช็กเบี้ย ออกกรมธรรม์ และติดตามค่าคอมมิชชันได้เองแบบเรียลไทม์ รองรับการใช้งานบนมือถือ' },
+		{ img:'images/tour_img04.jpg', date:'2026.06.18', title:'แจ้งวันหยุดทำการและช่องทางติดต่อช่วงวันหยุด', desc:'แจ้งกำหนดวันหยุดทำการของสำนักงาน พร้อมช่องทางติดต่อฉุกเฉินสำหรับการแจ้งเคลมและสอบถามข้อมูลกรมธรรม์ ตลอด 24 ชั่วโมง' },
+	]},
+	{ label:'โปรโมชัน', cards:[
+		{ img:'images/tour_img05.jpg', date:'2026.06.22', title:'ประกันรถยนต์ชั้น 1 ผ่อน 0% นานสูงสุด 10 เดือน', desc:'รับส่วนลดพิเศษและของแถมเมื่อทำประกันรถยนต์ชั้น 1 กับบริษัทประกันที่ร่วมรายการ ผ่อนสบาย 0% สอบถามเบี้ยและเงื่อนไขกับเจ้าหน้าที่' },
+		{ img:'images/tour_img01.jpg', date:'2026.06.15', title:'ทำประกันสุขภาพวันนี้ รับสิทธิ์ตรวจสุขภาพฟรี', desc:'โปรโมชันประกันสุขภาพแบบเหมาจ่าย คุ้มครองค่ารักษาทั้งผู้ป่วยในและผู้ป่วยนอก พร้อมสิทธิ์ตรวจสุขภาพประจำปีฟรีสำหรับลูกค้าใหม่' },
+		{ img:'images/tour_img02.jpg', date:'2026.06.10', title:'แนะนำเพื่อนทำประกัน รับเครดิตเงินคืนทั้งคู่', desc:'เพียงแนะนำเพื่อนหรือคนรู้จักทำประกันกับเรา รับสิทธิพิเศษทั้งผู้แนะนำและผู้สมัคร รายละเอียดเพิ่มเติมติดต่อเจ้าหน้าที่' },
+	]},
+	{ label:'บทความ', cards:[
+		{ img:'images/tour_img04.jpg', date:'2026.06.25', title:'ประกันชั้น 1, 2+, 3+ ต่างกันอย่างไร เลือกแบบไหนดี', desc:'ไขข้อสงสัยความแตกต่างของประกันรถยนต์แต่ละชั้น ทั้งความคุ้มครอง เบี้ยประกัน และความเหมาะสมกับการใช้งาน เพื่อช่วยให้คุณเลือกได้คุ้มค่า' },
+		{ img:'images/tour_img05.jpg', date:'2026.06.21', title:'ทำไมการมีนายหน้าดูแลกรมธรรม์ถึงสำคัญ', desc:'นายหน้าที่ดีไม่ได้ช่วยแค่ตอนซื้อ แต่ดูแลคุณตลอดอายุกรมธรรม์ ทั้งการต่ออายุ การปรับความคุ้มครอง และช่วยประสานงานเวลาเคลม' },
+		{ img:'images/tour_img01.jpg', date:'2026.06.17', title:'รวมเอกสารที่ต้องเตรียมเมื่อต้องการเคลมประกัน', desc:'เช็กลิสต์เอกสารและขั้นตอนการเคลมแต่ละประเภท เพื่อให้การเคลมของคุณราบรื่น รวดเร็ว และได้รับความคุ้มครองอย่างเต็มที่' },
+	]},
+	{ label:'กิจกรรม', cards:[
+		{ img:'images/tour_img02.jpg', date:'2026.06.12', title:'สัมมนาวางแผนการเงินและประกันสำหรับครอบครัว', desc:'ขอเชิญร่วมงานสัมมนาฟรี เรียนรู้การวางแผนความคุ้มครองและการเงินอย่างมืออาชีพ พร้อมปรึกษาตัวต่อตัวกับที่ปรึกษาประกันภัย' },
+		{ img:'images/tour_img04.jpg', date:'2026.06.05', title:'กิจกรรม CSR มอบความคุ้มครองสู่ชุมชน', desc:'กล้าดี โบรกเกอร์ ร่วมทำกิจกรรมเพื่อสังคม มอบความรู้เรื่องการบริหารความเสี่ยงและการประกันภัยให้แก่ชุมชน' },
+		{ img:'images/tour_img05.jpg', date:'2026.05.28', title:'อบรมพัฒนาทักษะนายหน้าประจำไตรมาส', desc:'จัดอบรมเพิ่มทักษะการขายและการบริการให้นายหน้าในสังกัด เพื่อยกระดับมาตรฐานการดูแลลูกค้าอย่างต่อเนื่อง' },
+	]},
+];
+
+// สไลด์ Hero
+const HERO = [
+	{ img:'images/hero1.png', title:'ยกระดับบริการอย่างไม่หยุดนิ่ง เพื่อคุณ', desc:'เราให้ความสำคัญกับการพัฒนาและปรับปรุงบริการอย่างต่อเนื่อง เพื่อมอบประสบการณ์ที่ดีที่สุดให้กับคุณ', btn:'เกี่ยวกับเรา' },
+	{ img:'images/hero2.png', title:'ออกกรมธรรม์ได้ในที่เดียว รวดเร็วทันใจ', desc:'เชื่อมระบบกับบริษัทประกันชั้นนำ ออก พ.ร.บ. และภาคสมัครใจได้ทันที พร้อมตรวจสอบสถานะแบบเรียลไทม์', btn:'ดูบริการ' },
+	{ img:'images/hero3.png', title:'เริ่มอาชีพนายหน้า สร้างรายได้ไม่จำกัด', desc:'ร่วมเป็นนายหน้ากับเรา มีทีมพี่เลี้ยง ระบบงานครบครัน และอบรมสอบใบอนุญาตให้ฟรี', btn:'สมัครนายหน้า' },
+	{ img:'images/hero4.png', title:'ดูแลคุณตลอดอายุกรมธรรม์', desc:'ไม่ได้ขายแล้วจบ แต่ดูแลต่อเนื่อง ทั้งต่ออายุ ปรับความคุ้มครอง และช่วยประสานงานเวลาเคลม', btn:'ปรึกษาเรา' },
+];
+
+/* =========================================================
+   ส่วนซ้าย : สร้างการ์ด + แท็บ + จุด
+   ========================================================= */
+const cardsBox = document.getElementById('newsCards');
+const dotsBox  = document.getElementById('newsDots');
+const tabs     = [...document.querySelectorAll('.news-tab')];
+let activeCat  = 0;
+
+function renderCards(catIndex){
+	const cat = NEWS[catIndex];
+	cardsBox.innerHTML = cat.cards.map(c => `
+		<article class="news-card">
+			<div class="news-card__media">
+				<img src="${c.img}" alt="${c.title}" loading="lazy">
+				<span class="news-card__badge">${cat.label}</span>
+			</div>
+			<div class="news-card__body">
+				<span class="news-card__date">${ICON_CAL}${c.date}</span>
+				<h3 class="news-card__title">${c.title}</h3>
+				<p class="news-card__desc">${c.desc}</p>
+				<a href="#" class="news-card__more">ดูเพิ่มเติม ${ICON_ARROW}</a>
+			</div>
+		</article>`).join('');
+	cardsBox.scrollTo({left:0, behavior:'auto'});
+}
+
+function renderDots(){
+	dotsBox.innerHTML = NEWS.map((_,i)=>
+		`<span class="news-dot ${i===activeCat?'is-active':''}" data-cat="${i}"></span>`).join('');
+}
+
+function setCategory(i){
+	activeCat = (i + NEWS.length) % NEWS.length;
+	tabs.forEach((t,idx)=>t.classList.toggle('is-active', idx===activeCat));
+	renderCards(activeCat);
+	renderDots();
+	tabs[activeCat].scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+}
+
+tabs.forEach(t => t.addEventListener('click', ()=>setCategory(+t.dataset.cat)));
+dotsBox.addEventListener('click', e=>{ const d=e.target.closest('.news-dot'); if(d) setCategory(+d.dataset.cat); });
+document.getElementById('newsPrev').addEventListener('click', ()=>setCategory(activeCat-1));
+document.getElementById('newsNext').addEventListener('click', ()=>setCategory(activeCat+1));
+
+/* =========================================================
+   ส่วนขวา : Hero slider
+   ========================================================= */
+const heroSlidesBox = document.getElementById('heroSlides');
+const heroGridView  = document.getElementById('heroGridView');
+const elTitle = document.getElementById('heroTitle');
+const elDesc  = document.getElementById('heroDesc');
+const elBtn   = document.getElementById('heroBtnText');
+const elCur   = document.getElementById('heroCurrent');
+const elTotal = document.getElementById('heroTotal');
+const toggleBtn = document.getElementById('heroToggle');
+let heroIndex = 0, heroTimer = null, heroPlaying = true;
+const HERO_DELAY = 5000;
+
+heroSlidesBox.innerHTML = HERO.map((s,i)=>
+	`<div class="hero-slide ${i===0?'is-active':''}"><img src="${s.img}" alt="${s.title}" loading="lazy"></div>`).join('');
+heroGridView.insertAdjacentHTML('beforeend', HERO.map((s,i)=>
+	`<button class="hero-thumb ${i===0?'is-active':''}" data-idx="${i}"><img src="${s.img}" alt="${s.title}"></button>`).join(''));
+elTotal.textContent = '/ ' + HERO.length;
+const heroSlideEls = [...heroSlidesBox.children];
+const heroThumbEls = [...heroGridView.querySelectorAll('.hero-thumb')];
+
+function showHero(i){
+	heroIndex = (i + HERO.length) % HERO.length;
+	heroSlideEls.forEach((el,idx)=>el.classList.toggle('is-active', idx===heroIndex));
+	heroThumbEls.forEach((el,idx)=>el.classList.toggle('is-active', idx===heroIndex));
+	const s = HERO[heroIndex];
+	elTitle.textContent = s.title;
+	elDesc.textContent  = s.desc;
+	elBtn.textContent   = s.btn;
+	elCur.textContent   = heroIndex + 1;
+}
+function nextHero(){ showHero(heroIndex+1); }
+function startHero(){ stopHero(); heroTimer = setInterval(nextHero, HERO_DELAY); heroPlaying = true; toggleBtn.classList.remove('is-paused'); }
+function stopHero(){ clearInterval(heroTimer); heroTimer = null; }
+function pauseHero(){ stopHero(); heroPlaying = false; toggleBtn.classList.add('is-paused'); }
+
+document.getElementById('heroPrev').addEventListener('click', ()=>{ showHero(heroIndex-1); if(heroPlaying) startHero(); });
+document.getElementById('heroNext').addEventListener('click', ()=>{ nextHero(); if(heroPlaying) startHero(); });
+toggleBtn.addEventListener('click', ()=> heroPlaying ? pauseHero() : startHero());
+
+// Grid overlay
+document.getElementById('heroGridBtn').addEventListener('click', ()=>{ heroGridView.classList.add('is-open'); pauseHero(); });
+document.getElementById('heroGridClose').addEventListener('click', ()=> heroGridView.classList.remove('is-open'));
+heroGridView.addEventListener('click', e=>{
+	const t = e.target.closest('.hero-thumb');
+	if(t){ showHero(+t.dataset.idx); heroGridView.classList.remove('is-open'); startHero(); }
+});
+
+/* =========================================================
+   ปุ่มกลับขึ้นบน
+   ========================================================= */
+const toTop = document.getElementById('toTop');
+window.addEventListener('scroll', ()=> toTop.classList.toggle('is-show', window.scrollY > 320));
+toTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
+/* init */
+renderCards(0);
+renderDots();
+showHero(0);
+startHero();
+</script>
+</body>
+</html>
