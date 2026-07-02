@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ลงทะเบียนสมัครสมาชิก — กล้าดีโบรคเกอร์</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/join-register.css?v=20260630b">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="join-register-page">
+  <header class="joinReg__top">
+    <div class="joinReg__topInner">
+      <a href="index.html" class="joinReg__brand">
+        <img src="images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="joinReg__brandLogo" width="160" height="40" decoding="async">
+      </a>
+      <a href="login.html" class="joinReg__topLink">มีบัญชีแล้ว? เข้าสู่ระบบ</a>
+    </div>
+  </header>
+
+  <main class="joinReg">
+    <h1 class="joinReg__title">ลงทะเบียนสมัครสมาชิก</h1>
+
+    <nav class="joinReg__stepper" aria-label="ขั้นตอนการสมัคร">
+      <div class="joinReg__step is-active" data-step-indicator="1">
+        <span class="joinReg__stepNum">1</span>
+        <span class="joinReg__stepLabel">กรอกข้อมูล</span>
+      </div>
+      <div class="joinReg__step" data-step-indicator="2">
+        <span class="joinReg__stepNum">2</span>
+        <span class="joinReg__stepLabel">อัปโหลดเอกสาร</span>
+      </div>
+      <div class="joinReg__step" data-step-indicator="3">
+        <span class="joinReg__stepNum">3</span>
+        <span class="joinReg__stepLabel">เงื่อนไข</span>
+      </div>
+      <div class="joinReg__step" data-step-indicator="4">
+        <span class="joinReg__stepNum">4</span>
+        <span class="joinReg__stepLabel">บันทึกข้อมูล</span>
+      </div>
+    </nav>
+
+    <div class="joinReg__alert" id="joinAlert" role="alert"></div>
+
+    <form id="joinForm" novalidate>
+      <!-- Step 1: กรอกข้อมูล -->
+      <section class="joinReg__panel is-active" data-step="1" aria-labelledby="joinStep1Title">
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle joinReg__cardTitle--table" id="joinStep1Title">คุณสมบัติของผู้สมัครสมาชิก กล้าดีโบรคเกอร์ (บุคคลธรรมดา/นิติบุคคล)</h2>
+          <div class="joinReg__qualGrid" role="region" aria-label="เปรียบเทียบคุณสมบัติสมาชิก">
+            <section class="joinReg__qualCol">
+              <h3 class="joinReg__qualColTitle">สมาชิก/ผู้แนะนำ</h3>
+              <ol class="joinReg__qualList">
+                <li><span class="joinReg__tableNum">1.</span> มีอายุไม่ต่ำกว่า 20 ปีบริบูรณ์</li>
+                <li><span class="joinReg__tableNum">2.</span> มีภูมิลำเนาอยู่ในประเทศไทย</li>
+                <li><span class="joinReg__tableNum">3.</span> มีสติสัมปชัญญะ ไม่เป็นคนไร้ความสามารถหรือเสมือนไร้ความสามารถ</li>
+                <li><span class="joinReg__tableNum">4.</span> ไม่เคยถูกลงโทษในคดีอาญาเกี่ยวกับทรัพย์ภายใน 5 ปี</li>
+                <li><span class="joinReg__tableNum">5.</span> ไม่อยู่ในสภาพล้มละลาย</li>
+              </ol>
+            </section>
+            <section class="joinReg__qualCol">
+              <h3 class="joinReg__qualColTitle">สมาชิก กล้าดีโบรคเกอร์</h3>
+              <ol class="joinReg__qualList">
+                <li><span class="joinReg__tableNum">1.</span> มีอายุไม่ต่ำกว่า 20 ปีบริบูรณ์</li>
+                <li><span class="joinReg__tableNum">2.</span> มีภูมิลำเนาอยู่ในประเทศไทย</li>
+                <li><span class="joinReg__tableNum">3.</span> มีสติสัมปชัญญะ ไม่เป็นคนไร้ความสามารถหรือเสมือนไร้ความสามารถ</li>
+                <li><span class="joinReg__tableNum">4.</span> ไม่เคยถูกลงโทษในคดีอาญาเกี่ยวกับทรัพย์ภายใน 5 ปี</li>
+                <li><span class="joinReg__tableNum">5.</span> ไม่อยู่ในสภาพล้มละลาย</li>
+                <li><span class="joinReg__tableNum">6.</span> มีใบอนุญาตนายหน้าประกันวินาศภัยที่ออกโดย คปภ. และยังไม่หมดอายุ (กรณีขายภาคสมัครใจ)</li>
+                <li><span class="joinReg__tableNum">7.</span> ไม่เคยถูกเพิกถอนใบอนุญาตนายหน้าประกันวินาศภัยภายใน 5 ปี</li>
+                <li><span class="joinReg__tableNum">8.</span> กรณีนิติบุคคล ต้องแนบหนังสือรับรองบริษัทและบัตรประชาชนผู้มีอำนาจลงนาม</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle">บุคคลทั่วไป / นิติบุคคล</h2>
+          <div class="joinReg__grid">
+            <div class="joinReg__field joinReg__field--full">
+              <label for="memberType">บุคคลทั่วไป / นิติบุคคล <span class="req">*</span></label>
+              <select id="memberType" name="memberType" required>
+                <option value="individual">บุคคลทั่วไป</option>
+                <option value="juristic">นิติบุคคล</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle">ข้อมูลทั่วไป</h2>
+          <div class="joinReg__grid">
+            <div class="joinReg__field">
+              <label for="title">คำนำหน้าชื่อ <span class="req">*</span></label>
+              <select id="title" name="title" required>
+                <option value="">กรุณาเลือก</option>
+                <option value="นาย">นาย</option>
+                <option value="นาง">นาง</option>
+                <option value="นางสาว">นางสาว</option>
+                <option value="ดร.">ดร.</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="fullName">ชื่อ - นามสกุล <span class="req">*</span></label>
+              <input type="text" id="fullName" name="fullName" placeholder="กรุณากรอกชื่อ - นามสกุล" autocomplete="name" required>
+            </div>
+            <div class="joinReg__field">
+              <label for="idCard">เลขบัตรประชาชน <span class="req">*</span></label>
+              <input type="text" id="idCard" name="idCard" inputmode="numeric" maxlength="13" placeholder="กรุณากรอกเลขบัตรประชาชน 13 หลัก" required>
+            </div>
+            <div class="joinReg__field">
+              <label for="phone">เบอร์โทรติดต่อ <span class="req">*</span></label>
+              <input type="tel" id="phone" name="phone" inputmode="tel" placeholder="กรุณากรอกเบอร์โทรศัพท์" autocomplete="tel" required>
+            </div>
+            <div class="joinReg__field">
+              <label for="birthDay">วันเกิด <span class="req">*</span></label>
+              <select id="birthDay" name="birthDay" required>
+                <option value="">วัน</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="birthMonth">เดือนเกิด <span class="req">*</span></label>
+              <select id="birthMonth" name="birthMonth" required>
+                <option value="">เดือน</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="birthYear">ปีเกิด (พ.ศ.) <span class="req">*</span></label>
+              <select id="birthYear" name="birthYear" required>
+                <option value="">ปี</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="occupation">อาชีพ <span class="req">*</span></label>
+              <select id="occupation" name="occupation" required>
+                <option value="">กรุณาเลือก</option>
+                <option value="พนักงานบริษัท">พนักงานบริษัท</option>
+                <option value="เจ้าของกิจการ">เจ้าของกิจการ</option>
+                <option value="ฟรีแลนซ์">ฟรีแลนซ์</option>
+                <option value="นักเรียน/นักศึกษา">นักเรียน/นักศึกษา</option>
+                <option value="เกษียณอายุ">เกษียณอายุ</option>
+                <option value="อื่นๆ">อื่นๆ</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="email">อีเมล <span class="req">*</span></label>
+              <input type="email" id="email" name="email" placeholder="กรุณากรอกอีเมล" autocomplete="email" required>
+            </div>
+            <div class="joinReg__field">
+              <label for="referrer">รหัสผู้แนะนำ</label>
+              <input type="text" id="referrer" name="referrer" placeholder="กรอกรหัสผู้แนะนำ (ถ้ามี)">
+            </div>
+          </div>
+        </div>
+
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle">ที่อยู่ตามทะเบียนบ้าน</h2>
+          <div class="joinReg__grid">
+            <div class="joinReg__field joinReg__field--full">
+              <label for="addressNo">บ้านเลขที่ <span class="req">*</span></label>
+              <input type="text" id="addressNo" name="addressNo" placeholder="กรุณากรอกบ้านเลขที่" required>
+            </div>
+            <div class="joinReg__field">
+              <label for="province">จังหวัด <span class="req">*</span></label>
+              <select id="province" name="province" required>
+                <option value="">กรุณาเลือกจังหวัด</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="district">เขต/อำเภอ <span class="req">*</span></label>
+              <select id="district" name="district" required disabled>
+                <option value="">กรุณาเลือกเขต/อำเภอ</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="subdistrict">แขวง/ตำบล <span class="req">*</span></label>
+              <select id="subdistrict" name="subdistrict" required disabled>
+                <option value="">กรุณาเลือกแขวง/ตำบล</option>
+              </select>
+            </div>
+            <div class="joinReg__field">
+              <label for="zipcode">รหัสไปรษณีย์ <span class="req">*</span></label>
+              <input type="text" id="zipcode" name="zipcode" inputmode="numeric" maxlength="5" placeholder="รหัสไปรษณีย์" required readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle">จังหวัดที่ทำงานปัจจุบัน</h2>
+          <div class="joinReg__grid">
+            <div class="joinReg__field joinReg__field--full">
+              <label for="workProvince">จังหวัดที่ทำงานปัจจุบัน <span class="req">*</span></label>
+              <select id="workProvince" name="workProvince" required>
+                <option value="">กรุณาเลือกจังหวัด</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: อัปโหลดเอกสาร -->
+      <section class="joinReg__panel" data-step="2" aria-labelledby="joinStep2Title">
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle" id="joinStep2Title">อัปโหลดบัตรประชาชน</h2>
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:16px">อัปโหลดภาพบัตรประชาชนด้านหน้าให้ชัดเจน ระบบจะใช้ตรวจสอบข้อมูลเบื้องต้น (รองรับไฟล์ JPG, PNG ไม่เกิน 5 MB)</p>
+          <div class="joinReg__upload" id="idUploadZone">
+            <span class="joinReg__uploadHelp">วิธีใช้งาน</span>
+            <input type="file" id="idCardFile" name="idCardFile" accept="image/jpeg,image/png,image/webp" required>
+            <div class="joinReg__uploadIcon" aria-hidden="true">
+              <span class="joinReg__uploadOcr">OCR</span>
+            </div>
+            <div class="joinReg__uploadTitle">อัปโหลดบัตรประชาชน</div>
+            <div class="joinReg__uploadHint">คลิกหรือลากไฟล์มาวางที่นี่</div>
+            <div class="joinReg__uploadPreview" id="idUploadPreview">
+              <img id="idUploadImg" src="" alt="ตัวอย่างบัตรประชาชน">
+              <div class="joinReg__uploadFileName" id="idUploadName"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: เงื่อนไข -->
+      <section class="joinReg__panel" data-step="3" aria-labelledby="joinStep3Title">
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle joinReg__cardTitle--table" id="joinStep3Title">เงื่อนไขการสมัครสมาชิก กล้าดีโบรคเกอร์</h2>
+          <div class="joinReg__tableWrap">
+            <table class="joinReg__table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width:48px">ลำดับ</th>
+                  <th scope="col">รายการเงื่อนไข</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="joinReg__tableNum">1</td>
+                  <td>ผู้สมัครต้องให้ข้อมูลที่เป็นจริงและครบถ้วน หากตรวจพบข้อมูลเท็จ บริษัทขอสงวนสิทธิ์ปฏิเสธหรือยกเลิกสมาชิกภาพ</td>
+                </tr>
+                <tr>
+                  <td class="joinReg__tableNum">2</td>
+                  <td>เอกสารประกอบการสมัครต้องชัดเจน อ่านได้ และตรงกับข้อมูลที่กรอกในแบบฟอร์ม</td>
+                </tr>
+                <tr>
+                  <td class="joinReg__tableNum">3</td>
+                  <td>บริษัทจะเก็บรักษาข้อมูลส่วนบุคคลตาม <a href="privacy.html" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a> และใช้เพื่อการสมัครและให้บริการเท่านั้น</td>
+                </tr>
+                <tr>
+                  <td class="joinReg__tableNum">4</td>
+                  <td>การอนุมัติสมาชิกภาพอยู่ภายใต้ดุลยพินิจของบริษัท อาจใช้เวลา 1–2 วันทำการ</td>
+                </tr>
+                <tr>
+                  <td class="joinReg__tableNum">5</td>
+                  <td>สมาชิกต้องปฏิบัติตามกฎหมายประกันวินาศภัย ข้อกำหนด คปภ. และ <a href="terms.html" target="_blank" rel="noopener">ข้อกำหนดการใช้งาน</a> ของกล้าดีโบรคเกอร์</td>
+                </tr>
+                <tr>
+                  <td class="joinReg__tableNum">6</td>
+                  <td>ค่าคอมมิชชันและสิทธิประโยชน์เป็นไปตามนโยบายที่บริษัทกำหนดในแต่ละช่วงเวลา</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="joinReg__accept">
+            <label>
+              <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+              <span>ข้าพเจ้าได้อ่านและยอมรับคุณสมบัติ เงื่อนไขการสมัคร และ <a href="terms.html" target="_blank" rel="noopener">ข้อกำหนดการใช้งาน</a> ของกล้าดีโบรคเกอร์แล้ว</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: บันทึกข้อมูล -->
+      <section class="joinReg__panel" data-step="4" aria-labelledby="joinStep4Title">
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle" id="joinStep4Title">ตรวจสอบข้อมูลก่อนบันทึก</h2>
+          <dl class="joinReg__summary" id="joinSummary"></dl>
+        </div>
+
+        <div class="joinReg__card">
+          <h2 class="joinReg__cardTitle">ตั้งค่าบัญชีเข้าใช้งาน</h2>
+          <div class="joinReg__grid">
+            <div class="joinReg__field">
+              <label for="username">ชื่อผู้ใช้ <span class="req">*</span></label>
+              <input type="text" id="username" name="username" autocomplete="username" placeholder="ตั้งชื่อผู้ใช้สำหรับเข้าระบบ" required>
+            </div>
+            <div class="joinReg__field">
+              <label for="password">รหัสผ่าน <span class="req">*</span></label>
+              <input type="password" id="password" name="password" autocomplete="new-password" minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required>
+            </div>
+            <div class="joinReg__field joinReg__field--full">
+              <label for="passwordConfirm">ยืนยันรหัสผ่าน <span class="req">*</span></label>
+              <input type="password" id="passwordConfirm" name="passwordConfirm" autocomplete="new-password" minlength="6" placeholder="กรอกรหัสผ่านอีกครั้ง" required>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="joinReg__actions">
+        <button type="button" class="joinReg__btn joinReg__btn--ghost" id="joinPrev" hidden>ย้อนกลับ</button>
+        <button type="button" class="joinReg__btn joinReg__btn--primary" id="joinNext">ถัดไป</button>
+        <button type="submit" class="joinReg__btn joinReg__btn--primary" id="joinSubmit" hidden>บันทึกข้อมูล</button>
+      </div>
+    </form>
+
+    <p class="joinReg__footer">
+      <a href="index.html">← กลับหน้าแรกเว็บไซต์</a>
+    </p>
+  </main>
+
+  <script src="js/geoth.js"></script>
+  <script src="js/pages/join.js"></script>
+</body>
+</html>

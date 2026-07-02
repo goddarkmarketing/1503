@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ — กล้าดีโบรคเกอร์</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/login.css?v=20260630b">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="login-page">
+  <div class="login-shell">
+    <div class="login-card">
+      <header class="login-brand">
+        <img src="images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="login-brand__logo" width="200" height="48" decoding="async">
+        <p class="login-brand__sub">ระบบนายหน้าและผู้ดูแล</p>
+      </header>
+
+      <div class="login-error" id="loginError" role="alert"></div>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <div class="login-field">
+          <label for="username">ชื่อผู้ใช้</label>
+          <input type="text" id="username" name="username" autocomplete="username" placeholder="กรอกชื่อผู้ใช้" required>
+        </div>
+        <div class="login-field">
+          <label for="password">รหัสผ่าน</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required>
+        </div>
+        <button type="submit" class="login-submit">เข้าสู่ระบบ</button>
+      </form>
+
+      <footer class="login-foot">
+        <a href="index.html" class="login-back">← กลับหน้าแรกเว็บไซต์</a>
+        <p class="login-signup">ยังไม่มีบัญชี? <a href="join.html">สมัครนายหน้า</a></p>
+      </footer>
+
+      <aside class="login-mock" aria-label="ข้อมูลทดสอบระบบ">
+        <div class="login-mock__head">
+          <span class="login-mock__badge">Demo</span>
+          <span class="login-mock__title">Mock Login</span>
+        </div>
+        <p class="login-mock__hint">แตะเพื่อกรอกข้อมูลทดสอบอัตโนมัติ</p>
+        <ul class="login-mock__list">
+          <li>
+            <button type="button" class="login-mock__item" data-username="Ck1-039" data-password="demo">
+              <span class="login-mock__role">นายหน้า</span>
+              <span class="login-mock__creds"><kbd>Ck1-039</kbd> / <kbd>demo</kbd></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="login-mock__item" data-username="admin" data-password="demo">
+              <span class="login-mock__role">Admin</span>
+              <span class="login-mock__creds"><kbd>admin</kbd> / <kbd>demo</kbd></span>
+            </button>
+          </li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+
+  <script src="js/config/app-config.js"></script>
+  <script src="js/mock/data.js"></script>
+  <script src="js/mock/api.js"></script>
+  <script src="js/services/api-client.js"></script>
+  <script src="js/core/session.js"></script>
+  <script src="js/core/permissions.js"></script>
+  <script src="js/services/auth-service.js"></script>
+  <script src="js/pages/login.js"></script>
+</body>
+</html>

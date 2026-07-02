@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายงานรายเดือน — Admin</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/admin.css">
+  <link rel="stylesheet" href="../../css/portal.css">
+  <link rel="stylesheet" href="../../css/agent-report.css">
+  <link rel="stylesheet" href="../../css/agent-finance.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-portal="admin" data-base-path="../../">
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+              <a href="../../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
+                <img src="../../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
+              </a>
+              <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+            </div>
+      <!-- ADMIN_SIDEBAR_V1 -->
+<nav class="sidebar-nav" data-admin-sidebar>
+        <div class="nav-group" data-nav-zone="main">
+          <p class="nav-group__title">หลัก</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../../admin/index.html" class="nav-link" data-nav="home"><i data-lucide="layout-dashboard"></i><span class="nav-link-text">แดชบอร์ด</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="agents">
+          <p class="nav-group__title">นายหน้า &amp; ทีม</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../../admin/agents.html" class="nav-link" data-nav="agents"><i data-lucide="users"></i><span class="nav-link-text">จัดการนายหน้า</span></a></li>
+            <li class="nav-item"><a href="../../admin/team.html" class="nav-link" data-nav="team"><i data-lucide="users-round"></i><span class="nav-link-text">โครงสร้างทีม</span></a></li>
+            <li class="nav-item"><a href="../../admin/users.html" class="nav-link" data-nav="users"><i data-lucide="shield"></i><span class="nav-link-text">ผู้ดูแลระบบ</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="policies">
+          <p class="nav-group__title">กรมธรรม์</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../../admin/policies.html" class="nav-link" data-nav="policies"><i data-lucide="file-text"></i><span class="nav-link-text">กรมธรรม์ทั้งหมด</span></a></li>
+            <li class="nav-item"><a href="../../admin/pending.html" class="nav-link" data-nav="pending"><i data-lucide="alert-circle"></i><span class="nav-link-text">กรมธรรม์ค้าง</span></a></li>
+            <li class="nav-item"><a href="../../admin/renew.html" class="nav-link" data-nav="renew"><i data-lucide="refresh-cw"></i><span class="nav-link-text">ต่ออายุกรมธรรม์</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="reports">
+          <p class="nav-group__title">รายงาน</p>
+          <ul class="nav-group__list">
+            <li class="nav-item has-submenu" data-nav-group="reports">
+              <a href="#" class="nav-link"><i data-lucide="bar-chart-3"></i><span class="nav-link-text">รายงานยอดขาย</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+              <ul class="nav-submenu">
+                <li><a href="../../admin/reports/daily-policies.html" class="nav-sub-link" data-nav="reports-daily-policies"><i data-lucide="clipboard-list" class="nav-sub-icon"></i><span>ขายกรมธรรม์ประจำวัน</span></a></li>
+                <li><a href="../../admin/reports/daily-summary.html" class="nav-sub-link" data-nav="reports-daily-summary"><i data-lucide="bar-chart-3" class="nav-sub-icon"></i><span>สรุปการขายประจำวัน</span></a></li>
+                <li><a href="../../admin/reports/monthly.html" class="nav-sub-link" data-nav="reports-monthly"><i data-lucide="calendar-range" class="nav-sub-icon"></i><span>รายงานรายเดือน</span></a></li>
+                <li><a href="../../admin/reports/team.html" class="nav-sub-link" data-nav="reports-team"><i data-lucide="users-round" class="nav-sub-icon"></i><span>รายงานลูกทีม</span></a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="finance">
+          <p class="nav-group__title">การเงิน</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../../admin/credit-requests.html" class="nav-link" data-nav="credit-requests"><i data-lucide="inbox"></i><span class="nav-link-text">อนุมัติเติมวงเงิน</span></a></li>
+            <li class="nav-item"><a href="../../admin/credit-ledger.html" class="nav-link" data-nav="credit-ledger"><i data-lucide="wallet"></i><span class="nav-link-text">ประวัติวงเงิน</span></a></li>
+            <li class="nav-item"><a href="../../admin/commission.html" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="receipt">
+          <p class="nav-group__title">ใบเสร็จ</p>
+          <ul class="nav-group__list">
+            <li class="nav-item has-submenu" data-receipt-nav data-nav-group="receipt">
+              <a href="#" class="nav-link"><i data-lucide="receipt"></i><span class="nav-link-text">ใบเสร็จ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+              <ul class="nav-submenu">
+                <li><a href="../../admin/receipt/inquiry.html" class="nav-sub-link" data-nav="receipt-inquiry"><i data-lucide="search" class="nav-sub-icon"></i><span>สอบถามข้อมูล</span></a></li>
+                <li><a href="../../admin/receipt/daily-summary.html" class="nav-sub-link" data-nav="receipt-summary"><i data-lucide="bar-chart-2" class="nav-sub-icon"></i><span>สรุปประจำวัน</span></a></li>
+                <li><a href="../../admin/receipt/daily-detail.html" class="nav-sub-link" data-nav="receipt-detail"><i data-lucide="list" class="nav-sub-icon"></i><span>รายละเอียดประจำวัน</span></a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="settings">
+          <p class="nav-group__title">ตั้งค่าระบบ</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../../admin/insurers.html" class="nav-link" data-nav="insurers"><i data-lucide="building-2"></i><span class="nav-link-text">บริษัทประกัน</span></a></li>
+            <li class="nav-item"><a href="../../admin/products.html" class="nav-link" data-nav="products"><i data-lucide="settings"></i><span class="nav-link-text">ตั้งค่าผลิตภัณฑ์</span></a></li>
+            <li class="nav-item"><a href="../../admin/audit-log.html" class="nav-link" data-nav="audit"><i data-lucide="scroll-text"></i><span class="nav-link-text">บันทึกระบบ</span></a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+      </header>
+      <main class="main-content">
+        <div class="content-card content-card--report">
+          <div class="report-panel">
+            <header class="report-panel__head"><i data-lucide="calendar-range"></i><h1>รายงานรายเดือน (ทั้งระบบ)</h1></header>
+            <div class="report-panel__body">
+              <div class="finance-stats finance-stats--3x2">
+                <div class="finance-stat"><div class="finance-stat__label">พ.ร.บ. (จำนวน)</div><div class="finance-stat__value" id="statPrbCount">0</div></div>
+                <div class="finance-stat"><div class="finance-stat__label">พ.ร.บ. (เบี้ย)</div><div class="finance-stat__value" id="statPrbPremium">0</div></div>
+                <div class="finance-stat"><div class="finance-stat__label">สมัครใจ (จำนวน)</div><div class="finance-stat__value" id="statVolCount">0</div></div>
+                <div class="finance-stat"><div class="finance-stat__label">สมัครใจ (เบี้ย)</div><div class="finance-stat__value" id="statVolPremium">0</div></div>
+                <div class="finance-stat"><div class="finance-stat__label">รวม (จำนวน)</div><div class="finance-stat__value" id="statTotalCount">0</div></div>
+                <div class="finance-stat"><div class="finance-stat__label">รวม (เบี้ย)</div><div class="finance-stat__value" id="statTotalPremium">0</div></div>
+              </div>
+              <div class="finance-toolbar">
+                <div class="finance-toolbar__field"><label for="reportPeriod">เดือน</label><select id="reportPeriod"></select></div>
+                <div class="finance-toolbar__field"><label for="reportView">มุมมอง</label><select id="reportView"><option value="insurer">แยกตามบริษัทประกัน</option><option value="day">แยกตามวัน</option></select></div>
+                <div class="finance-toolbar__field"><label>&nbsp;</label><button type="button" class="btn-primary btn-sm" id="btnMonthlySearch">ค้นหา</button></div>
+              </div>
+              <div class="report-table-wrap"><table class="report-table"><thead id="monthlyTableHead"><tr><th>บริษัทประกัน</th><th class="col-center">จำนวน กธ.</th><th class="col-money">เบี้ยรวม</th></tr></thead><tbody id="monthlyTableBody"></tbody></table></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../../js/admin-sidebar-nav-template.js?v=20260702a"></script>
+  <script src="../../js/load-admin.js"></script>
+  <script src="../../js/admin-app.js"></script>
+  <script src="../../js/pages/admin-report-monthly.js"></script>
+</body>
+</html>

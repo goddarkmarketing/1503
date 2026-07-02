@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
-const cache = '20260628l';
+const cache = '20260630d';
 
 const headCommon = (title, description) => `<!DOCTYPE html>
 <html lang="th">
@@ -20,6 +20,7 @@ const headCommon = (title, description) => `<!DOCTYPE html>
 <link rel="stylesheet" type="text/css" href="css/3802.css?v=${cache}">
 <link rel="stylesheet" type="text/css" href="css/3803.css?v=${cache}">
 <link rel="stylesheet" type="text/css" href="css/6714.css?v=${cache}">
+<link rel="stylesheet" type="text/css" href="css/header-kladee.css?v=${cache}">
 <link rel="stylesheet" type="text/css" href="css/6918.css?v=${cache}">
 <link rel="stylesheet" type="text/css" href="css/icons-lucide.css?v=${cache}">
 <link rel="stylesheet" type="text/css" href="css/pages.css?v=${cache}">
@@ -70,16 +71,16 @@ function build(page, title, description, srcFile, outFile) {
 
 build(
   'news',
-  'ข่าวสาร | กล้าดี โบรกเกอร์',
-  'ข่าวสาร โปรโมชัน บทความน่ารู้ กิจกรรม และประกาศรับสมัครนายหน้าจากกล้าดี โบรกเกอร์ — อัปเดตล่าสุดทุกเดือน',
+  'ข่าวสาร | กล้าดีโบรคเกอร์',
+  'ข่าวสาร โปรโมชัน บทความน่ารู้ กิจกรรม และประกาศรับสมัครนายหน้าจากกล้าดีโบรคเกอร์ — อัปเดตล่าสุดทุกเดือน',
   path.join(root, 'news.html'),
   path.join(root, 'news.html')
 );
 
 build(
   'contact',
-  'ติดต่อเรา | กล้าดี โบรกเกอร์',
-  'ติดต่อกล้าดี โบรกเกอร์ ปรึกษาประกันภัย สมัครนายหน้า แจ้งเคลม — โทร 082-616-4555 อีเมล kladee.broker@gmail.com LINE @kladeebroker',
+  'ติดต่อเรา | กล้าดีโบรคเกอร์',
+  'ติดต่อกล้าดีโบรคเกอร์ ปรึกษาประกันภัย สมัครนายหน้า แจ้งเคลม — โทร 082-616-4555 อีเมล kladee.broker@gmail.com LINE @kladeebroker',
   path.join(root, 'contact.html'),
   path.join(root, 'contact.html')
 );

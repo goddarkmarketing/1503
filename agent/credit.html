@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ขอเติมวงเงิน — KLADEE BROKER</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../css/portal.css">
+  <link rel="stylesheet" href="../css/agent-report.css">
+  <link rel="stylesheet" href="../css/agent-finance.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-base-path="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon"><i data-lucide="shield-check"></i></div>
+          <a href="index.html" class="sidebar-logo-text">KLADEE BROKER</a>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+      </div>
+      <!-- AGENT_SIDEBAR_V3 -->
+<!-- AGENT_SIDEBAR_V3 -->
+<nav class="sidebar-nav" data-agent-sidebar>
+  <div class="nav-group" data-nav-zone="main">
+    <p class="nav-group__title">หลัก</p>
+    <ul class="nav-group__list">
+      <li class="nav-item"><a href="../agent/index.html" class="nav-link" data-nav="home"><i data-lucide="house"></i><span class="nav-link-text">หน้าแรก</span></a></li>
+    </ul>
+  </div>
+  <div class="nav-group" data-nav-zone="products">
+    <p class="nav-group__title">ออกกรมธรรม์</p>
+    <ul class="nav-group__list">
+      <li class="nav-item has-submenu" data-nav-group="compulsory">
+        <a href="#" class="nav-link"><i data-lucide="shield"></i><span class="nav-link-text">ภาคบังคับ (พ.ร.บ.)</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+        <ul class="nav-submenu">
+          <li><a href="../compulsory/indara.html" class="nav-sub-link" data-nav="compulsory-indara"><img src="../assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span><span class="nav-badge">In-SURE</span></span></a></li>
+          <li><a href="../compulsory/viriyah.html" class="nav-sub-link" data-nav="compulsory-viriyah"><img src="../assets/logos/viriyah.png" alt="วิริยะประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>วิริยะประกันภัย</span><span class="nav-badge">OPApi</span></span></a></li>
+          <li><a href="../compulsory/tokio-marine.html" class="nav-sub-link" data-nav="compulsory-tokio"><img src="../assets/logos/tokio-marine.png" alt="โตเกียวมารีนประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>โตเกียวมารีนประกันภัย</span></span></a></li>
+          <li><a href="../compulsory/ergo.html" class="nav-sub-link" data-nav="compulsory-ergo"><img src="../assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
+        </ul>
+      </li>
+      <li class="nav-item has-submenu" data-nav-group="voluntary">
+        <a href="#" class="nav-link"><i data-lucide="file-check"></i><span class="nav-link-text">ภาคสมัครใจ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+        <ul class="nav-submenu">
+          <li><a href="#" class="nav-sub-link"><img src="../assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
+          <li><a href="#" class="nav-sub-link"><img src="../assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span><span class="nav-badge">In-SURE</span></span></a></li>
+          <li><a href="#" class="nav-sub-link"><img src="../assets/logos/tokio-marine.png" alt="โตเกียวมารีนประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>โตเกียวมารีนประกันภัย</span></span></a></li>
+        </ul>
+      </li>
+      <li class="nav-item has-submenu" data-nav-group="pa">
+        <a href="#" class="nav-link"><i data-lucide="heart-pulse"></i><span class="nav-link-text">ประกันอุบัติเหตุ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+        <ul class="nav-submenu">
+          <li><a href="#" class="nav-sub-link"><img src="../assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
+        </ul>
+      </li>
+      <li class="nav-item"><a href="../agent/renew.html" class="nav-link" data-nav="renew"><i data-lucide="refresh-cw"></i><span class="nav-link-text">ต่ออายุ กธ.</span><span class="nav-badge">renew</span></a></li>
+    </ul>
+  </div>
+  <div class="nav-group" data-nav-zone="reports">
+    <p class="nav-group__title">รายงาน &amp; ข้อมูล</p>
+    <ul class="nav-group__list">
+      <li class="nav-item has-submenu" data-nav-group="reports">
+        <a href="#" class="nav-link"><i data-lucide="bar-chart-3"></i><span class="nav-link-text">รายงาน</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+        <ul class="nav-submenu">
+          <li><a href="../agent/reports/daily-policies.html" class="nav-sub-link" data-nav="reports-daily-policies"><i data-lucide="clipboard-list" class="nav-sub-icon"></i><span>ขายกรมธรรม์ประจำวัน</span></a></li>
+          <li><a href="../agent/reports/daily-summary.html" class="nav-sub-link" data-nav="reports-daily-summary"><i data-lucide="bar-chart-3" class="nav-sub-icon"></i><span>สรุปการขายประจำวัน</span></a></li>
+          <li><a href="../agent/reports/monthly.html" class="nav-sub-link" data-nav="reports-monthly"><i data-lucide="calendar-range" class="nav-sub-icon"></i><span>รายงานรายเดือน</span></a></li>
+          <li><a href="../agent/reports/team.html" class="nav-sub-link" data-nav="reports-team"><i data-lucide="users-round" class="nav-sub-icon"></i><span>รายงานลูกทีม</span></a></li>
+        </ul>
+      </li>
+      <li class="nav-item"><a href="../agent/inquiry.html" class="nav-link" data-nav="inquiry"><i data-lucide="search"></i><span class="nav-link-text">สอบถามกรมธรรม์</span></a></li>
+    </ul>
+  </div>
+  <div class="nav-group" data-nav-zone="finance">
+    <p class="nav-group__title">การเงิน</p>
+    <ul class="nav-group__list">
+      <li class="nav-item"><a href="../agent/commission.html" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
+      <li class="nav-item"><a href="../agent/credit.html" class="nav-link" data-nav="credit"><i data-lucide="wallet"></i><span class="nav-link-text">ขอเติมวงเงิน</span></a></li>
+    </ul>
+  </div>
+  <div class="nav-group" data-nav-zone="receipt">
+    <p class="nav-group__title">ใบเสร็จ</p>
+    <ul class="nav-group__list">
+      <li class="nav-item has-submenu" data-receipt-nav data-nav-group="receipt">
+        <a href="#" class="nav-link"><i data-lucide="receipt"></i><span class="nav-link-text">ออกใบเสร็จ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+        <ul class="nav-submenu">
+          <li><a href="../agent/receipt/issue.html" class="nav-sub-link" data-receipt-page="issue" data-nav="receipt-issue"><i data-lucide="printer" class="nav-sub-icon"></i><span>ออกใบเสร็จ</span></a></li>
+          <li><a href="../agent/receipt/inquiry.html" class="nav-sub-link" data-receipt-page="inquiry" data-nav="receipt-inquiry"><i data-lucide="search" class="nav-sub-icon"></i><span>สอบถามข้อมูล</span></a></li>
+          <li><a href="../agent/receipt/daily-summary.html" class="nav-sub-link" data-receipt-page="daily-summary" data-nav="receipt-summary"><i data-lucide="bar-chart-2" class="nav-sub-icon"></i><span>สรุปประจำวัน</span></a></li>
+          <li><a href="../agent/receipt/daily-detail.html" class="nav-sub-link" data-receipt-page="daily-detail" data-nav="receipt-detail"><i data-lucide="list" class="nav-sub-icon"></i><span>รายละเอียดประจำวัน</span></a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <div class="nav-group" data-nav-zone="team">
+    <p class="nav-group__title">ทีมงาน</p>
+    <ul class="nav-group__list">
+      <li class="nav-item"><a href="../agent/team.html" class="nav-link" data-nav="team"><i data-lucide="users"></i><span class="nav-link-text">ลูกทีม</span></a></li>
+    </ul>
+  </div>
+</nav>
+      <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
+        <div class="balance-pill">
+          <div class="balance-pill-text">
+            <span class="balance-label">วงเงินคงเหลือ</span>
+            <span class="balance-value"><span class="balance-amount" id="balanceAmount">0.00</span><span class="balance-currency">บ.</span></span>
+          </div>
+        </div>
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">CK</div><span class="user-name">-</span></div>
+      </header>
+      <main class="main-content">
+        <div class="content-card content-card--finance">
+          <div class="finance-panel">
+            <header class="finance-panel__head">
+              <i data-lucide="wallet"></i>
+              <h1>ขอเติมวงเงิน</h1>
+            </header>
+            <div class="finance-panel__body">
+              <div class="finance-top-grid">
+                <div class="finance-balance-card">
+                  <header class="finance-card-head">
+                    <span class="finance-card-head__icon finance-card-head__icon--green"><i data-lucide="wallet"></i></span>
+                    <h2 class="finance-card-head__title">วงเงินคงเหลือ</h2>
+                  </header>
+                  <div class="finance-balance-card__body">
+                    <div class="finance-balance-card__amount">
+                      <span class="finance-balance-card__value" id="financeBalance">0.00</span>
+                      <span class="finance-balance-card__currency">บาท</span>
+                    </div>
+                    <div class="finance-balance-card__limit">
+                      <span class="finance-balance-card__label">เพดานวงเงิน</span>
+                      <div class="finance-balance-card__limit-text" id="financeLimitText">-</div>
+                      <div class="finance-balance-card__progress" aria-hidden="true">
+                        <div class="finance-balance-card__progress-fill" id="financeProgressFill"></div>
+                      </div>
+                    </div>
+                    <div class="finance-balance-stats">
+                      <div class="finance-balance-stat">
+                        <span class="finance-balance-stat__icon finance-balance-stat__icon--green"><i data-lucide="credit-card"></i></span>
+                        <div class="finance-balance-stat__text">
+                          <span class="finance-balance-stat__label">ใช้ไป</span>
+                          <span class="finance-balance-stat__value" id="financeUsedAmount">-</span>
+                        </div>
+                      </div>
+                      <div class="finance-balance-stat">
+                        <span class="finance-balance-stat__icon finance-balance-stat__icon--blue"><i data-lucide="percent"></i></span>
+                        <div class="finance-balance-stat__text">
+                          <span class="finance-balance-stat__label">ใช้ไป</span>
+                          <span class="finance-balance-stat__value" id="financeUsedPct">-</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="finance-request-card">
+                  <header class="finance-card-head">
+                    <span class="finance-card-head__icon finance-card-head__icon--green"><i data-lucide="file-plus"></i></span>
+                    <h2 class="finance-card-head__title">ส่งคำขอเติมวงเงิน</h2>
+                  </header>
+                  <form id="creditRequestForm" class="finance-request-form" novalidate>
+                    <div class="finance-request-form__field">
+                      <label for="creditAmount">จำนวนเงิน (บาท)</label>
+                      <input type="number" id="creditAmount" name="amount" min="1000" max="50000" step="100" placeholder="5,000" required>
+                      <p class="finance-field-hint">ขั้นต่ำ 1,000 บาท / สูงสุด 50,000 บาท</p>
+                    </div>
+                    <div class="finance-request-form__field">
+                      <label for="creditNote">หมายเหตุ (ถ้ามี)</label>
+                      <div class="finance-field-textarea-wrap">
+                        <textarea id="creditNote" name="note" rows="3" maxlength="200" placeholder="ระบุเหตุผล (ถ้ามี)"></textarea>
+                        <span class="finance-field-counter" id="creditNoteCounter">0 / 200</span>
+                      </div>
+                    </div>
+                    <div class="finance-request-form__actions">
+                      <button type="submit" class="btn-primary btn-primary--block"><i data-lucide="send"></i> ส่งคำขอ</button>
+                    </div>
+                  </form>
+                  <p class="finance-form-message" id="creditFormMessage"></p>
+                </div>
+              </div>
+
+              <div class="finance-section">
+                <h2 class="finance-section-title">คำขอเติมวงเงิน</h2>
+                <div class="report-table-wrap">
+                  <table class="report-table">
+                    <thead>
+                      <tr>
+                        <th>วันที่ขอ</th>
+                        <th class="col-money">จำนวน</th>
+                        <th>หมายเหตุ</th>
+                        <th>สถานะ</th>
+                        <th>วันที่อนุมัติ</th>
+                      </tr>
+                    </thead>
+                    <tbody id="creditRequestBody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="finance-section">
+                <h2 class="finance-section-title">ประวัติวงเงิน</h2>
+                <div class="report-table-wrap">
+                  <table class="report-table">
+                    <thead>
+                      <tr>
+                        <th>วันที่</th>
+                        <th class="col-money">จำนวน</th>
+                        <th class="col-money">ยอดคงเหลือ</th>
+                        <th>รายละเอียด</th>
+                      </tr>
+                    </thead>
+                    <tbody id="creditLedgerBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../js/agent-sidebar-nav-template.js?v=20260701j"></script>
+  <script src="../js/load-agent.js"></script>
+  <script src="../js/app.js?v=20260701j"></script>
+  <script src="../js/pages/agent-credit.js"></script>
+</body>
+</html>

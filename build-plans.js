@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CACHE = '20260628q';
+const CACHE = '20260630l';
 const OUT = path.join(__dirname, 'plans');
 
 const CAR_IMAGES = [
@@ -82,7 +82,7 @@ const categories = [
     file: 'car.html',
     title: 'ประกันรถยนต์',
     badge: 'ภาคสมัครใจ',
-    desc: 'เปรียบเทียบแผนประกันรถยนต์ชั้น 1 / 2+ / 2 / 3+ จากบริษัทประกันชั้นนำ คุ้มครองรถ คนขับ และบุคคลที่สาม — ปรึกษาฟรีกับที่ปรึกษากล้าดี โบรกเกอร์',
+    desc: 'เปรียบเทียบแผนประกันรถยนต์ชั้น 1 / 2+ / 2 / 3+ จากบริษัทประกันชั้นนำ คุ้มครองรถ คนขับ และบุคคลที่สาม — ปรึกษาฟรีกับที่ปรึกษากล้าดีโบรคเกอร์',
     intro: 'เราช่วยคัดแผนที่เหมาะกับการใช้งาน อายุรถ และงบประมาณของคุณ ไม่ว่าจะเป็นรถใหม่ รถมือสอง หรือรถใช้งาน',
     benefits: [
       { title: 'เปรียบเทียบหลายบริษัท', text: 'ดูเบี้ยและความคุ้มครองจากหลายบริษัทในที่เดียว' },
@@ -91,6 +91,7 @@ const categories = [
     ],
     plans: [
       { name: 'ประกันรถยนต์ชั้น 1', txt: 'คุ้มครองรอบคัน ชน-หาย-ไฟไหม้ ซ่อมห้างอุ่นใจ', price: 'เริ่ม ~12,500 บ./ปี' },
+      { name: 'ประกันรถยนต์ชั้น 2', txt: 'คุ้มครองรถและคู่กรณี ยอดนิยม', price: 'เริ่ม ~10,200 บ./ปี' },
       { name: 'ประกันรถยนต์ 2+ / 3+', txt: 'เบี้ยเบา คุ้มค่า คุ้มครองคู่กรณีครบ', price: 'เริ่ม ~8,900 บ./ปี' },
       { name: 'พ.ร.บ. รถยนต์', txt: 'ต่อง่าย ราคามาตรฐาน คุ้มครองตามกฎหมาย', price: '~645 บ./ปี' },
     ],
@@ -344,7 +345,7 @@ const planDetails = {
       { q: 'รถมือสองทำประกันชั้น 1 ได้ไหม?', a: 'ได้ ขึ้นกับอายุรถ สภาพรถ และนโยบายของแต่ละบริษัท เราช่วยเปรียบเทียบให้' },
       { q: 'พ.ร.บ. กับภาคสมัครใจต่างกันอย่างไร?', a: 'พ.ร.บ. เป็นภาคบังคับคุ้มครองผู้ประสบภัยตามกฎหมาย ภาคสมัครใจเสริมความคุ้มครองรถและคู่กรณีเพิ่มเติม' },
       { q: 'เปลี่ยนบริษัทตอนต่ออายุได้ไหม?', a: 'ได้ เราช่วยเปรียบเทียบเบี้ยและความคุ้มครองก่อนต่ออายุทุกครั้ง' },
-      { q: 'แจ้งเคลมต้องทำอย่างไร?', a: 'โทรแจ้งบริษัทประกันหรือติดต่อทีมกล้าดี โบรกเกอร์เพื่อประสานงานและแนะนำเอกสาร' },
+      { q: 'แจ้งเคลมต้องทำอย่างไร?', a: 'โทรแจ้งบริษัทประกันหรือติดต่อทีมกล้าดีโบรคเกอร์เพื่อประสานงานและแนะนำเอกสาร' },
     ],
   },
   compulsory: {
@@ -773,10 +774,11 @@ function renderMCon7Block() {
   const part2 = items.filter((i) => i.part === 'part2');
   const part3 = items.filter((i) => i.part === 'part3');
 
-  return `\t\t\t<div class="mCon7">
+  return `\t\t\t<div class="mCon7" id="plans">
 \t\t\t\t<div class="planHead">
 \t\t\t\t\t<h2>แผนประกันแนะนำ</h2>
 \t\t\t\t\t<div class="nNav">
+\t\t\t\t\t\t<a class="nHead__all" href="contact.html">ดูเพิ่มเติม</a>
 \t\t\t\t\t\t<button class="nNavBtn prevSlide4" type="button" aria-label="ก่อนหน้า"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
 \t\t\t\t\t\t<button class="nNavBtn nextSlide4" type="button" aria-label="ถัดไป"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
 \t\t\t\t\t</div>
@@ -788,10 +790,18 @@ ${desktopSlides}
 
 \t\t\t\t\t</ul>
 \t\t\t\t</div>
+\t\t\t\t<div class="planPage" role="tablist" aria-label="ตำแหน่งสไลด์แผนประกัน">
+\t\t\t\t\t<button type="button" class="planDot is-active" data-plan-dot="0" aria-label="สไลด์ชุดที่ 1" aria-selected="true"></button>
+\t\t\t\t\t<button type="button" class="planDot" data-plan-dot="1" aria-label="สไลด์ชุดที่ 2" aria-selected="false"></button>
+\t\t\t\t\t<button type="button" class="planDot" data-plan-dot="2" aria-label="สไลด์ชุดที่ 3" aria-selected="false"></button>
+\t\t\t\t</div>
 \t\t\t\t<div class="mobile_media">
 ${renderMobileSwiper(part1)}
 ${renderMobileSwiper(part2)}
 ${renderMobileSwiper(part3)}
+\t\t\t\t</div>
+\t\t\t\t<div class="kbSectionMore">
+\t\t\t\t\t<a class="kbSectionMore__btn" href="contact.html">ดูเพิ่มเติม <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
 \t\t\t\t</div>
 \t\t\t</div>
 `;
@@ -800,8 +810,8 @@ ${renderMobileSwiper(part3)}
 function patchIndexMCon7() {
   const indexPath = path.join(__dirname, 'index.html');
   let html = fs.readFileSync(indexPath, 'utf8');
-  const start = html.indexOf('\t\t\t<div class="mCon7">');
-  const end = html.indexOf('\t\t\t<div class="mCon8">');
+  const start = html.indexOf('\t\t\t<div class="mCon7"');
+  const end = html.indexOf('\t\t</div>\n\t\t<div class="mConW3">');
   if (start < 0 || end < 0) throw new Error('mCon7 markers not found in index.html');
   html = html.slice(0, start) + renderMCon7Block() + html.slice(end);
   html = html.replace(/\?v=20260627\w/g, `?v=${CACHE}`);
@@ -848,7 +858,7 @@ function renderPage(cat) {
   return `<!DOCTYPE html>
 <html lang="th">
 <head>
-<title>${cat.title} | แผนประกันแนะนำ | กล้าดี โบรกเกอร์</title>
+<title>${cat.title} | แผนประกันแนะนำ | กล้าดีโบรคเกอร์</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -861,6 +871,7 @@ function renderPage(cat) {
 <link rel="stylesheet" type="text/css" href="../css/3802.css?v=${CACHE}">
 <link rel="stylesheet" type="text/css" href="../css/3803.css?v=${CACHE}">
 <link rel="stylesheet" type="text/css" href="../css/6714.css?v=${CACHE}">
+<link rel="stylesheet" type="text/css" href="../css/header-kladee.css?v=${CACHE}">
 <link rel="stylesheet" type="text/css" href="../css/6918.css?v=${CACHE}">
 <link rel="stylesheet" type="text/css" href="../css/icons-lucide.css?v=${CACHE}">
 <link rel="stylesheet" type="text/css" href="../css/plans.css?v=${CACHE}">
@@ -912,7 +923,7 @@ function renderPage(cat) {
 \t</section>
 
 \t<section class="planSection">
-\t\t<div class="planSection__head"><h2>ทำไมต้องเลือกผ่านกล้าดี โบรกเกอร์</h2></div>
+\t\t<div class="planSection__head"><h2>ทำไมต้องเลือกผ่านกล้าดีโบรคเกอร์</h2></div>
 \t\t<div class="planBenefits">${benefits}</div>
 \t</section>
 

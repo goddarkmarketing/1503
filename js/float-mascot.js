@@ -4,7 +4,11 @@
 (function (window, document) {
   'use strict';
 
-  var CACHE = '20260628q';
+  var CACHE = '20260630t';
+
+  function iconChat() {
+    return '<svg class="floatMascot__btnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
+  }
   var ROOT_ID = 'floatMascot';
 
   function getBase() {
@@ -69,9 +73,8 @@
       '</div>' +
       '<div class="floatMascot__bubble" id="floatMascotBubble" role="status">สวัสดีครับ มีอะไรให้เราช่วยเหลือไหมครับ?</div>' +
       '<button type="button" class="floatMascot__btn" id="floatMascotBtn" aria-label="เปิดช่องทางติดต่อ" aria-expanded="false" aria-controls="floatMascotPanel">' +
-      '<img class="floatMascot__img" src="' +
-      asset('images/mascot-float.png') +
-      '" alt="มาสคอต กล้าดี โบรกเกอร์" width="88" height="88">' +
+      iconChat() +
+      '<span class="floatMascot__btnLabel">ติดต่อเรา</span>' +
       '</button>';
     return wrap;
   }

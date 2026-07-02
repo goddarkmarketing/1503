@@ -1,0 +1,577 @@
+/* ความน่าเชื่อถือ — หน้าแรก (สีแบรนด์กล้าดี) */
+.kbTrustAbout {
+  --ta-green: #008654;
+  --ta-green-dark: #045c3a;
+  --ta-green-soft: #e8f5ef;
+  --ta-blue: #1f379d;
+  --ta-blue-soft: #eef2fb;
+  --ta-ink: #111827;
+  --ta-muted: #4b5563;
+  --ta-line: #e8ecf3;
+  position: relative;
+  margin: 0 0 72px;
+  padding: 36px 32px 32px;
+  box-sizing: border-box;
+  font-family: 'Sarabun', sans-serif;
+  background: linear-gradient(135deg, #f4fbf8 0%, #f6f8fc 52%, #eef2fb 100%);
+  border: 1px solid #e2ebe8;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.kbTrustAbout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ta-green) 0%, var(--ta-blue) 100%);
+}
+
+.kbTrustAbout__head {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.kbTrustAbout__title {
+  margin: 0;
+  font-family: 'GmarketSans', 'Sarabun', sans-serif;
+  font-size: clamp(26px, 2.8vw, 36px);
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ta-ink);
+  letter-spacing: -0.02em;
+}
+
+.kbTrustAbout__titleLead {
+  display: block;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.kbTrustAbout__titleSub {
+  display: block;
+  margin-top: 4px;
+  font-weight: 700;
+  color: var(--ta-green);
+}
+
+.kbTrustAbout__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* —— Cards —— */
+.kbTrustCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px 24px 20px;
+  background: #fff;
+  border: 1px solid var(--ta-line);
+  border-radius: 18px;
+  box-shadow: 0 8px 28px rgba(20, 40, 90, 0.06);
+  box-sizing: border-box;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.kbTrustCard:hover {
+  transform: translateY(-3px);
+  border-color: #d4e8df;
+  box-shadow: 0 14px 36px rgba(0, 134, 84, 0.1);
+}
+
+.kbTrustCard--combined {
+  gap: 0;
+}
+
+.kbTrustCard--partners {
+  gap: 0;
+}
+
+.kbTrustCard--partners .kbTrustPartners {
+  flex: 1;
+  margin-top: 4px;
+}
+
+/* —— Card header —— */
+.kbTrustCard__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ta-line);
+}
+
+.kbTrustCard__headText {
+  min-width: 0;
+}
+
+.kbTrustCard__eyebrow {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ta-green);
+}
+
+.kbTrustCard--partners .kbTrustCard__eyebrow {
+  color: var(--ta-blue);
+}
+
+.kbTrustCard__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--ta-green);
+  background: var(--ta-green-soft);
+  border-radius: 12px;
+}
+
+.kbTrustCard__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.kbTrustCard__icon--blue {
+  color: var(--ta-blue);
+  background: var(--ta-blue-soft);
+}
+
+.kbTrustCard__title {
+  margin: 0;
+  font-family: 'GmarketSans', 'Sarabun', sans-serif;
+  font-size: clamp(18px, 1.8vw, 21px);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ta-ink);
+  letter-spacing: -0.02em;
+}
+
+.kbTrustCard__lead {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ta-muted);
+}
+
+.kbTrustCard__lead--compact {
+  margin-bottom: 12px;
+}
+
+/* —— Highlights row —— */
+.kbTrustHighlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.kbTrustHighlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  text-align: center;
+  background: linear-gradient(180deg, #fafcfd 0%, #f4f8fb 100%);
+  border: 1px solid #e8eef5;
+  border-radius: 12px;
+}
+
+.kbTrustHighlight__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--ta-green);
+  background: var(--ta-green-soft);
+  border-radius: 8px;
+}
+
+.kbTrustHighlight__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kbTrustHighlight__label {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ta-ink);
+}
+
+.kbTrustHighlight__desc {
+  font-size: 11px;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+/* —— Panels (licenses + stats side by side) —— */
+.kbTrustCard__panels {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 12px;
+  flex: 1;
+  margin-bottom: 18px;
+}
+
+.kbTrustBlock {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 14px;
+  background: #f8fafb;
+  border: 1px solid #eef2f6;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.kbTrustBlock--stats {
+  background: linear-gradient(160deg, #fafbfd 0%, #f4f7fc 100%);
+  border-color: #e6ebf5;
+}
+
+.kbTrustBlock__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-family: 'GmarketSans', 'Sarabun', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ta-ink);
+}
+
+.kbTrustBlock__dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ta-green);
+  box-shadow: 0 0 0 3px var(--ta-green-soft);
+}
+
+.kbTrustBlock__dot--blue {
+  background: var(--ta-blue);
+  box-shadow: 0 0 0 3px var(--ta-blue-soft);
+}
+
+/* —— Licenses —— */
+.kbTrustLicenses {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.kbTrustBlock--licenses .kbTrustLicenses li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e8eef3;
+  border-radius: 10px;
+}
+
+.kbTrustLicenses__tag {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ta-green-dark);
+  background: var(--ta-green-soft);
+  border-radius: 5px;
+}
+
+.kbTrustLicenses__num {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ta-green);
+  word-break: break-all;
+}
+
+/* —— Stats —— */
+.kbTrustStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  flex: 1;
+  align-content: stretch;
+}
+
+.kbTrustStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 78px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+.kbTrustStat__label {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.kbTrustStat__num {
+  font-family: 'GmarketSans', 'Sarabun', sans-serif;
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.kbTrustStat__unit {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.kbTrustStat--green {
+  background: #008654;
+  border-color: #006b44;
+}
+
+.kbTrustStat--green .kbTrustStat__label,
+.kbTrustStat--green .kbTrustStat__num,
+.kbTrustStat--green .kbTrustStat__unit {
+  color: #fff;
+}
+
+.kbTrustStat--blue {
+  background: #1f379d;
+  border-color: #172b75;
+}
+
+.kbTrustStat--blue .kbTrustStat__label,
+.kbTrustStat--blue .kbTrustStat__num,
+.kbTrustStat--blue .kbTrustStat__unit {
+  color: #fff;
+}
+
+.kbTrustStat--teal {
+  background: #0d9488;
+  border-color: #0a7a70;
+}
+
+.kbTrustStat--teal .kbTrustStat__label,
+.kbTrustStat--teal .kbTrustStat__num,
+.kbTrustStat--teal .kbTrustStat__unit {
+  color: #fff;
+}
+
+.kbTrustStat--red {
+  background: #dc2626;
+  border-color: #b91c1c;
+}
+
+.kbTrustStat--red .kbTrustStat__label,
+.kbTrustStat--red .kbTrustStat__num,
+.kbTrustStat--red .kbTrustStat__unit {
+  color: #fff;
+}
+
+/* —— Footer —— */
+.kbTrustCard__footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--ta-line);
+}
+
+.kbTrustBadges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.kbTrustBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--ta-line);
+  border-radius: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kbTrustBadge:hover {
+  border-color: #c5d0ea;
+  box-shadow: 0 4px 14px rgba(31, 55, 157, 0.08);
+}
+
+.kbTrustBadge__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.kbTrustBadge--oic .kbTrustBadge__img {
+  max-height: 44px;
+}
+
+.kbTrustBadge--dbd .kbTrustBadge__img {
+  max-height: 50px;
+}
+
+.kbTrustCard__note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* —— Partners grid —— */
+.kbTrustPartners {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.kbTrustPartners__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #eef2f6;
+  border-radius: 9px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.kbTrustPartners__item:hover {
+  background: #fff;
+  border-color: #cce8da;
+  box-shadow: 0 4px 12px rgba(0, 134, 84, 0.08);
+  transform: translateY(-2px);
+}
+
+.kbTrustPartners__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* —— Responsive —— */
+@media all and (max-width: 1100px) {
+  .kbTrustAbout__grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .kbTrustCard__panels {
+    grid-template-columns: 1fr;
+  }
+
+  .kbTrustHighlights {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kbTrustPartners {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media all and (max-width: 700px) {
+  .kbTrustAbout {
+    margin-bottom: 56px;
+    padding: 28px 18px 20px;
+    border-radius: 18px;
+  }
+
+  .kbTrustAbout__head {
+    margin-bottom: 22px;
+  }
+
+  .kbTrustAbout__title {
+    font-size: 24px;
+  }
+
+  .kbTrustCard {
+    padding: 20px 18px 18px;
+  }
+
+  .kbTrustHighlights {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .kbTrustHighlight {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: 12px 14px;
+  }
+
+  .kbTrustHighlight__icon {
+    flex-shrink: 0;
+  }
+
+  .kbTrustHighlight__label,
+  .kbTrustHighlight__desc {
+    display: block;
+  }
+
+  .kbTrustBlock {
+    padding: 12px;
+  }
+
+  .kbTrustStat {
+    min-height: 72px;
+    padding: 10px 8px;
+  }
+
+  .kbTrustPartners {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media all and (max-width: 420px) {
+  .kbTrustPartners {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,142 @@
+/* Shared portal widgets — table states, pagination, etc. */
+.table-empty td {
+  text-align: center;
+  padding: 32px 16px !important;
+  color: var(--text-muted);
+}
+
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.pagination-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.pagination-btns button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pagination-btns button:hover:not(:disabled) {
+  background: var(--bg-page);
+}
+
+.pagination-btns button.active {
+  background: var(--accent-green-soft);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.pagination-btns button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.success-card {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.success-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  background: var(--accent-green-soft);
+  color: var(--accent-green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.success-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.stub-page {
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.stub-page h1 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.stub-page p {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.credit-limit-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.credit-limit-bar {
+  height: 6px;
+  background: #e8eaed;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 4px;
+  max-width: 120px;
+}
+
+.credit-limit-fill {
+  height: 100%;
+  background: var(--accent-green);
+  border-radius: 6px;
+}
+
+.credit-limit-fill.warn {
+  background: #f59e0b;
+}
+
+body[data-base-path] .main-content > .content-card {
+  padding: 24px 28px 32px;
+}
+
+.stub-page .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: var(--brand-green-gradient);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}

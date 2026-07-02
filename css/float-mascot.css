@@ -1,7 +1,7 @@
 .floatMascot{
 	--fm-blue:#1f379d;
 	--fm-green:#008654;
-	position:fixed;right:20px;bottom:20px;z-index:9990;
+	position:fixed;right:20px;bottom:88px;z-index:9990;
 	display:flex;flex-direction:column;align-items:flex-end;gap:10px;
 	pointer-events:none;
 }
@@ -58,24 +58,34 @@
 
 .floatMascot__btn{
 	pointer-events:auto;
-	position:relative;display:block;padding:0;margin:0;
-	width:88px;height:88px;border:none;background:transparent;cursor:pointer;
-	border-radius:50%;transition:transform 0.2s ease;
+	display:inline-flex;align-items:center;justify-content:center;gap:8px;
+	padding:0 20px 0 16px;margin:0;min-width:56px;height:56px;
+	border:none;border-radius:999px;cursor:pointer;
+	color:#fff;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:0.01em;
+	background:linear-gradient(135deg,var(--fm-blue) 0%,#2d4bb8 55%,var(--fm-green) 100%);
+	box-shadow:0 8px 24px rgba(31,55,157,0.35);
+	transition:transform 0.2s ease,box-shadow 0.2s ease;
+	animation:floatMascotBob 3.2s ease-in-out infinite;
 	-webkit-tap-highlight-color:transparent;
 }
-.floatMascot__btn:hover{transform:scale(1.05);}
-.floatMascot__btn:focus-visible{outline:2px solid var(--fm-blue);outline-offset:4px;}
-.floatMascot__img{
-	display:block;width:100%;height:100%;object-fit:contain;
-	filter:drop-shadow(0 6px 16px rgba(31,55,157,0.22));
-	animation:floatMascotBob 3.2s ease-in-out infinite;
+.floatMascot__btn:hover{
+	animation-play-state:paused;
+	transform:translateY(-2px) scale(1.03);
+	box-shadow:0 12px 28px rgba(31,55,157,0.42);
 }
-.floatMascot.is-open .floatMascot__img{animation:floatMascotBob 2s ease-in-out infinite;}
+.floatMascot.is-open .floatMascot__btn{
+	animation:floatMascotBob 2s ease-in-out infinite;
+	background:linear-gradient(135deg,#15287a 0%,var(--fm-blue) 55%,#047c5d 100%);
+}
+.floatMascot__btn:focus-visible{outline:2px solid var(--fm-blue);outline-offset:4px;}
+.floatMascot__btnIcon{
+	display:block;width:22px;height:22px;flex-shrink:0;
+}
+.floatMascot__btnLabel{white-space:nowrap;}
 
 @keyframes floatMascotBob{
-	0%,100%{transform:translateY(0) rotate(0deg);}
-	30%{transform:translateY(-5px) rotate(-2deg);}
-	70%{transform:translateY(-3px) rotate(2deg);}
+	0%,100%{transform:translateY(0);}
+	50%{transform:translateY(-4px);}
 }
 @keyframes floatBubbleIn{
 	to{opacity:1;transform:translateY(0) scale(1);}
@@ -85,15 +95,27 @@
 	50%{transform:translateY(-4px);}
 }
 
+@media(max-width:768px){
+	body.kbMenuOpen .floatMascot{
+		visibility:hidden;
+		pointer-events:none;
+		opacity:0;
+	}
+}
+
 @media(max-width:640px){
-	.floatMascot{right:14px;bottom:14px;}
-	.floatMascot__btn{width:64px;height:64px;}
+	.floatMascot{right:12px;bottom:96px;z-index:9900;}
+	.floatMascot__btn{
+		width:56px;height:56px;min-width:56px;padding:0;
+		border-radius:50%;
+	}
+	.floatMascot__btnLabel{display:none;}
 	.floatMascot__bubble{max-width:200px;font-size:12px;padding:10px 14px;}
 	.floatMascot__panel{min-width:200px;}
 }
 
 @media(prefers-reduced-motion:reduce){
-	.floatMascot__img,.floatMascot__bubble{animation:none !important;}
+	.floatMascot__btn,.floatMascot__bubble{animation:none !important;}
 	.floatMascot__bubble{opacity:1;transform:none;}
 	.floatMascot__panel{transition:none;}
 }

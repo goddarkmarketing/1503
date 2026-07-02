@@ -1,130 +1,95 @@
 $(function(){
 
 	//팝업 big 슬라이드
-	var $mpopBSlide = $('.mCon1');
-	var $slidContrb1 = $mpopBSlide.find('.control2');
 	var swiper1 = new Swiper('.mSlide1', {
 		navigation: {
           nextEl: ".nextSlide1",
           prevEl: ".prevSlide1",
         },
+		pagination: {
+			el: '.mSlide1Dots',
+			clickable: true,
+			bulletClass: 'heroDot',
+			bulletActiveClass: 'is-active',
+		},
 		autoplay: {
           delay: 5000,
           disableOnInteraction: false,
         },
 		speed: 500,
 		autoplayDisableOnInteraction: false,
-		//2025-12-16 수정
-		pagination: {
-          el: ".vPage",
-		  clickable: true,
-		  renderBullet: function (index, className) {
-			return '<button type="button" class="' + className + '">' + (index + 1) + "</button>";
-		  },
-        },
 		loop: true,
-		
 		on: {
-			slideChangeTransitionStart: function () { //접근성 추가 - tab 포커스이동
+			slideChangeTransitionStart: function () {
 				$('.mSlide1 li').find('a').attr('tabindex', -1);
 				$('.mSlide1 li.swiper-slide-active, .mSlide1 li.swiper-slide-active ~ li').find('a').attr('tabindex', 0);
 			},
-			transitionEnd: function () {
-				$(".mCon1 .control2 .lineBar .line").addClass('on');
-			},
-			transitionStart: function () {
-				$(".mCon1 .control2 .lineBar .line").removeClass('on');
-			},
-			
 		},
-	});
-	$slidContrb1.find( '.startSlide1' ).on( 'click', function () {
-		swiper1.autoplay.start();
-		$(this).hide().prev().show().focus();
-		$(".mCon1 .control2 .lineBar .line").addClass('on');
-	});
-	$slidContrb1.find( '.stopSlide1' ).on( 'click', function () {
-		swiper1.autoplay.stop();
-		$(this).hide().next().show().focus();
-		$(".mCon1 .control2 .lineBar .line").removeClass('on');
 	});
 	$( '.mSlide1 li' ).focusin( function () {
 		swiper1.autoplay.stop();
-		$slidContrb1.find( '.stopSlide1' ).hide().next().show();
 	});
 
-	//링크 슬라이드
-	var swiper2 = new Swiper('.mSlide2', {
-		navigation: {
-			nextEl: ".nextSlide2",
-			prevEl: ".prevSlide2",
-		  },
-		slidesPerView: 2,
-		loop: false,
-		spaceBetween: 0,
-		breakpoints: {
-			1200: {
-				slidesPerView: 8,
-				spaceBetween: 0
+	//พันธมิตรประกันภัย — แถบโลโก้ต่อเนื่อง (mCon3)
+	if (document.querySelector('.mSlide2--partners')) {
+		var swiper2 = new Swiper('.mSlide2--partners', {
+			slidesPerView: 'auto',
+			spaceBetween: 0,
+			loop: true,
+			speed: 700,
+			autoplay: {
+				delay: 1600,
+				disableOnInteraction: false,
 			},
-			1024: {
-				slidesPerView: 6,
-			},
-			650: {
-				slidesPerView: 4,
-			},
-			500: {
-				slidesPerView: 3,
-			},
-			400: {
-				slidesPerView: 2,
-			},
-		},
-		
-	});
+			allowTouchMove: true,
+			loopAdditionalSlides: 10,
+		});
+	}
 
 	
 
-	//팝업 smal 슬라이드
-	var $mpopSSlide = $('.mCon5');
-	var $slidContrb2 = $mpopSSlide.find('.control');
-	var swiper3 = new Swiper('.mSlide3', {
-		navigation: {
-          nextEl: ".nextSlide3",
-          prevEl: ".prevSlide3",
-        },
-		autoplay: {
-          delay: 5000,
-          disableOnInteraction: false,
-        },
-		speed: 700,
-		autoplayDisableOnInteraction: false,
-		pagination: {
-          el: ".pPage",
-          type: "fraction",
-        },
-		loop: true,
-		slidesPerView: 1,
-		spaceBetween: 0,
-		on: {
-			slideChangeTransitionStart: function () { //접근성 추가 - tab 포커스이동
-				$('.mSlide3 li').find('a').attr('tabindex', -1);
-				$('.mSlide3 li.swiper-slide-active').find('a').attr('tabindex', 0);
-			}
-		},
-	});
-	$slidContrb2.find( '.startSlide3' ).on( 'click', function () {
-		swiper3.autoplay.start();
-		$(this).hide().prev().show().focus();
-	});
-	$slidContrb2.find( '.stopSlide3' ).on( 'click', function () {
-		swiper3.autoplay.stop();
-		$(this).hide().next().show().focus();
-	});
-	$( '.mSlide3 li' ).focusin( function () {
-		swiper3.autoplay.stop();
-		$slidContrb2.find( '.stopSlide3' ).hide().next().show();
-	});
+	//팝업 smal 슬라이드 (mCon5 ถ้ามีในหน้า)
+	if ($('.mSlide3').length) {
+		var $mpopSSlide = $('.mCon5');
+		var $slidContrb2 = $mpopSSlide.find('.control');
+		var swiper3 = new Swiper('.mSlide3', {
+			navigation: {
+	          nextEl: ".nextSlide3",
+	          prevEl: ".prevSlide3",
+	        },
+			autoplay: {
+	          delay: 5000,
+	          disableOnInteraction: false,
+	        },
+			speed: 700,
+			autoplayDisableOnInteraction: false,
+			pagination: {
+	          el: ".pPage",
+	          type: "fraction",
+	        },
+			loop: true,
+			slidesPerView: 1,
+			spaceBetween: 0,
+			on: {
+				slideChangeTransitionStart: function () {
+					$('.mSlide3 li').find('a').attr('tabindex', -1);
+					$('.mSlide3 li.swiper-slide-active').find('a').attr('tabindex', 0);
+				}
+			},
+		});
+		$slidContrb2.find( '.startSlide3' ).on( 'click', function () {
+			swiper3.autoplay.start();
+			$(this).hide().prev().show().focus();
+		});
+		$slidContrb2.find( '.stopSlide3' ).on( 'click', function () {
+			swiper3.autoplay.stop();
+			$(this).hide().next().show().focus();
+		});
+		$( '.mSlide3 li' ).focusin( function () {
+			swiper3.autoplay.stop();
+			$slidContrb2.find( '.stopSlide3' ).hide().next().show();
+		});
+	}
 
 
 	//공지사항 텝메뉴
@@ -176,26 +141,98 @@ $(function(){
           nextEl: ".nextSlide4",
           prevEl: ".prevSlide4",
         },
+		autoplay: {
+			delay: 3500,
+			disableOnInteraction: false,
+		},
+		speed: 700,
 		autoplayDisableOnInteraction: false,
-		loop: false,
+		loop: true,
 		slidesPerView: 1,
 		slidesPerGroup: 1,
 		spaceBetween: 14,
 		breakpoints: {
 			768: {
 				slidesPerView: 2,
-				slidesPerGroup: 2,
+				slidesPerGroup: 1,
 				spaceBetween: 16,
 			},
 			1200: {
-				slidesPerView: 3,
-				slidesPerGroup: 3,
+				slidesPerView: 4,
+				slidesPerGroup: 1,
 				spaceBetween: 20,
 			},
 		},
 		observer: true,
 		observeParents: true,
 	});
+
+	var $planDots = $('#plans .planDot');
+	function planSlideTotal() {
+		return document.querySelectorAll('.mSlide5 .swiper-slide:not(.swiper-slide-duplicate)').length;
+	}
+	function slideToPlanDot(realIndex, total) {
+		if (realIndex < total / 3) return 0;
+		if (realIndex < (total * 2) / 3) return 1;
+		return 2;
+	}
+	function planDotToSlide(dot, total) {
+		if (dot === 0) return 0;
+		if (dot === 1) return Math.floor(total / 3);
+		return Math.floor((total * 2) / 3);
+	}
+	function updatePlanDots(swiper) {
+		var total = planSlideTotal();
+		var idx = slideToPlanDot(swiper.realIndex, total);
+		$planDots.removeClass('is-active').attr({ 'aria-selected': 'false', title: '' });
+		$planDots.eq(idx).addClass('is-active').attr({ 'aria-selected': 'true', title: 'เลือกอยู่' });
+	}
+	swiper4.on('slideChange', function () { updatePlanDots(swiper4); });
+	updatePlanDots(swiper4);
+	$planDots.on('click', function () {
+		var dot = parseInt($(this).data('plan-dot'), 10);
+		var total = planSlideTotal();
+		swiper4.slideToLoop(planDotToSlide(dot, total));
+	});
+
+	//ความประทับใจของสมาชิก
+	if ($('.kbMemberReviews__slider').length) {
+		new Swiper('.kbMemberReviews__slider', {
+			navigation: {
+				nextEl: '.kbMemberReviews__nav--next',
+				prevEl: '.kbMemberReviews__nav--prev',
+			},
+			pagination: {
+				el: '.kbMemberReviews__dots',
+				clickable: true,
+				bulletClass: 'kbReviewDot',
+				bulletActiveClass: 'is-active',
+			},
+			autoplay: {
+				delay: 4200,
+				disableOnInteraction: false,
+			},
+			speed: 650,
+			autoplayDisableOnInteraction: false,
+			loop: true,
+			slidesPerView: 1,
+			slidesPerGroup: 1,
+			spaceBetween: 20,
+			loopAdditionalSlides: 3,
+			breakpoints: {
+				768: {
+					slidesPerView: 2,
+					spaceBetween: 22,
+				},
+				1100: {
+					slidesPerView: 3,
+					spaceBetween: 24,
+				},
+			},
+			observer: true,
+			observeParents: true,
+		});
+	}
 
 	
 	//문화관광 이미지
@@ -292,12 +329,14 @@ $(function(){
 	}
 
 
-	//메인 비주얼 슬라이드 더보기 열기
-	$('.moreSlide1').click(function(){
-		$(".slide_list_pop").attr('tabindex', '0').fadeIn('fast').focus();
-		$('.slide_list_pop .btnClose').click(function(){
-			$(".slide_list_pop").fadeOut('fast');
+	//메인 비주얼 슬라이드 더보기 열기 (ปุ่มถูกถอดออกจาก hero — คง handler ไว้ถ้ามีปุ่มอื่นในอนาคต)
+	if ($('.moreSlide1').length) {
+		$('.moreSlide1').click(function(){
+			$(".slide_list_pop").attr('tabindex', '0').fadeIn('fast').focus();
+			$('.slide_list_pop .btnClose').click(function(){
+				$(".slide_list_pop").fadeOut('fast');
+			});
 		});
-	});
+	}
 
 });         

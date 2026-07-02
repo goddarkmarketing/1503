@@ -1,0 +1,136 @@
+/* FAQ หน้าแรก — ต่อจาก mCon9 tourCon */
+.kbHomeFaq {
+  margin: 48px 0 40px;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Sarabun', sans-serif;
+}
+
+.kbHomeFaq__inner {
+  width: 100%;
+  max-width: 100%;
+}
+
+.kbHomeFaq__title {
+  margin: 0 0 28px;
+  text-align: center;
+  font-family: 'GmarketSans', 'Sarabun', sans-serif;
+  font-size: clamp(26px, 2.8vw, 36px);
+  font-weight: 700;
+  line-height: 1.35;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.kbHomeFaq__titleLead {
+  display: block;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.kbHomeFaq__titleSub {
+  display: block;
+  margin-top: 4px;
+  font-weight: 700;
+  color: #008654;
+}
+
+.kbHomeFaq__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kbHomeFaq__item {
+  background: #fff;
+  border: 1px solid #e8ecf3;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(20, 40, 90, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kbHomeFaq__item[open] {
+  border-color: #c8e6d8;
+  box-shadow: 0 8px 24px rgba(0, 134, 84, 0.08);
+}
+
+.kbHomeFaq__item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #111827;
+  cursor: pointer;
+  list-style: none;
+}
+
+.kbHomeFaq__item summary::-webkit-details-marker {
+  display: none;
+}
+
+.kbHomeFaq__item summary::after {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  color: #1f379d;
+  background: #f0f3fb;
+  border-radius: 50%;
+  content: '+';
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.kbHomeFaq__item[open] summary::after {
+  content: '−';
+  color: #fff;
+  background: #008654;
+}
+
+.kbHomeFaq__item p {
+  margin: 0;
+  padding: 0 22px 20px;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #4b5563;
+}
+
+.kbHomeFaq__item p a {
+  color: #1f379d;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.kbHomeFaq__item p a:hover {
+  color: #008654;
+}
+
+@media all and (max-width: 850px) {
+  .kbHomeFaq {
+    margin: 36px 0 28px;
+  }
+
+  .kbHomeFaq__title {
+    margin-bottom: 22px;
+    font-size: 24px;
+  }
+
+  .kbHomeFaq__item summary {
+    padding: 16px 18px;
+    font-size: 15px;
+  }
+
+  .kbHomeFaq__item p {
+    padding: 0 18px 18px;
+    font-size: 14px;
+  }
+}

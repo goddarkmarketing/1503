@@ -48,6 +48,64 @@ button,input,select,textarea{font-family:inherit;}
 	background:#fff;border:1px solid var(--pg-line);border-left:4px solid var(--pg-green);border-radius:12px;
 }
 
+.pagePromo{
+	margin:0 0 28px;border-radius:18px;overflow:hidden;
+	border:1px solid var(--pg-line);box-shadow:0 6px 20px rgba(20,40,90,0.06);
+}
+.pagePromo img{width:100%;height:auto;object-fit:cover;}
+
+.joinPerks{
+	display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:28px;
+}
+.joinPerk{
+	padding:20px 18px;background:#fff;border:1px solid var(--pg-line);border-radius:16px;
+	box-shadow:0 4px 14px rgba(20,40,90,0.04);
+}
+.joinPerk h3{margin:0 0 8px;font-size:15px;font-weight:700;color:var(--pg-ink);}
+.joinPerk p{margin:0;font-size:13px;color:var(--pg-muted);line-height:1.6;}
+.joinPerk__icon{
+	display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin-bottom:12px;
+	color:var(--pg-blue);background:#eef1fb;border-radius:12px;
+}
+.joinPerk__icon svg{width:22px;height:22px;}
+
+.joinSteps{
+	display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:32px;
+}
+.joinStep{
+	position:relative;padding:20px 18px;background:#fff;border:1px solid var(--pg-line);border-radius:16px;
+	box-shadow:0 4px 14px rgba(20,40,90,0.04);
+}
+.joinStep__num{
+	display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin-bottom:10px;
+	font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--pg-blue),var(--pg-green));border-radius:50%;
+}
+.joinStep h3{margin:0 0 6px;font-size:15px;font-weight:700;color:var(--pg-ink);}
+.joinStep p{margin:0;font-size:13px;color:var(--pg-muted);line-height:1.6;}
+
+.joinFormSection{margin:0 0 22px;padding-top:4px;}
+.joinFormSection h3{
+	margin:0 0 14px;padding-bottom:10px;font-size:16px;font-weight:700;color:var(--pg-ink);
+	border-bottom:1px solid var(--pg-line);
+}
+.joinDocList{margin:0;padding:0;list-style:none;}
+.joinDocList li{
+	position:relative;margin-bottom:10px;padding-left:22px;font-size:14px;color:var(--pg-muted);line-height:1.55;
+}
+.joinDocList li::before{
+	content:'';position:absolute;left:0;top:8px;width:8px;height:8px;
+	background:linear-gradient(135deg,var(--pg-blue),var(--pg-green));border-radius:50%;
+}
+.joinPortalBox{
+	padding:24px;background:linear-gradient(135deg,#1f379d,#15287a);border-radius:18px;color:#fff;
+}
+.joinPortalBox h3{margin:0 0 8px;font-size:17px;font-weight:700;}
+.joinPortalBox p{margin:0 0 16px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.88);}
+.joinPortalBox .formSubmit{
+	background:#fff;color:var(--pg-blue);box-shadow:0 6px 18px rgba(0,0,0,0.15);
+}
+.joinPortalBox .formSubmit:hover{box-shadow:0 10px 22px rgba(0,0,0,0.2);}
+
 /* ---- News ---- */
 .newsLayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start;}
 .newsToolbar{
@@ -137,6 +195,19 @@ button,input,select,textarea{font-family:inherit;}
 .formRow input,.formRow select,.formRow textarea{
 	width:100%;padding:12px 14px;font-size:15px;color:var(--pg-ink);
 	background:#fff;border:1px solid var(--pg-line);border-radius:12px;outline:none;transition:0.2s ease;
+	box-sizing:border-box;
+}
+.formRow input:not([type="checkbox"]):not([type="radio"]),
+.formRow select{
+	min-height:56px;
+}
+.formRow select{
+	height:56px;
+	line-height:1.35;
+	padding-top:12px;
+	padding-bottom:12px;
+	appearance:auto;
+	-webkit-appearance:auto;
 }
 .formRow input:focus,.formRow select:focus,.formRow textarea:focus{border-color:var(--pg-blue);box-shadow:0 0 0 3px rgba(31,55,157,0.1);}
 .formRow textarea{min-height:120px;resize:vertical;}
@@ -328,18 +399,185 @@ a.infoCard:hover{border-color:#c5d0ee;box-shadow:0 6px 18px rgba(20,40,90,0.08);
 .aboutCta__btn--ghost{color:var(--pg-blue) !important;background:#fff;border:1px solid #c5d0ee;}
 .aboutCta__btn:hover{transform:translateY(-2px);}
 
+.aboutStats--inline{margin-bottom:28px;}
+.aboutHub{margin-bottom:32px;}
+.aboutHub__title{margin:0 0 20px;font-size:22px;font-weight:700;color:var(--pg-ink);}
+.aboutHubGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.aboutHubGrid--3{grid-template-columns:repeat(3,minmax(0,1fr));}
+.aboutHubCard{
+	display:block;padding:24px;background:#fff;border:1px solid var(--pg-line);border-radius:18px;
+	text-decoration:none;color:inherit;transition:0.2s ease;box-shadow:0 4px 16px rgba(20,40,90,0.04);
+}
+.aboutHubCard:hover{transform:translateY(-3px);border-color:#c5d0ee;box-shadow:0 10px 28px rgba(31,55,157,0.1);}
+.aboutHubCard--outline{background:linear-gradient(135deg,#fff,#f8fafc);}
+.aboutHubCard__tag{
+	display:inline-block;margin-bottom:10px;padding:4px 12px;font-size:11px;font-weight:600;
+	color:var(--pg-blue);background:#eef1fb;border-radius:50px;
+}
+.aboutHubCard h3{margin:0 0 8px;font-size:17px;font-weight:700;color:var(--pg-ink);}
+.aboutHubCard p{margin:0;font-size:14px;color:var(--pg-muted);line-height:1.6;}
+.aboutHub--contact{margin-top:8px;}
+.aboutPager{
+	display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:8px;padding-top:24px;
+	border-top:1px solid var(--pg-line);
+}
+.aboutPager__link{
+	font-size:14px;font-weight:600;color:var(--pg-blue);text-decoration:none;
+}
+.aboutPager__link:hover{text-decoration:underline;}
+
 @media(max-width:900px){
+	.joinPerks{grid-template-columns:repeat(2,minmax(0,1fr));}
+	.joinSteps{grid-template-columns:repeat(2,minmax(0,1fr));}
 	.subpage #content .pageMain{padding:24px 20px 48px;}
 	.pageHero{padding:28px 24px 28px 28px;}
 	.newsLayout,.contactLayout,.aboutLayout{grid-template-columns:1fr;}
 	.aboutSide{position:static;}
 	.aboutStats{grid-template-columns:repeat(2,minmax(0,1fr));}
-	.aboutCards,.aboutFeatures,.aboutTeamGrid,.aboutServices,.aboutValues{grid-template-columns:1fr;}
+	.aboutCards,.aboutFeatures,.aboutTeamGrid,.aboutServices,.aboutValues,.joinPerks{grid-template-columns:1fr;}
+	.aboutHubGrid,.aboutHubGrid--3{grid-template-columns:1fr 1fr;}
 	.newsGrid{grid-template-columns:1fr;}
 	.formRow--2{grid-template-columns:1fr;}
 }
 @media(max-width:640px){
+	.joinPerks{grid-template-columns:1fr;}
+	.joinSteps{grid-template-columns:1fr;}
 	.newsToolbar{align-items:flex-start;flex-direction:column;}
 	.aboutSection{padding:24px 20px;}
 	.aboutStats{grid-template-columns:1fr 1fr;}
+	.aboutHubGrid,.aboutHubGrid--3{grid-template-columns:1fr;}
+}
+
+/* Sitemap */
+.siteMapGrid{
+	display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:8px;
+}
+.siteMapCol{
+	padding:24px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:16px;
+}
+.siteMapCol h2{margin:0 0 14px;font-size:17px;font-weight:700;color:var(--pg-ink);}
+.siteMapCol ul{margin:0;padding:0;list-style:none;}
+.siteMapCol li{margin-bottom:8px;}
+.siteMapCol a{font-size:14px;color:var(--pg-blue);line-height:1.5;}
+.siteMapCol a:hover{text-decoration:underline;}
+
+/* Site search */
+.siteSearchForm{margin-bottom:24px;}
+.siteSearchForm__label{display:block;margin-bottom:8px;font-size:14px;font-weight:600;color:var(--pg-ink);}
+.siteSearchForm__row{display:flex;gap:10px;flex-wrap:wrap;}
+.siteSearchForm__row input{
+	flex:1;min-width:200px;padding:14px 18px;font-size:15px;
+	border:1px solid var(--pg-line);border-radius:12px;background:#fff;
+}
+.siteSearchForm__row button{
+	padding:14px 28px;font-size:15px;font-weight:600;color:#fff;
+	background:linear-gradient(135deg,var(--pg-blue),#2d4bb8);border:none;border-radius:12px;cursor:pointer;
+}
+.siteSearchMeta{margin:0 0 16px;font-size:14px;color:var(--pg-muted);}
+.siteSearchResults{margin:0;padding:0;list-style:none;}
+.siteSearchResults li{
+	margin-bottom:12px;padding:18px 20px;background:#fff;border:1px solid var(--pg-line);border-radius:14px;
+}
+.siteSearchResults a{display:block;font-size:16px;font-weight:600;color:var(--pg-blue);margin-bottom:4px;}
+.siteSearchResults p{margin:0;font-size:14px;color:var(--pg-muted);line-height:1.55;}
+.siteSearchResults .siteSearchTag{
+	display:inline-block;margin-top:8px;padding:3px 10px;font-size:11px;font-weight:600;
+	color:var(--pg-blue);background:#eef1fb;border-radius:50px;
+}
+
+/* Legal pages */
+.legalProse{
+	padding:32px 36px;background:#fff;border:1px solid var(--pg-line);border-radius:20px;
+}
+.legalProse__updated{margin:0 0 24px;font-size:13px;color:var(--pg-muted);}
+.legalProse h2{margin:28px 0 12px;font-size:18px;font-weight:700;color:var(--pg-ink);}
+.legalProse h2:first-of-type{margin-top:0;}
+.legalProse p,.legalProse li{font-size:15px;color:var(--pg-muted);line-height:1.75;}
+.legalProse ul{margin:0 0 16px;padding-left:22px;}
+.legalProse a{color:var(--pg-blue);font-weight:500;}
+.legalNav{
+	display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;padding:12px 14px;
+	background:#f8fafc;border:1px solid var(--pg-line);border-radius:12px;
+}
+.legalNav a{
+	padding:8px 14px;font-size:13px;font-weight:600;color:var(--pg-blue);text-decoration:none;
+	background:#fff;border:1px solid #dce3f0;border-radius:50px;
+}
+.legalNav a:hover{background:#eef1fb;}
+.legalNav a.is-active{color:#fff;background:var(--pg-blue);border-color:var(--pg-blue);}
+.legalTable{width:100%;margin:12px 0 20px;border-collapse:collapse;font-size:14px;}
+.legalTable th,.legalTable td{
+	padding:12px 14px;text-align:left;vertical-align:top;border:1px solid var(--pg-line);
+}
+.legalTable th{width:28%;font-weight:600;color:var(--pg-ink);background:#f8fafc;}
+.legalTable td{color:var(--pg-muted);line-height:1.6;}
+.legalRelated{
+	margin-top:28px;padding-top:22px;border-top:1px solid var(--pg-line);
+}
+.legalRelated h3{margin:0 0 10px;font-size:16px;font-weight:700;color:var(--pg-ink);}
+.legalRelated ul{margin:0;padding:0;list-style:none;}
+.legalRelated li{margin-bottom:8px;}
+.legalRelated a{font-size:14px;font-weight:600;color:var(--pg-blue);}
+
+/* ---- Claims page ---- */
+body[data-page="claims"] .pageMain > .claimsCard{margin-bottom:18px;}
+body[data-page="claims"] .pageMain > .claimsCard:last-child{margin-bottom:0;}
+.claimsCard{
+	padding:24px 26px 22px;background:#fff;border:1px solid var(--pg-line);border-radius:18px;
+	box-shadow:0 6px 22px rgba(20,40,90,0.05);
+}
+.claimsCard__head{display:flex;gap:16px;align-items:flex-start;margin-bottom:18px;}
+.claimsCard__icon{
+	flex:0 0 48px;display:flex;align-items:center;justify-content:center;width:48px;height:48px;
+	color:var(--pg-green);background:#e8f7f0;border-radius:12px;
+}
+.claimsCard__icon svg{width:24px;height:24px;}
+.claimsCard__title{margin:0 0 6px;font-size:18px;font-weight:700;color:var(--pg-ink);}
+.claimsCard__desc{margin:0;font-size:13px;color:var(--pg-muted);line-height:1.65;}
+
+.claimsContactList{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none;}
+.claimsContactRow{
+	display:grid;grid-template-columns:minmax(0,130px) 1fr auto;gap:12px;align-items:center;
+	padding:12px 14px;background:#f3f7ff;border:1px solid #e2e9f8;border-radius:12px;
+}
+.claimsContactRow__label{font-size:13px;font-weight:600;color:#4a5568;}
+.claimsContactRow__value{
+	font-size:15px;font-weight:600;color:var(--pg-blue);text-decoration:none;word-break:break-word;
+}
+.claimsContactRow__value:hover{text-decoration:underline;}
+.claimsContactRow .claimsSns{flex-shrink:0;margin:0;padding:0;list-style:none;}
+.claimsContactRow .claimsSns li{margin:0;}
+.claimsContactRow .claimsSns a{
+	display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+	text-indent:-9999px;overflow:hidden;border-radius:50%;
+	border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(31,55,157,0.06);
+	transition:transform 0.2s ease,box-shadow 0.2s ease;
+}
+.claimsContactRow .claimsSns a:hover{transform:translateY(-2px);box-shadow:0 3px 10px rgba(31,55,157,0.12);}
+
+.claimsDocList{margin:0;padding:0;list-style:none;border:1px solid var(--pg-line);border-radius:14px;overflow:hidden;}
+.claimsDocItem{
+	display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+	padding:14px 16px;background:#fff;border-bottom:1px solid var(--pg-line);
+	transition:background 0.2s ease;
+}
+.claimsDocItem:last-child{border-bottom:none;}
+.claimsDocItem:hover{background:#f8fafc;}
+.claimsDocItem__icon{
+	display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+	color:var(--pg-blue);background:#eef1fb;border-radius:10px;
+}
+.claimsDocItem__icon svg{width:18px;height:18px;}
+.claimsDocItem__text{font-size:14px;color:var(--pg-ink);line-height:1.5;}
+.claimsDocItem__chev{width:18px;height:18px;color:#b0b8c8;}
+
+@media(max-width:900px){
+	.siteMapGrid{grid-template-columns:1fr 1fr;}
+	.legalProse{padding:24px 20px;}
+	.claimsContactRow{grid-template-columns:1fr auto;}
+	.claimsContactRow__label{grid-column:1/-1;}
+}
+@media(max-width:640px){
+	.siteMapGrid{grid-template-columns:1fr;}
+	.claimsCard{padding:20px 18px;}
 }

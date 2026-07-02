@@ -172,6 +172,8 @@ br{font-family: 'Dotum';}
 .mCon1 .mSlide1 ul li a:focus{border: 2px dashed #000;}
 /* === hero overlay === */
 .mCon1 .heroSlide{position: relative;}
+.mCon1 .heroSlide--plain{display:block;}
+.mCon1 .heroSlide--plain img{width:100%;height:480px;object-fit:cover;display:block;}
 .mCon1 .heroMask{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 1;}
 .mCon1 .heroInner{position: absolute;z-index: 2;left: 56px;top: 50%;width: 64%;max-width: 510px;transform: translateY(-50%);color: #fff;}
 .mCon1 .heroBadge{display: inline-flex;align-items: center;gap: 8px;margin-bottom: 18px;padding: 8px 18px;font-size: 15px;font-weight: 500;color: #fff;background: rgba(255,255,255,0.16);border: 1px solid rgba(255,255,255,0.4);border-radius: 50px;backdrop-filter: blur(4px);-webkit-backdrop-filter: blur(4px);}
@@ -265,11 +267,14 @@ br{font-family: 'Dotum';}
 .mCon2 .con1 h2,
 .mCon2 .con1 ul,
 .mCon2 .con1 .mayer_home{max-width: 195px;}
-.mCon2 .con1 p b{white-space: nowrap;}
+.mCon2 .con1 p b{white-space: normal;line-height: 1.35;}
 #wrapper{overflow-x: hidden;}
 .mCon2 .con1 h2{margin-bottom: 25px;font-size: 18px;}
 .mCon2 .con1 p{font-size: 22px; margin: 70px 0 12px 0;}
-.mCon2 .con1 p b{font-size: 25px;font-weight: 800;line-height: 1.5;color: #047c5d;background: linear-gradient(110deg, #047c5d 0%, #047c5d 38%, #57e3b4 48%, #ffffff 50%, #57e3b4 52%, #047c5d 62%, #047c5d 100%);background-size: 250% 100%;-webkit-background-clip: text;background-clip: text;-webkit-text-fill-color: transparent;animation: brandShine 4s linear infinite;}
+.mCon2 .con1 p b{font-size: 25px;font-weight: 800;line-height: 1.35;color: #047c5d;background: linear-gradient(110deg, #047c5d 0%, #047c5d 38%, #57e3b4 48%, #ffffff 50%, #57e3b4 52%, #047c5d 62%, #047c5d 100%);background-size: 250% 100%;-webkit-background-clip: text;background-clip: text;-webkit-text-fill-color: transparent;animation: brandShine 4s linear infinite;}
+.brand-stacked{display:inline-block;line-height:1.3;letter-spacing:0.01em;}
+.brand-stacked br{display:block;content:'';}
+#footer .footBrandCol__name.brand-stacked{line-height:1.25;}
 @keyframes brandShine{0%{background-position: 200% 0;}100%{background-position: -200% 0;}}
 .mCon2 .con1 ul{margin:10px 0 0 0;}
 .mCon2 .con1 ul li{margin-bottom: 8px;}
@@ -295,6 +300,40 @@ br{font-family: 'Dotum';}
 .mCon2 .con2 ul li a span::after{position: absolute;left: 50%;bottom:0;width: 0;height: 8px;content: '';background-color: rgba(0,0,0,0.3);border-radius: 4px;transition: 0.2s ease;z-index: -1;}
 .mCon2 .con2 ul li a:hover span::after{left: 0;width: 100%;}
 .mCon2 .con2 ul li a:hover{text-shadow: 5px 5px 20px rgba(159, 186, 219, 0.46);background-position: left 8px;}
+
+/* mCon2 — โปรโมชัน 2 ภาพแนวนอน (สูงเท่า hero) */
+.mCon2.mCon2--promo{
+	--mcon2-stack-h:480px;
+	--mcon2-stack-gap:12px;
+	display:flex;
+	flex-direction:column;
+	gap:var(--mcon2-stack-gap);
+	height:var(--mcon2-stack-h);
+	box-sizing:border-box;
+}
+.mCon2.mCon2--promo .mCon2__card{
+	flex:1 1 0;
+	min-height:0;
+	display:block;
+	border-radius:14px;
+	overflow:hidden;
+	box-shadow:0 4px 16px rgba(0,0,0,0.08);
+	transition:transform 0.2s ease,box-shadow 0.2s ease;
+}
+.mCon2.mCon2--promo .mCon2__card:hover{
+	transform:translateY(-2px);
+	box-shadow:0 8px 24px rgba(0,0,0,0.12);
+}
+.mCon2.mCon2--promo .mCon2__card:focus-visible{
+	outline:2px dashed #047c5d;
+	outline-offset:3px;
+}
+.mCon2.mCon2--promo .mCon2__card img{
+	width:100%;
+	height:100%;
+	object-fit:cover;
+	display:block;
+}
 
 .mCon3{position: relative;margin-bottom: 80px;padding: 0 60px;}
 .mCon3 .mSlide2 ul li{text-align: center;}
@@ -478,9 +517,9 @@ br{font-family: 'Dotum';}
 .mCon6 .con2.col2 .iPage button:hover{background-color: #6c49a0;border-color: #6c49a0;}
 .mCon6 .con2.col2 .iPage button:hover.swiper-pagination-bullet-active{background-color: #fff;border-color: #6c49a0;}
 
-.mConW3{position: relative;display: flex;justify-content: space-between;margin-bottom: 80px;padding-bottom: 100px;}
+.mConW3{position: relative;display: flex;align-items: flex-start;gap: 20px;margin-bottom: 80px;padding-bottom: 100px;}
 .mConW3::before{position: absolute;left: 150px;bottom: 0;width: 200%;height: 310px;content: '';background-color: #eef7f5;border-radius: 30px 0 0 100px;z-index: -1;}
-.mCon7{position: relative;margin: 80px 40px 0 0;max-width: 910px;width: calc(68% - 40px);}
+.mCon7{position: relative;z-index: 10;margin: 0 0 50px;max-width: 100%;width: 100%;}
 .mCon7 h2{margin-bottom: 15px;font-size: 32px;font-weight: 500;line-height: 1;}
 .mCon7 > .control{position: absolute;top: -5px;right: 0;display: flex;align-items: center;;}
 .mCon7 > .control .mPage{display: flex;padding-top: 2px;font-size: 15px;color: #666;text-indent: -999px;overflow: hidden;text-align: center;}
@@ -649,6 +688,7 @@ br{font-family: 'Dotum';}
 	.mCon1 .mSlide1 ul li img{width: 100%;}
 	.mCon1 .mSlide1,.mCon1 .mSlide1 .swiper-wrapper,.mCon1 .mSlide1 ul li,.mCon1 .mSlide1 ul li a{height: 400px;}
 	.mCon1 .mSlide1 ul li a img{height: 400px;}
+	.mCon1 .heroSlide--plain img{height:400px;}
 	.mCon1 .heroInner{left: 24px;right: 24px;width: auto;max-width: none;}
 	.mCon1 .heroBadge{margin-bottom: 12px;padding: 6px 14px;font-size: 13px;}
 	.mCon1 .heroTitle{margin-bottom: 12px;font-size: 27px;}
@@ -656,6 +696,7 @@ br{font-family: 'Dotum';}
 	.mCon1 .heroBtn{padding: 10px 22px;font-size: 14px;}
 
 	.mCon2{max-width: 100%;width: 100%;}
+	.mCon2.mCon2--promo{--mcon2-stack-h:400px;}
 	.mCon2 .con1{height: auto; background-size: contain;}
 	.mCon2 .con1 .img{right:0;height: 90%;}
         .mCon2 .con1 p {margin: 20px 0 0 0;}
@@ -3154,7 +3195,10 @@ span.lineh_2{line-height:2em;}
 @media all and (min-width: 851px){
 	/* ---- 1) โซนข่าวสาร mConW2 ให้เป็นสัดส่วน ไม่ทับกัน ---- */
 	.mConW2{align-items: stretch; padding-top: 90px;}
-	.mCon4{width: calc(64% - 40px);}
+	.mConW2 .mCon7{margin-bottom: 60px;}
+	.mConW3{justify-content: flex-start;align-items: stretch;gap: 20px;}
+	.mConW3 > .mCon4{flex: 1 1 auto;min-width: 0;width: auto;max-width: none;margin-right: 0;}
+	.mConW3 > .mCon8{flex: 0 0 380px;width: 380px;}
 	.mCon4 h2{top: 6px; left: 0; font-size: 25px; line-height: 42px; max-width: 240px; overflow: hidden; text-overflow: ellipsis;}
 	.mCon4 .mNotice{min-height: 426px;}
 	.mCon4 .mNotice .mNoticeTab{padding-left: 258px; padding-right: 96px; margin-bottom: 24px;}
@@ -3228,9 +3272,11 @@ span.lineh_2{line-height:2em;}
 	margin:0 0 14px;font-size:clamp(26px,3.2vw,36px);font-weight:700;color:#fff;line-height:1.25;letter-spacing:-0.4px;
 }
 #footer .footCta__title em{
-	font-style:normal;
-	background:linear-gradient(90deg,#6dd4a8,#47b8e0);
+	font-style:normal;display:inline-block;
+	background:linear-gradient(110deg,#6dd4a8 0%,#6dd4a8 38%,#b8f0dc 48%,#ffffff 50%,#a8e4f5 52%,#47b8e0 62%,#47b8e0 100%);
+	background-size:250% 100%;
 	-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+	animation:brandShine 4s linear infinite;
 }
 #footer .footCta p.footCta__desc{
 	display:block;margin:0 auto 28px;max-width:720px;
@@ -3272,15 +3318,15 @@ span.lineh_2{line-height:2em;}
 #footer .footBrandCol__name{margin:0 0 4px;font-size:18px;font-weight:700;color:#fff;}
 #footer .footBrandCol__tag{margin:0 0 14px;font-size:13px;color:#6dd4a8;letter-spacing:0.01em;}
 #footer .footBrandCol__desc{margin:0 0 22px;font-size:14px;line-height:1.7;color:#8b92a6;}
-#footer .footSocial{display:flex;flex-wrap:wrap;gap:8px;}
-#footer .footSocial__btn{
-	display:grid;place-items:center;width:40px;height:40px;border-radius:12px;
-	color:#b8bcc9;text-decoration:none;
-	background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
-	transition:color 0.2s ease,background 0.2s ease,border-color 0.2s ease,transform 0.2s ease;
+#footer .footSocial{display:flex;align-items:center;gap:6px;margin:0;padding:0;list-style:none;}
+#footer .footSocial li{margin:0;}
+#footer .footSocial a{
+	display:flex;align-items:center;justify-content:center;width:30px;height:30px;
+	text-indent:-9999px;overflow:hidden;border-radius:50%;
+	border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(31,55,157,0.06);
+	transition:transform 0.2s ease,box-shadow 0.2s ease;
 }
-#footer .footSocial__btn svg{width:18px;height:18px;}
-#footer .footSocial__btn:hover{color:#fff;background:rgba(31,55,157,0.35);border-color:rgba(109,212,168,0.35);transform:translateY(-2px);}
+#footer .footSocial a:hover{transform:translateY(-2px);box-shadow:0 3px 10px rgba(31,55,157,0.12);}
 
 #footer .footLinksGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 24px;}
 #footer .footCol__title{margin:0 0 18px;font-size:14px;font-weight:700;color:#fff;letter-spacing:0.02em;}
@@ -3380,9 +3426,13 @@ span.lineh_2{line-height:2em;}
 .mCon4 .nPanel{display:none;}
 .mCon4 .nPanel.is-active{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch;}
 
-.mCon4 .nCard{display:flex;flex-direction:column;height:100%;padding:24px 22px;background:#fff;border:1px solid #eef0f5;border-radius:18px;box-shadow:0 6px 18px rgba(20,40,90,0.05);transition:transform 0.2s ease,box-shadow 0.2s ease,border-color 0.2s ease;}
+.mCon4 .nCard{display:flex;flex-direction:column;height:100%;padding:0;background:#fff;border:1px solid #eef0f5;border-radius:18px;box-shadow:0 6px 18px rgba(20,40,90,0.05);overflow:hidden;transition:transform 0.2s ease,box-shadow 0.2s ease,border-color 0.2s ease;}
 .mCon4 .nCard:hover{transform:translateY(-5px);border-color:#cdd6f2;box-shadow:0 14px 30px rgba(20,40,90,0.12);}
-.mCon4 .nCard__top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.mCon4 .nCard__img{position:relative;aspect-ratio:16/10;overflow:hidden;flex-shrink:0;background:#eef0f5;}
+.mCon4 .nCard__img img{width:100%;height:100%;object-fit:cover;transition:transform 0.35s ease;}
+.mCon4 .nCard:hover .nCard__img img{transform:scale(1.05);}
+.mCon4 .nCard__body{display:flex;flex-direction:column;flex:1;padding:20px 22px 24px;}
+.mCon4 .nCard__top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .mCon4 .nCard__badge{padding:4px 14px;font-size:13px;font-weight:500;color:#fff;background:#2349b1;border-radius:50px;}
 .mCon4 .nCard__date{font-size:13px;color:#9aa1ad;}
 .mCon4 .nCard__title{font-size:18px;font-weight:600;line-height:1.4;color:#1b2333;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em;}
@@ -3455,15 +3505,88 @@ span.lineh_2{line-height:2em;}
 .mCon7 ul li .infor .date{flex:1;}
 
 /* mCon7 หัวข้อ + ปุ่มวงกลม (แบบ mCon4 nNav) */
-.mCon7 .planHead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px;}
+.mCon7 .planHead{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px;}
 .mCon7 .planHead h2{margin-bottom:0;}
-.mCon7 .planHead .nNav{flex:0 0 auto;display:flex;gap:8px;}
+.mCon7 .planHead .nNav{flex:0 0 auto;display:flex;align-items:center;gap:8px;}
+.mCon7 .planHead .nHead__all{display:inline-flex;align-items:center;padding:8px 16px;font-size:14px;font-weight:600;color:#1f379d;background:#fff;border:1px solid #e2e4ec;border-radius:50px;white-space:nowrap;text-decoration:none;transition:0.2s ease;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.mCon7 .planHead .nHead__all:hover{color:#fff;background:#1f379d;border-color:#1f379d;}
 .mCon7 .planHead .nNavBtn{width:40px;height:40px;display:grid;place-items:center;color:#1f379d;background:#fff;border:1px solid #e2e4ec;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.06);cursor:pointer;transition:0.2s ease;text-indent:0;overflow:visible;}
 .mCon7 .planHead .nNavBtn::before,.mCon7 .planHead .nNavBtn::after{display:none !important;}
 .mCon7 .planHead .nNavBtn svg{width:18px;height:18px;}
 .mCon7 .planHead .nNavBtn:hover{color:#fff;background:#1f379d;border-color:#1f379d;}
 .mCon7 .planHead .nNavBtn.swiper-button-disabled{opacity:0.35;cursor:default;pointer-events:none;}
 .mCon7 > .control{display:none !important;}
+
+/* mCon7 pagination dots — 3 จุด สีเขียวเฮดเดอร์ */
+.mCon7 .planPage{
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	gap:14px;
+	margin:26px auto 0;
+	width:100%;
+	min-height:14px;
+	position:relative;
+	z-index:1;
+	text-align:center;
+}
+.mCon7 .planPage .planDot{
+	flex-shrink:0;
+	width:10px;
+	height:10px;
+	padding:0;
+	margin:0;
+	border:none;
+	border-radius:50%;
+	background:rgba(0,134,84,0.28);
+	cursor:pointer;
+	transition:width 0.3s ease, height 0.3s ease, background 0.3s ease, border-radius 0.3s ease, transform 0.3s ease;
+}
+.mCon7 .planPage .planDot:hover{background:rgba(0,134,84,0.45);}
+.mCon7 .planPage .planDot.is-active{
+	width:32px;
+	height:12px;
+	border-radius:6px;
+	background:#008654;
+	transform:scale(1);
+}
+.mCon7 .planPage .planDot.is-active:hover{background:#007a4d;}
+
+/* ปุ่มดูเพิ่มเติม — ท้าย section แผนประกัน / ข่าวสาร */
+.kbSectionMore{display:flex;justify-content:center;margin-top:28px;padding-top:4px;}
+.kbSectionMore__btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;font-size:15px;font-weight:600;color:#1f379d;background:#fff;border:1px solid #e2e4ec;border-radius:50px;text-decoration:none;box-shadow:0 2px 10px rgba(0,0,0,0.05);transition:color 0.2s ease,background 0.2s ease,border-color 0.2s ease,gap 0.2s ease,box-shadow 0.2s ease;}
+.kbSectionMore__btn svg{width:16px;height:16px;flex-shrink:0;}
+.kbSectionMore__btn:hover{color:#fff;background:#1f379d;border-color:#1f379d;gap:12px;box-shadow:0 6px 18px rgba(31,55,157,0.2);}
+.mConW3 .kbSectionMore{margin-top:32px;padding-bottom:8px;}
+.mCon7 .kbSectionMore{margin-top:24px;}
+
+/* ============================================================
+   mCon9 — ประมวลภาพกิจกรรม KLADEEBROKER
+   ============================================================ */
+.kbActGallery__title{
+	margin:0 0 22px;
+	font-family:'GmarketSans','Sarabun',sans-serif;
+	font-size:clamp(26px,2.6vw,34px);
+	font-weight:700;
+	line-height:1.3;
+	color:#1b2333;
+	letter-spacing:-0.02em;
+}
+.kbActGallery__th{display:block;font-weight:700;}
+.kbActGallery__brand{
+	display:block;
+	margin-top:4px;
+	font-size:clamp(30px,3vw,42px);
+	font-weight:800;
+	letter-spacing:0.06em;
+	text-transform:uppercase;
+	color:#008654;
+}
+
+@media all and (max-width:850px){
+	.kbActGallery__title{margin-bottom:18px;font-size:24px;}
+	.kbActGallery__brand{font-size:28px;}
+}
 
 /* ============================================================
    mCon9 tourLink — จัดระเบียบ CTA + ลิงก์ด่วน
@@ -3686,13 +3809,15 @@ span.lineh_2{line-height:2em;}
 	/* Hero */
 	.mCon1 .mSlide1,.mCon1 .mSlide1 .swiper-wrapper,.mCon1 .mSlide1 ul li,.mCon1 .mSlide1 ul li a{height:min(72vw,380px);}
 	.mCon1 .mSlide1 ul li a img{height:100%;object-fit:cover;}
+	.mCon1 .heroSlide--plain img{height:100%;object-fit:cover;}
 	.mCon1 .heroInner{left:18px;right:18px;width:auto;}
 	.mCon1 .heroTitle{font-size:clamp(22px,5.5vw,28px);min-height:0;-webkit-line-clamp:3;}
 	.mCon1 .heroDesc{font-size:13px;line-height:1.55;margin-bottom:14px;-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;}
 	.mCon1 .heroBtns{flex-wrap:wrap;gap:8px;}
 	.mCon1 .heroBtn{padding:9px 18px;font-size:13px;}
 
-	/* Intro card */
+	/* Intro card / promo stack */
+	.mCon2.mCon2--promo{--mcon2-stack-h:min(72vw,380px);}
 	.mCon2 .con1 .mascot{display:none;}
 	.mCon2 .con1{padding:28px 22px;overflow:hidden;}
 	.mCon2 .con1 p{font-size:20px;}
@@ -3705,6 +3830,7 @@ span.lineh_2{line-height:2em;}
 	/* News + promo row */
 	.mConW2{padding-top:56px;margin-bottom:40px;}
 	.mCon4 .nCard{flex:0 0 86%;}
+	.mCon4 .nCard__body{padding:16px 18px 20px;}
 	.mCon4 .nCard__title{font-size:16px;min-height:0;}
 	.mCon5 .mSlide3,.mCon5 .mSlide3 .swiper-wrapper,.mCon5 .mSlide3 ul li,.mCon5 .mSlide3 ul li a{height:auto;min-height:260px;}
 	.mCon5 .mSlide3 ul li img{height:min(56vw,320px);object-fit:cover;}
@@ -3717,6 +3843,7 @@ span.lineh_2{line-height:2em;}
 	/* Plans slider — ใช้ mSlide5 เดียว ไม่สลับ mobile_media */
 	.mCon7 .mSlide5{display:block !important;padding-top:0;}
 	.mobile_media{display:none !important;}
+	.mCon7 .planHead .nHead__all{padding:6px 12px;font-size:13px;}
 	.mCon7 .planHead h2{font-size:22px;}
 	.mCon7 .planHead .nNavBtn{width:38px;height:38px;}
 	.mCon7 ul li a:hover{transform:none;}
@@ -3737,7 +3864,7 @@ span.lineh_2{line-height:2em;}
 	.mBoxBg{padding:16px 16px 0;}
 
 	#header .head_box .logo{width:200px;}
-	#header .btnMenu{top:72px;right:14px;width:48px;height:48px;}
+	#header:not(.kbHeader) .btnMenu{top:72px;right:14px;width:48px;height:48px;}
 	.topSearch{margin:14px 0 18px;}
 	.topSearch .searForm input{font-size:15px;}
 
@@ -3752,7 +3879,8 @@ span.lineh_2{line-height:2em;}
 	.mCon4 .nHead h2{font-size:20px;}
 	.mCon4 .nHead__all{padding:6px 12px;font-size:13px;}
 	.mCon4 .nTab{padding:8px 16px;font-size:14px;}
-	.mCon4 .nCard{flex:0 0 88%;padding:18px;}
+	.mCon4 .nCard{flex:0 0 88%;padding:0;}
+	.mCon4 .nCard__body{padding:14px 16px 18px;}
 	.mCon4 .nCard__title{font-size:15px;}
 
 	.mCon5 .control{margin-top:12px;min-width:0;width:100%;max-width:280px;}
@@ -3764,8 +3892,10 @@ span.lineh_2{line-height:2em;}
 	.mCon6 .aboutPoints li{font-size:14px;padding-left:30px;}
 
 	.mCon7{margin-bottom:36px;}
-	.mCon7 .planHead{gap:10px;}
+	.mCon7 .planHead{gap:10px;flex-wrap:wrap;}
 	.mCon7 .planHead h2{font-size:20px;line-height:1.3;}
+	.kbSectionMore{margin-top:22px;}
+	.kbSectionMore__btn{padding:10px 22px;font-size:14px;}
 	.mCon7 ul li .photo{height:180px;}
 	.mCon7 ul li .infor{padding:32px 22px 24px;}
 	.mCon7 ul li .infor .tit{font-size:16px;}
@@ -3793,7 +3923,7 @@ span.lineh_2{line-height:2em;}
 
 	.mCon3{padding:0 32px;}
 
-	.mCon4 .nCard{flex:0 0 92%;}
+	.mCon4 .nCard{flex:0 0 92%;padding:0;}
 
 	.mCon9 .contactBar{padding:20px 16px;}
 	.mCon9 .contactItem{padding:14px 16px;}
