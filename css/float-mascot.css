@@ -58,10 +58,10 @@
 
 .floatMascot__btn{
 	pointer-events:auto;
-	display:inline-flex;align-items:center;justify-content:center;gap:8px;
-	padding:0 20px 0 16px;margin:0;min-width:56px;height:56px;
-	border:none;border-radius:999px;cursor:pointer;
-	color:#fff;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:0.01em;
+	display:inline-flex;align-items:center;justify-content:center;
+	width:56px;height:56px;min-width:56px;padding:0;margin:0;
+	border:none;border-radius:50%;cursor:pointer;
+	color:#fff;font-family:inherit;
 	background:linear-gradient(135deg,var(--fm-blue) 0%,#2d4bb8 55%,var(--fm-green) 100%);
 	box-shadow:0 8px 24px rgba(31,55,157,0.35);
 	transition:transform 0.2s ease,box-shadow 0.2s ease;
@@ -79,9 +79,8 @@
 }
 .floatMascot__btn:focus-visible{outline:2px solid var(--fm-blue);outline-offset:4px;}
 .floatMascot__btnIcon{
-	display:block;width:22px;height:22px;flex-shrink:0;
+	display:block;width:24px;height:24px;flex-shrink:0;
 }
-.floatMascot__btnLabel{white-space:nowrap;}
 
 @keyframes floatMascotBob{
 	0%,100%{transform:translateY(0);}
@@ -105,11 +104,6 @@
 
 @media(max-width:640px){
 	.floatMascot{right:12px;bottom:96px;z-index:9900;}
-	.floatMascot__btn{
-		width:56px;height:56px;min-width:56px;padding:0;
-		border-radius:50%;
-	}
-	.floatMascot__btnLabel{display:none;}
 	.floatMascot__bubble{max-width:200px;font-size:12px;padding:10px 14px;}
 	.floatMascot__panel{min-width:200px;}
 }

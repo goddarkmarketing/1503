@@ -1,10 +1,15 @@
 /* ===== Kladee Broker — 2-tier header (Srikrung-inspired, refined) ===== */
 
+:root {
+  --kb-shell-max: 1400px;
+  --kb-shell-pad-x: clamp(16px, 3vw, 40px);
+  --kb-nav-bg: linear-gradient(105deg, #142a5c 0%, #0d4a3a 52%, #0a6847 100%);
+}
+
 .kbHeader {
   --kb-navy: #1f379d;
   --kb-green: #047c5d;
   --kb-green-bright: #008654;
-  --kb-nav-bg: linear-gradient(105deg, #142a5c 0%, #0d4a3a 52%, #0a6847 100%);
   --kb-top-h: 72px;
   --kb-nav-h: 56px;
   --kb-mega-accent: #1f379d;
@@ -35,8 +40,8 @@
   align-items: center;
   gap: 10px 12px;
   margin: 0 auto;
-  padding: 10px clamp(16px, 3vw, 40px);
-  max-width: 1400px;
+  padding: 10px var(--kb-shell-pad-x);
+  max-width: var(--kb-shell-max);
   min-height: 52px;
   box-sizing: border-box;
 }
@@ -280,7 +285,7 @@
   column-gap: 16px;
   margin: 0 auto;
   padding: 0 clamp(12px, 2.5vw, 32px);
-  max-width: 1400px;
+  max-width: var(--kb-shell-max);
   min-height: var(--kb-nav-h);
   box-sizing: border-box;
 }
@@ -380,14 +385,17 @@
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 14px;
-  height: 14px;
+  width: 0;
+  height: 0;
   margin: 0;
   border: 0;
   border-radius: 0;
-  background: #fff;
+  background: transparent;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid #fff;
   opacity: 1;
-  transform: translate(-50%, 50%) rotate(45deg);
+  transform: translate(-50%, 100%);
   z-index: 35;
   pointer-events: none;
   content: '';

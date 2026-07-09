@@ -270,7 +270,8 @@
   }
 
   .mConBox {
-    padding: 0 16px;
+    padding-left: var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));
+    padding-right: var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));
   }
 
   .mConBox > h2,

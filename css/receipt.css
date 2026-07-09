@@ -414,6 +414,10 @@
   padding: 28px 12px !important;
 }
 
+body.receipt-modal-open {
+  overflow: hidden;
+}
+
 @media (max-width: 900px) {
   .receipt-form__grid--main,
   .receipt-form__grid--sub {

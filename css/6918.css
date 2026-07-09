@@ -155,10 +155,16 @@ br{font-family: 'Dotum';}
 
 .swiper-notification{display: none;}
 
-.mBoxBg{position: relative;padding: 50px 40px 80px;overflow: hidden;font-family: 'GmarketSans';}
+.mBoxBg{position: relative;padding: 50px 0 80px;overflow: hidden;font-family: 'GmarketSans';}
 .mBoxBg::before{position: absolute;top: 0;left: 0;width: 100%;height: 1150px;content: '';background-image:linear-gradient(#fff, #f5f5fa);border-radius: 0 0 0 150px;z-index: 0;pointer-events: none;}
 .mBoxBg::after{position: absolute;bottom: 0;left: 0;width: 100%;height: 360px;content: '';background:#f6f6f6;border-radius: 180px 0 0 0;z-index: 0;pointer-events: none;}
-.mConBox{position: relative;z-index: 1;margin: 0 auto;max-width: 1400px;}/* 2025-12-16 수정 */
+.mConBox{
+	position: relative;z-index: 1;margin: 0 auto;
+	max-width: var(--kb-shell-max, 1400px);
+	padding-left: var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));
+	padding-right: var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));
+	box-sizing: border-box;
+}
 .mConBox h2{font-size: 28px;color: #000;font-weight: 400;}
 .mConBox h2,
 .mConBox h3{font-family: 'GmarketSans';}
@@ -644,8 +650,8 @@ br{font-family: 'Dotum';}
 .mCon9 .tourLink ul li a:hover::before{background-position: right center;}
 .mCon9 .tourLink ul li a:hover::after{background: url('/img/geumjeong/main_new/ico_arrow3_over.png') no-repeat;}
 
-.mBanner{padding: 0 40px;background-color: #fff;}
-.mBanner .box{position: relative;display: flex;align-items: center;margin: 0 auto;padding: 35px 0;max-width: 1400px;}
+.mBanner{padding: 0 var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));background-color: #fff;}
+.mBanner .box{position: relative;display: flex;align-items: center;margin: 0 auto;padding: 35px 0;max-width: var(--kb-shell-max, 1400px);box-sizing: border-box;}
 .mBanner .box .mbanSlide::before{display: none;position: absolute;top: 0;left: 0;width: 50px;height: 100%;content: '';background-image: linear-gradient(to right, #fff, transparent);z-index: 20;}
 .mBanner .box .mbanSlide::after{position: absolute;top: 0;right: 0;width: 50px;height: 100%;content: '';background-image: linear-gradient(to right, transparent , #fff);z-index: 20;}
 .mBanner .box h2{flex-shrink: 0;margin-right: 15px;padding-top: 5px;font-family: 'GmarketSans';font-size: 18px;color: #000;font-weight: 500;}
@@ -678,12 +684,12 @@ br{font-family: 'Dotum';}
 
 @media all and (max-width: 1200px){
 
-	.mBoxBg{padding: 50px 40px 0;}
+	.mBoxBg{padding: 50px 0 0;}
 	.mBoxBg::before{display: none}
 	.mBoxBg::after{display: none;}
 
 	.mConW1{position: relative;display: block;margin-bottom: 60px;}
-	.mConW1::before{position: absolute;bottom:-240px;left: -40px;width: calc(100% + 80px); height: 500px; content: '';background-image: linear-gradient(#fff, #f5f5fa); }
+	.mConW1::before{position: absolute;bottom:-240px;left: calc(-1 * var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)));width: calc(100% + (2 * var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)))); height: 500px; content: '';background-image: linear-gradient(#fff, #f5f5fa); }
 	.mCon1{margin:0 0 50px;max-width: 100%;width: 100%;}
 	.mCon1 .mSlide1 ul li img{width: 100%;}
 	.mCon1 .mSlide1,.mCon1 .mSlide1 .swiper-wrapper,.mCon1 .mSlide1 ul li,.mCon1 .mSlide1 ul li a{height: 400px;}
@@ -852,7 +858,7 @@ br{font-family: 'Dotum';}
 	.slide_list_pop .box .btnClose{right: 0;}
 	/* 2025-12-16 추가 */
 
-	.mBoxBg{padding: 20px 20px 0;}
+	.mBoxBg{padding: 20px 0 0;}
 
 	.mCon1 .control1 button{width: 40px;height: 40px;}
 	.mCon1 .control1 button::before{width:10px;height: 15px;}
@@ -3252,10 +3258,11 @@ span.lineh_2{line-height:2em;}
 	box-sizing:border-box;
 }
 #footer .footWrap--v3{
-	position:relative;width:100%;max-width:none;margin:0;
+	position:relative;width:100%;max-width:var(--kb-shell-max, 1400px);margin:0 auto;
 	background:transparent;
 	border:none;border-radius:0;box-shadow:none;
 	overflow:hidden;
+	box-sizing:border-box;
 }
 #footer .footWrap--v3::before{
 	content:'';position:absolute;top:0;left:0;right:0;height:3px;
@@ -3264,7 +3271,7 @@ span.lineh_2{line-height:2em;}
 
 /* CTA จดหมายข่าว */
 #footer .footCta{
-	padding:52px 40px 44px;text-align:center;
+	padding:52px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 44px;text-align:center;
 	border-bottom:1px solid rgba(255,255,255,0.07);
 	background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(31,55,157,0.18),transparent 70%);
 }
@@ -3311,7 +3318,7 @@ span.lineh_2{line-height:2em;}
 /* เนื้อหาหลัก */
 #footer .footMain{
 	display:grid;grid-template-columns:minmax(0,280px) 1fr;gap:48px;
-	width:100%;padding:44px 40px 40px;box-sizing:border-box;
+	width:100%;padding:44px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 40px;box-sizing:border-box;
 }
 #footer .footBrandCol__logo{display:inline-block;margin-bottom:16px;}
 #footer .footBrandCol__logo img{height:46px;width:auto;border-radius:8px;}
@@ -3340,10 +3347,14 @@ span.lineh_2{line-height:2em;}
 
 /* แถบล่าง */
 #footer .footBar{
-	display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;
 	width:100%;box-sizing:border-box;
-	padding:20px 40px;border-top:1px solid rgba(255,255,255,0.07);
+	border-top:1px solid rgba(255,255,255,0.07);
 	background:rgba(0,0,0,0.15);
+}
+#footer .footBar__inner{
+	display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;
+	width:100%;max-width:var(--kb-shell-max, 1400px);margin:0 auto;box-sizing:border-box;
+	padding:20px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));
 }
 #footer .footBar__copy{font-size:13px;color:#6e7589;line-height:1.5;}
 #footer .footBar__legal{display:flex;flex-wrap:wrap;gap:8px 20px;margin:0;padding:0;list-style:none;}
@@ -3352,7 +3363,7 @@ span.lineh_2{line-height:2em;}
 #footer .footWrap--v3 .footDisclaimer,
 #footer .footWrap--v3 .botBt_txt{
 	width:100%;margin:0;box-sizing:border-box;
-	padding:16px 40px 28px;
+	padding:16px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 28px;
 	font-size:12px;line-height:1.65;color:#4e5568;word-break:keep-all;
 }
 
@@ -3368,23 +3379,23 @@ span.lineh_2{line-height:2em;}
 
 @media all and (max-width:1024px){
 	#footer:has(.footWrap--v3){padding:0;}
-	#footer .footCta{padding:40px 32px 36px;}
-	#footer .footMain{grid-template-columns:1fr;gap:36px;padding:36px 32px 32px;}
+	#footer .footCta{padding:40px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 36px;}
+	#footer .footMain{grid-template-columns:1fr;gap:36px;padding:36px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 32px;}
 	#footer .footLinksGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 20px;}
-	#footer .footBar{padding:18px 32px;}
+	#footer .footBar__inner{padding:18px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));}
 	#footer .footWrap--v3 .footDisclaimer,
-	#footer .footWrap--v3 .botBt_txt{padding:14px 32px 24px;}
+	#footer .footWrap--v3 .botBt_txt{padding:14px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 24px;}
 }
 @media all and (max-width:640px){
 	#footer:has(.footWrap--v3){padding:0;}
-	#footer .footCta{padding:32px 20px 28px;}
+	#footer .footCta{padding:32px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 28px;}
 	#footer .footCta__form{flex-direction:column;max-width:100%;}
 	#footer .footCta__btn{width:100%;height:48px;}
-	#footer .footMain{padding:28px 20px 24px;}
+	#footer .footMain{padding:28px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 24px;}
 	#footer .footLinksGrid{grid-template-columns:1fr;gap:24px;}
-	#footer .footBar{flex-direction:column;align-items:flex-start;padding:16px 20px;}
+	#footer .footBar__inner{flex-direction:column;align-items:flex-start;padding:16px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px));}
 	#footer .footWrap--v3 .footDisclaimer,
-	#footer .footWrap--v3 .botBt_txt{padding:12px 20px 22px;}
+	#footer .footWrap--v3 .botBt_txt{padding:12px var(--kb-shell-pad-x, clamp(16px, 3vw, 40px)) 22px;}
 	#footer .footWrap--v3 .botBtTop{right:16px;bottom:16px;}
 }
 
@@ -3797,7 +3808,7 @@ span.lineh_2{line-height:2em;}
    =================================================================== */
 @media all and (max-width:850px){
 	#wrapper{overflow-x:hidden;}
-	.mBoxBg{padding:40px 18px 0;}
+	.mBoxBg{padding:40px 0 0;}
 
 	/* Header contact */
 	#header .head_box .topLink .topInfor .topContact{
@@ -3861,7 +3872,7 @@ span.lineh_2{line-height:2em;}
 }
 
 @media all and (max-width:640px){
-	.mBoxBg{padding:16px 16px 0;}
+	.mBoxBg{padding:16px 0 0;}
 
 	#header .head_box .logo{width:200px;}
 	#header:not(.kbHeader) .btnMenu{top:72px;right:14px;width:48px;height:48px;}

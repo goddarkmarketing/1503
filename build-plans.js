@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const { buildCategoryArticle, renderFeatures } = require('./scripts/plan-article-render');
 
-const CACHE = '20260630l';
+const CACHE = '20260709za';
 const OUT = path.join(__dirname, 'plans');
 
 const CAR_IMAGES = [
@@ -646,71 +647,6 @@ function cellClass(v) {
   return '';
 }
 
-function renderAudience(items) {
-  return items
-    .map((t) => `<li>${esc(t)}</li>`)
-    .join('\n\t\t\t');
-}
-
-function renderCoverage(cov) {
-  if (!cov) return '';
-  if (cov.type === 'list') {
-    return cov.items
-      .map(
-        (i) => `<div class="planCoverItem">
-\t\t\t\t<h3>${esc(i.title)}</h3>
-\t\t\t\t<p>${esc(i.text)}</p>
-\t\t\t</div>`
-      )
-      .join('\n\t\t\t');
-  }
-  const head = cov.headers.map((h) => `<th scope="col">${esc(h)}</th>`).join('');
-  const rows = cov.rows
-    .map((row) => {
-      const cells = row
-        .map((cell, i) => {
-          const cls = i === 0 ? '' : cellClass(cell);
-          return `<td${cls ? ` class="${cls}"` : ''}>${esc(cell)}</td>`;
-        })
-        .join('');
-      return `<tr>${cells}</tr>`;
-    })
-    .join('\n\t\t\t\t');
-  return `<div class="planCompareWrap">
-\t\t\t<table class="planCompare">
-\t\t\t\t<thead><tr>${head}</tr></thead>
-\t\t\t\t<tbody>
-\t\t\t\t${rows}
-\t\t\t\t</tbody>
-\t\t\t</table>
-\t\t</div>`;
-}
-
-function renderConditions(items) {
-  return items
-    .map(
-      (c) => `<div class="planCond">
-\t\t\t\t<strong>${esc(c.label)}</strong>
-\t\t\t\t<p>${esc(c.text)}</p>
-\t\t\t</div>`
-    )
-    .join('\n\t\t\t');
-}
-
-function renderSteps(steps) {
-  return steps
-    .map(
-      (s, i) => `<div class="planStep">
-\t\t\t\t<span class="planStep__num">${i + 1}</span>
-\t\t\t\t<div>
-\t\t\t\t\t<h3>${esc(s.title)}</h3>
-\t\t\t\t\t<p>${esc(s.text)}</p>
-\t\t\t\t</div>
-\t\t\t</div>`
-    )
-    .join('\n\t\t\t');
-}
-
 function renderFaq(items) {
   return items
     .map(
@@ -720,6 +656,11 @@ function renderFaq(items) {
 \t\t\t</details>`
     )
     .join('\n\t\t\t');
+}
+
+function renderBenefitsArticle(benefits) {
+  const items = benefits.map((b) => ({ t: b.title, p: b.text }));
+  return `<div class="planArticleFeats">${renderFeatures(items)}</div>`;
 }
 
 function collectPlanItems() {
@@ -827,15 +768,8 @@ function renderPage(cat) {
     .map((c) => `<a href="${c.file}" class="${c.slug === cat.slug ? 'is-active' : ''}">${c.title}</a>`)
     .join('\n\t\t\t');
 
-  const benefits = cat.benefits
-    .map(
-      (b) => `<div class="planBenefit">
-\t\t\t\t<div class="planBenefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-\t\t\t\t<h3>${b.title}</h3>
-\t\t\t\t<p>${b.text}</p>
-\t\t\t</div>`
-    )
-    .join('\n\t\t\t');
+  const benefitsArticle = renderBenefitsArticle(cat.benefits);
+  const articleHtml = buildCategoryArticle(details, steps, benefitsArticle, cat.title);
 
   const plans = cat.plans
     .map((p, i) => {
@@ -899,38 +833,7 @@ function renderPage(cat) {
 \t\t<p class="planHero__desc">${cat.desc}</p>
 \t</section>
 
-\t<section class="planSection">
-\t\t<div class="planSection__head"><h2>เหมาะกับใคร</h2></div>
-\t\t<ul class="planAudience">${renderAudience(details.audience || [])}</ul>
-\t</section>
-
-\t<section class="planSection">
-\t\t<div class="planSection__head">
-\t\t\t<h2>ความคุ้มครองหลัก</h2>
-\t\t\t<p>สรุปภาพรวมเพื่อเปรียบเทียบเบื้องต้น รายละเอียดจริงขึ้นกับบริษัทและแผนที่เลือก</p>
-\t\t</div>
-\t\t${details.coverage && details.coverage.type === 'list' ? `<div class="planCoverList">${renderCoverage(details.coverage)}</div>` : renderCoverage(details.coverage)}
-\t</section>
-
-\t<section class="planSection">
-\t\t<div class="planSection__head"><h2>เงื่อนไขสำคัญ</h2></div>
-\t\t<div class="planConds">${renderConditions(details.conditions || [])}</div>
-\t</section>
-
-\t<section class="planSection">
-\t\t<div class="planSection__head"><h2>ขั้นตอนทำประกันกับเรา</h2></div>
-\t\t<div class="planSteps">${renderSteps(steps)}</div>
-\t</section>
-
-\t<section class="planSection">
-\t\t<div class="planSection__head"><h2>ทำไมต้องเลือกผ่านกล้าดีโบรคเกอร์</h2></div>
-\t\t<div class="planBenefits">${benefits}</div>
-\t</section>
-
-\t<section class="planSection">
-\t\t<div class="planSection__head"><h2>คำถามที่พบบ่อย</h2></div>
-\t\t<div class="planFaq">${renderFaq(details.faq || [])}</div>
-\t</section>
+\t${articleHtml}
 
 \t<section class="planSection">
 \t\t<div class="planSection__head">
@@ -970,6 +873,7 @@ function renderPage(cat) {
 <script type="text/javascript" src="../js/6717.js?v=${CACHE}"></script>
 <script type="text/javascript" src="../js/6719.js?v=${CACHE}"></script>
 <script type="text/javascript" src="../js/site-chrome.js?v=${CACHE}"></script>
+<script type="text/javascript" src="../js/plan-article.js?v=${CACHE}"></script>
 <script type="text/javascript" src="../js/float-mascot.js?v=${CACHE}"></script>
 </body>
 </html>`;
