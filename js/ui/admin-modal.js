@@ -40,28 +40,3 @@ App.Modal = {
     return this._overlay;
   }
 };
-
-App.AdminUtils = {
-  formatDateTime(iso) {
-    if (!iso) return '-';
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleString('th-TH', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  },
-
-  formatThaiDate(iso) {
-    if (!iso) return '-';
-    const [y, m, d] = iso.split('-');
-    return `${d}/${m}/${y}`;
-  },
-
-  policyStatusLabel(status) {
-    return { active: 'มีผล', pending: 'รอดำเนินการ', cancelled: 'ยกเลิก' }[status] || status;
-  }
-};

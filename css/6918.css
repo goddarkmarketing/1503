@@ -307,7 +307,7 @@ br{font-family: 'Dotum';}
 .mCon2 .con2 ul li a:hover span::after{left: 0;width: 100%;}
 .mCon2 .con2 ul li a:hover{text-shadow: 5px 5px 20px rgba(159, 186, 219, 0.46);background-position: left 8px;}
 
-/* mCon2 — โปรโมชัน 2 ภาพแนวนอน (สูงเท่า hero) */
+/* mCon2 — ปุ่มออกกรมธรรม์ด่วน + โปรโมติดต่อ */
 .mCon2.mCon2--promo{
 	--mcon2-stack-h:480px;
 	--mcon2-stack-gap:12px;
@@ -316,6 +316,86 @@ br{font-family: 'Dotum';}
 	gap:var(--mcon2-stack-gap);
 	height:var(--mcon2-stack-h);
 	box-sizing:border-box;
+}
+.mCon2.mCon2--promo .mCon2__quick{
+	flex:1 1 0;
+	min-height:0;
+	display:flex;
+	flex-direction:column;
+	gap:8px;
+	padding:10px;
+	border-radius:14px;
+	background:linear-gradient(160deg,#f4f7fb 0%,#eef6f2 100%);
+	border:1px solid rgba(31,55,157,0.08);
+	box-sizing:border-box;
+}
+.mCon2.mCon2--promo .mQuickBtn{
+	flex:1 1 0;
+	min-height:0;
+	display:flex;
+	align-items:center;
+	gap:12px;
+	padding:0 12px 0 10px;
+	border-radius:12px;
+	text-decoration:none;
+	color:#1a2744;
+	background:#fff;
+	border:1px solid rgba(15,23,42,0.06);
+	box-shadow:0 2px 8px rgba(15,23,42,0.05);
+	transition:transform 0.18s ease,box-shadow 0.18s ease,border-color 0.18s ease;
+}
+.mCon2.mCon2--promo .mQuickBtn:hover{
+	transform:translateY(-1px);
+	box-shadow:0 6px 16px rgba(15,23,42,0.1);
+	border-color:rgba(4,124,93,0.28);
+}
+.mCon2.mCon2--promo .mQuickBtn:focus-visible{
+	outline:2px dashed #047c5d;
+	outline-offset:2px;
+}
+.mCon2.mCon2--promo .mQuickBtn__icon{
+	flex:0 0 40px;
+	width:40px;
+	height:40px;
+	display:inline-flex;
+	align-items:center;
+	justify-content:center;
+	border-radius:11px;
+	color:#fff;
+	background:linear-gradient(135deg,#1f379d,#008654);
+}
+.mCon2.mCon2--promo .mQuickBtn--hub .mQuickBtn__icon{background:linear-gradient(135deg,#1f379d,#4f59a7);}
+.mCon2.mCon2--promo .mQuickBtn--prb .mQuickBtn__icon{background:linear-gradient(135deg,#047c5d,#1f379d);}
+.mCon2.mCon2--promo .mQuickBtn--2plus .mQuickBtn__icon{background:linear-gradient(135deg,#1f379d,#008654);}
+.mCon2.mCon2--promo .mQuickBtn--3plus .mQuickBtn__icon{background:linear-gradient(135deg,#008654,#047c5d);}
+.mCon2.mCon2--promo .mQuickBtn__text{
+	flex:1 1 auto;
+	min-width:0;
+	display:flex;
+	flex-direction:column;
+	gap:2px;
+}
+.mCon2.mCon2--promo .mQuickBtn__title{
+	font-size:14px;
+	font-weight:700;
+	line-height:1.25;
+	letter-spacing:-0.01em;
+}
+.mCon2.mCon2--promo .mQuickBtn__hint{
+	font-size:11px;
+	font-weight:500;
+	color:#6b7280;
+	line-height:1.2;
+}
+.mCon2.mCon2--promo .mQuickBtn__chev{
+	flex:0 0 auto;
+	color:#9aa3b5;
+	display:inline-flex;
+	transition:transform 0.18s ease,color 0.18s ease;
+}
+.mCon2.mCon2--promo .mQuickBtn:hover .mQuickBtn__chev{
+	color:#047c5d;
+	transform:translateX(2px);
 }
 .mCon2.mCon2--promo .mCon2__card{
 	flex:1 1 0;
@@ -702,7 +782,10 @@ br{font-family: 'Dotum';}
 	.mCon1 .heroBtn{padding: 10px 22px;font-size: 14px;}
 
 	.mCon2{max-width: 100%;width: 100%;}
-	.mCon2.mCon2--promo{--mcon2-stack-h:400px;}
+	.mCon2.mCon2--promo{height:auto;--mcon2-stack-h:auto;}
+	.mCon2.mCon2--promo .mCon2__quick,
+	.mCon2.mCon2--promo .mCon2__card{flex:none;height:auto;}
+	.mCon2.mCon2--promo .mCon2__card img{height:auto;aspect-ratio:16 / 9;object-fit:cover;}
 	.mCon2 .con1{height: auto; background-size: contain;}
 	.mCon2 .con1 .img{right:0;height: 90%;}
         .mCon2 .con1 p {margin: 20px 0 0 0;}
@@ -3827,8 +3910,22 @@ span.lineh_2{line-height:2em;}
 	.mCon1 .heroBtns{flex-wrap:wrap;gap:8px;}
 	.mCon1 .heroBtn{padding:9px 18px;font-size:13px;}
 
-	/* Intro card / promo stack */
-	.mCon2.mCon2--promo{--mcon2-stack-h:min(72vw,380px);}
+	/* Intro card / promo stack — auto height so 4 buttons + contact show */
+	.mCon2.mCon2--promo{
+		height:auto;
+		--mcon2-stack-h:auto;
+	}
+	.mCon2.mCon2--promo .mCon2__quick,
+	.mCon2.mCon2--promo .mCon2__card{
+		flex:none;
+		height:auto;
+		min-height:0;
+	}
+	.mCon2.mCon2--promo .mCon2__card img{
+		height:auto;
+		aspect-ratio:16 / 9;
+		object-fit:cover;
+	}
 	.mCon2 .con1 .mascot{display:none;}
 	.mCon2 .con1{padding:28px 22px;overflow:hidden;}
 	.mCon2 .con1 p{font-size:20px;}

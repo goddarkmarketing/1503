@@ -93,5 +93,26 @@ App.AdminUtils = {
     const pct = Math.min(100, Math.round((balance / limit) * 100));
     const cls = pct < 20 ? 'danger' : pct < 40 ? 'warn' : '';
     return `<div class="credit-limit-wrap"><div class="credit-limit-text">${App.Shell.formatCurrency(balance)} / ${App.Shell.formatCurrency(limit)}</div><div class="credit-limit-bar"><div class="credit-limit-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+  },
+  creditLimitGauge(balance, limit) {
+    if (!limit) return '-';
+    const pct = Math.min(100, Math.round((balance / limit) * 100));
+    const cls = pct < 20 ? 'danger' : pct < 40 ? 'warn' : '';
+    return `<span class="credit-gauge"><span class="credit-gauge__limit">${App.Shell.formatCurrency(limit)}</span><span class="credit-gauge__bar"><span class="credit-limit-fill ${cls}" style="width:${pct}%"></span></span><span class="credit-gauge__pct">${pct}%</span></span>`;
+  },
+
+  showToast(message, type = 'success') {
+    document.querySelectorAll('.admin-toast').forEach((el) => el.remove());
+    const el = document.createElement('div');
+    el.className = `admin-toast admin-toast--${type}`;
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.textContent = message;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('is-show'));
+    window.setTimeout(() => {
+      el.classList.remove('is-show');
+      window.setTimeout(() => el.remove(), 320);
+    }, 3200);
   }
 };

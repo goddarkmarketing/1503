@@ -97,12 +97,13 @@
           <div class="admin-toolbar">
             <div>
               <h1 class="admin-page-title">จัดการบัญชีนายหน้า</h1>
-              <p class="admin-hint">เพิ่มนายหน้า ปรับวงเงิน ระงับ/เปิดใช้บัญชี</p>
+              <p class="admin-hint">เพิ่มนายหน้า ปรับวงเงิน กำหนดสิทธิ์ฟังก์ชัน ระงับ/เปิดใช้บัญชี</p>
+              <p class="admin-hint admin-hint--demo">บัญชีทดลอง: <strong>Ck1-039</strong> (สิทธิ์ครบ) · <strong>Ag2-112</strong> (จำกัดสิทธิ์) · <strong>Ag3-205</strong> (ทดลองใบเสร็จ) — รหัสผ่าน <code>demo</code></p>
             </div>
             <button type="button" class="btn-primary" id="btnAddAgent"><i data-lucide="user-plus" style="width:16px;height:16px"></i> เพิ่มนายหน้า</button>
           </div>
           <div class="data-table-wrap">
-            <table class="data-table">
+            <table class="data-table data-table--agents">
               <thead><tr><th>รหัส</th><th>ชื่อ</th><th>โทรศัพท์</th><th>วงเงินคงเหลือ</th><th>วงเงินสูงสุด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
               <tbody id="agentsTableBody"></tbody>
             </table>
@@ -132,6 +133,6 @@
   <script src="../js/admin-sidebar-nav-template.js?v=20260702a"></script>
   <script src="../js/load-admin.js"></script>
   <script src="../js/admin-app.js"></script>
-  <script src="../js/pages/admin-agents.js"></script>
+  <script src="../js/pages/admin-agents.js?v=20260709c"></script>
 </body>
 </html>

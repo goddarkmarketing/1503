@@ -6,10 +6,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!tbody) return;
 
   document.getElementById('btnAddAgent')?.addEventListener('click', openAddAgentModal);
-  await renderAgents();
-
-  document.getElementById('ledgerAgentFilter')?.addEventListener('change', renderMiniLedger);
-  await renderMiniLedger();
+  try {
+    await renderAgents();
+    document.getElementById('ledgerAgentFilter')?.addEventListener('change', renderMiniLedger);
+    await renderMiniLedger();
+  } catch (err) {
+    console.error(err);
+    App.TableUI.showEmpty(
+      tbody,
+      7,
+      `โหลดข้อมูลไม่สำเร็จ: ${err.message || 'เกิดข้อผิดพลาด'}`
+    );
+  }
 });
 
 async function renderAgents() {
@@ -33,13 +41,14 @@ function renderAgentsTable() {
   tbody.innerHTML = pg.items.map((a) => `
     <tr data-agent-id="${a.id}">
       <td>${a.code}</td>
-      <td>${a.name}</td>
+      <td title="${a.name}">${a.name}</td>
       <td>${a.phone || '-'}</td>
       <td class="agent-balance">${App.Shell.formatCurrency(a.balance)}</td>
-      <td>${App.AdminUtils.creditLimitBar(a.balance, a.creditLimit)}</td>
+      <td class="agent-credit">${App.AdminUtils.creditLimitGauge(a.balance, a.creditLimit)}</td>
       <td><span class="status-pill ${a.status}">${a.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</span></td>
       <td>
         <div class="btn-group">
+          <button type="button" class="btn-secondary btn-sm btn-perms" data-id="${a.id}">สิทธิ์</button>
           <button type="button" class="btn-secondary btn-sm btn-adjust" data-id="${a.id}">ปรับวงเงิน</button>
           <button type="button" class="btn-secondary btn-sm btn-edit" data-id="${a.id}">แก้ไข</button>
           <button type="button" class="btn-sm ${a.status === 'active' ? 'btn-danger' : 'btn-success-outline'} btn-toggle" data-id="${a.id}" data-status="${a.status}">
@@ -50,6 +59,9 @@ function renderAgentsTable() {
     </tr>
   `).join('');
 
+  tbody.querySelectorAll('.btn-perms').forEach((btn) => {
+    btn.addEventListener('click', () => openPermissionsModal(btn.dataset.id));
+  });
   tbody.querySelectorAll('.btn-adjust').forEach((btn) => {
     btn.addEventListener('click', () => openAdjustModal(btn.dataset.id));
   });
@@ -143,6 +155,95 @@ function openAdjustModal(agentId) {
       App.Modal.close();
     } catch (err) {
       alert(err.message);
+    }
+  });
+}
+
+function openPermissionsModal(agentId) {
+  const agent = agentsCache.find((a) => a.id === agentId);
+  if (!agent) {
+    alert('ไม่พบข้อมูลนายหน้า');
+    return;
+  }
+  if (!App.AgentFeatures) {
+    alert('ระบบสิทธิ์ยังไม่พร้อม กรุณารีเฟรชหน้า (Ctrl+F5)');
+    return;
+  }
+
+  const overlay = App.Modal.open({
+    title: `กำหนดสิทธิ์ฟังก์ชัน — ${agent.code}`,
+    size: 'wide',
+    body: `
+      <form id="agentPermForm" novalidate>
+        ${App.AgentFeatures.renderPermissionsTable(agent.featurePermissions)}
+      </form>
+    `,
+    footer: `
+      <button type="button" class="btn-secondary" data-dismiss>ยกเลิก</button>
+      <button type="button" class="btn-primary" id="confirmPerms">บันทึกสิทธิ์</button>
+    `
+  });
+
+  const form = overlay.querySelector('#agentPermForm');
+  if (!form) {
+    alert('ไม่สามารถเปิดฟอร์มสิทธิ์ได้');
+    App.Modal.close();
+    return;
+  }
+
+  form.addEventListener('submit', (e) => e.preventDefault());
+
+  try {
+    App.AgentFeatures.bindPermissionsForm(form);
+  } catch (err) {
+    console.error(err);
+  }
+
+  overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
+
+  overlay.addEventListener('click', async (e) => {
+    const saveBtn = e.target.closest('#confirmPerms');
+    if (!saveBtn) return;
+    e.preventDefault();
+
+    if (saveBtn.disabled) return;
+
+    saveBtn.disabled = true;
+    const originalLabel = saveBtn.textContent;
+    saveBtn.textContent = 'กำลังบันทึก...';
+
+    try {
+      const featurePermissions = App.AgentFeatures.readPermissionsFromForm(form);
+      const noneEnabled = App.AgentFeatures.countEnabled(featurePermissions) === 0;
+
+      const updated = await App.AgentService.updateAgent(agentId, { featurePermissions });
+      const idx = agentsCache.findIndex((a) => a.id === agentId);
+      if (idx >= 0) agentsCache[idx] = { ...agentsCache[idx], ...updated };
+
+      let statusEl = form.querySelector('.agent-perm__status');
+      if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.className = 'agent-perm__status agent-perm__status--success';
+        form.prepend(statusEl);
+      }
+      statusEl.textContent = noneEnabled
+        ? 'บันทึกแล้ว — นายหน้าจะเข้าระบบไม่ได้จนกว่าจะเปิดสิทธิ์อย่างน้อย 1 รายการ'
+        : 'บันทึกสิทธิ์เรียบร้อยแล้ว';
+      saveBtn.textContent = 'บันทึกแล้ว';
+
+      await new Promise((resolve) => window.setTimeout(resolve, 700));
+      App.Modal.close();
+      renderAgentsTable();
+      App.AdminUtils.showToast(
+        noneEnabled
+          ? `บันทึกสิทธิ์ของ ${agent.code} แล้ว (ปิดทุกฟังก์ชัน — นายหน้าเข้าระบบไม่ได้)`
+          : `บันทึกสิทธิ์ของ ${agent.code} เรียบร้อยแล้ว`
+      );
+    } catch (err) {
+      console.error(err);
+      App.AdminUtils.showToast(err?.message || 'บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง', 'error');
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalLabel;
     }
   });
 }

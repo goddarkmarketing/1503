@@ -20,15 +20,15 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
     <li class="nav-item has-submenu" data-nav-group="voluntary">
       <a href="#" class="nav-link"><i data-lucide="file-check"></i><span class="nav-link-text">ภาคสมัครใจ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
       <ul class="nav-submenu">
-        <li><a href="#" class="nav-sub-link"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
-        <li><a href="#" class="nav-sub-link"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span><span class="nav-badge">In-SURE</span></span></a></li>
-        <li><a href="#" class="nav-sub-link"><img src="{{BASE}}assets/logos/tokio-marine.png" alt="โตเกียวมารีนประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>โตเกียวมารีนประกันภัย</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="voluntary-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="voluntary-ergo"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span><span class="nav-badge">In-SURE</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="voluntary-tokio"><img src="{{BASE}}assets/logos/tokio-marine.png" alt="โตเกียวมารีนประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>โตเกียวมารีนประกันภัย</span></span></a></li>
       </ul>
     </li>
     <li class="nav-item has-submenu" data-nav-group="pa">
       <a href="#" class="nav-link"><i data-lucide="heart-pulse"></i><span class="nav-link-text">ประกันอุบัติเหตุ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
       <ul class="nav-submenu">
-        <li><a href="#" class="nav-sub-link"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="pa-ergo"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
       </ul>
     </li>
     <li class="nav-item"><a href="{{BASE}}agent/renew.html" class="nav-link" data-nav="renew"><i data-lucide="refresh-cw"></i><span class="nav-link-text">ต่ออายุ กธ.</span><span class="nav-badge">renew</span></a></li>
@@ -89,22 +89,20 @@ window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const base = document.body?.dataset?.basePath || '';
 
   if (itemCount >= window.AGENT_SIDEBAR_NAV_COUNT && hasReceipt && hasGroups) {
+    applyAgentNavPermissions(navRoot);
     return true;
   }
 
   navRoot.innerHTML = window.AGENT_SIDEBAR_NAV_HTML.replace(/\{\{BASE\}\}/g, base);
   navRoot.dataset.sidebarRendered = '1';
+  applyAgentNavPermissions(navRoot);
   return true;
 };
 
-(function bootAgentSidebarNav() {
-  function run() {
-    if (typeof window.renderAgentSidebarNav === 'function') {
-      window.renderAgentSidebarNav();
-    }
+function applyAgentNavPermissions(navRoot) {
+  if (!navRoot || !window.App?.AgentFeatures || !window.App?.AuthService) return;
+  const user = App.AuthService.getCurrentUser();
+  if (user?.role === 'agent') {
+    App.AgentFeatures.applyNav(navRoot, user);
   }
-  run();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run);
-  }
-})();
+}

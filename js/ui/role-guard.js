@@ -44,6 +44,10 @@ App.RoleGuard = {
       return false;
     }
 
+    if (requiredRole === 'agent' && App.AgentFeatures) {
+      return App.AgentFeatures.enforceCurrentPage({ basePath: base });
+    }
+
     return true;
   }
 };

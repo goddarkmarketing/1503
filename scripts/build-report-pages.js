@@ -103,9 +103,9 @@ ${FILTER.split('\n').map((l) => '              ' + l).join('\n')}
       </main>
     </div>
   </div>
-  <script src="../../js/agent-sidebar-nav-template.js?v=20260701i"></script>
+  <script src="../../js/agent-sidebar-nav-template.js?v=20260709a"></script>
   <script src="../../js/load-agent.js"></script>
-  <script src="../../js/app.js?v=20260701j"></script>
+  <script src="../../js/app.js?v=20260709a"></script>
   <script src="../../js/pages/agent-report-daily.js"></script>
 </body>
 </html>

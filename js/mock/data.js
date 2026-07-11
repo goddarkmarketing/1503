@@ -22,12 +22,24 @@ App.MockData = {
       username: 'Ag2-112',
       password: 'demo',
       role: 'agent',
-      name: 'วิไล รักษ์ดี',
+      name: 'วิไล รักษ์ดี (ทดลองจำกัดสิทธิ์)',
       agentCode: 'Ag2-112',
       email: 'ag2112@example.com',
       phone: '082-345-6789',
       initials: 'WR',
       balance: 12890.5
+    },
+    {
+      id: 'agent-003',
+      username: 'Ag3-205',
+      password: 'demo',
+      role: 'agent',
+      name: 'ประเสริฐ มั่นคง (ทดลอง)',
+      agentCode: 'Ag3-205',
+      email: 'ag3205@example.com',
+      phone: '089-111-2233',
+      initials: 'PT',
+      balance: 5200
     },
     {
       id: 'admin-001',
@@ -57,24 +69,43 @@ App.MockData = {
     {
       id: 'agent-002',
       code: 'Ag2-112',
-      name: 'วิไล รักษ์ดี',
+      name: 'วิไล รักษ์ดี (ทดลองจำกัดสิทธิ์)',
       email: 'ag2112@example.com',
       phone: '082-345-6789',
       balance: 12890.5,
       creditLimit: 30000,
       status: 'active',
-      createdAt: '2024-08-02'
+      createdAt: '2024-08-02',
+      featurePermissions: {
+        'receipt-issue': false,
+        'receipt-inquiry': false,
+        'reports-monthly': false,
+        'compulsory-viriyah': false,
+        'voluntary-tokio': false
+      }
     },
     {
       id: 'agent-003',
       code: 'Ag3-205',
-      name: 'ประเสริฐ มั่นคง',
+      name: 'ประเสริฐ มั่นคง (ทดลอง)',
       email: 'ag3205@example.com',
       phone: '089-111-2233',
       balance: 5200,
       creditLimit: 15000,
-      status: 'inactive',
-      createdAt: '2025-01-10'
+      status: 'active',
+      createdAt: '2025-01-10',
+      featurePermissions: {
+        'receipt-issue': true,
+        'receipt-inquiry': true,
+        'receipt-summary': false,
+        'receipt-detail': false,
+        'reports-daily-policies': false,
+        'reports-daily-summary': true,
+        'reports-monthly': false,
+        'reports-team': false,
+        'commission': false,
+        'credit': true
+      }
     }
   ],
 

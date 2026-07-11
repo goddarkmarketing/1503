@@ -1,9 +1,17 @@
 /* KLADEE BROKER — Dashboard App */
 
-const AGENT_SIDEBAR_CACHE = '20260701j';
+const AGENT_SIDEBAR_CACHE = '20260709b';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const basePath = document.body.dataset.basePath || '';
+
+  if (window.App?.AuthService?.isAuthenticated?.()) {
+    try {
+      await App.AuthService.refreshUser();
+    } catch (e) {
+      /* session may be invalid */
+    }
+  }
 
   if (window.App) {
     App.RoleGuard.enforce('agent', { basePath });
@@ -14,9 +22,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await loadAgentSidebarNav();
-  if (typeof window.renderAgentSidebarNav === 'function') {
-    window.renderAgentSidebarNav();
-  }
   initLucideIcons();
   initSidebar();
   initNavDropdowns();
@@ -43,7 +48,29 @@ async function loadAgentSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-agent-sidebar]');
   if (!navRoot) return;
 
+  const user = App.AuthService?.getCurrentUser();
+  if (user && App.AgentFeatures) {
+    App.AgentFeatures.applyNav(navRoot, user);
+    bindDeniedNavLinks(navRoot);
+  }
+
   markAgentNavActive(navRoot);
+}
+
+function bindDeniedNavLinks(navRoot) {
+  if (navRoot.dataset.permGuardBound) return;
+  navRoot.dataset.permGuardBound = '1';
+
+  navRoot.addEventListener('click', (event) => {
+    const link = event.target.closest('[data-nav]');
+    if (!link || link.getAttribute('href') === '#') return;
+    const key = link.dataset.nav;
+    const user = App.AuthService?.getCurrentUser();
+    if (!key || !user || App.AgentFeatures.can(user, key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    alert('บัญชีของคุณไม่มีสิทธิ์ใช้งานฟังก์ชันนี้ กรุณาติดต่อผู้ดูแลระบบ');
+  });
 }
 
 function normalizePath(path) {

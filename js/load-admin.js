@@ -4,10 +4,11 @@
   [
     'config/app-config.js',
     'mock/data.js',
+    'core/permissions.js',
+    'core/agent-features.js',
     'mock/api.js',
     'services/api-client.js',
     'core/session.js',
-    'core/permissions.js',
     'services/auth-service.js',
     'services/balance-service.js',
     'services/policy-service.js',

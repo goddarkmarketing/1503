@@ -4,6 +4,43 @@
 window.App = window.App || {};
 
 App.MockAPI = {
+  _permissionsHydrated: false,
+
+  _hydrateAgentPermissions() {
+    if (this._permissionsHydrated) return;
+    this._permissionsHydrated = true;
+    try {
+      const key = App.Config.AGENT_PERMISSIONS_KEY;
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const map = JSON.parse(raw);
+      if (!map || typeof map !== 'object') return;
+      App.MockData.agents.forEach((agent) => {
+        if (!map[agent.id]) return;
+        const stored = map[agent.id];
+        agent.featurePermissions = App.AgentFeatures
+          ? (App.AgentFeatures.hasFullPermissions(stored)
+            ? App.AgentFeatures.explicitPermissions(stored)
+            : App.AgentFeatures.normalize(stored))
+          : stored;
+      });
+    } catch (e) {
+      console.warn('hydrateAgentPermissions failed', e);
+    }
+  },
+
+  _persistAgentPermissions(agentId, perms) {
+    try {
+      const key = App.Config.AGENT_PERMISSIONS_KEY;
+      const raw = localStorage.getItem(key);
+      const map = raw ? JSON.parse(raw) : {};
+      map[agentId] = perms;
+      localStorage.setItem(key, JSON.stringify(map));
+    } catch (e) {
+      console.warn('persistAgentPermissions failed', e);
+    }
+  },
+
   _delay() {
     return new Promise((resolve) => {
       setTimeout(resolve, App.Config.MOCK_DELAY_MS || 0);
@@ -53,8 +90,20 @@ App.MockAPI = {
     return entry;
   },
 
+  _agentUserPayload(user) {
+    if (!user || user.role !== 'agent') return user;
+    const agent = App.MockData.agents.find((a) => a.id === user.id);
+    if (!App.AgentFeatures) return user;
+    const featurePermissions = App.AgentFeatures.getUserPermissions({
+      role: 'agent',
+      featurePermissions: agent?.featurePermissions
+    });
+    return { ...user, featurePermissions };
+  },
+
   async login(username, password) {
     await this._delay();
+    this._hydrateAgentPermissions();
     const user = App.MockData.users.find(
       (u) => u.username === username && u.password === password
     );
@@ -64,6 +113,7 @@ App.MockAPI = {
       throw err;
     }
     const { password: _, ...safeUser } = user;
+    const enrichedUser = this._agentUserPayload(safeUser);
     App.MockData.auditLogs.unshift({
       id: `AUD-${String(App.MockData.auditLogs.length + 1).padStart(3, '0')}`,
       action: 'login',
@@ -73,15 +123,16 @@ App.MockAPI = {
       detail: `${user.role === 'admin' ? 'Admin' : 'Agent'} login: ${user.username}`,
       createdAt: new Date().toISOString()
     });
-    return { user: safeUser, token: `mock-token-${user.id}` };
+    return { user: enrichedUser, token: `mock-token-${user.id}` };
   },
 
   async getCurrentUser(userId) {
     await this._delay();
+    this._hydrateAgentPermissions();
     const user = App.MockData.users.find((u) => u.id === userId);
     if (!user) throw new Error('User not found');
     const { password: _, ...safeUser } = user;
-    return safeUser;
+    return this._agentUserPayload(safeUser);
   },
 
   async getBalance(agentId) {
@@ -104,11 +155,13 @@ App.MockAPI = {
 
   async getAgents() {
     await this._delay();
+    this._hydrateAgentPermissions();
     return [...App.MockData.agents];
   },
 
   async getAgent(agentId) {
     await this._delay();
+    this._hydrateAgentPermissions();
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     return { ...agent };
@@ -118,14 +171,31 @@ App.MockAPI = {
     await this._delay();
     const idx = App.MockData.agents.findIndex((a) => a.id === agentId);
     if (idx === -1) throw new Error('Agent not found');
-    App.MockData.agents[idx] = { ...App.MockData.agents[idx], ...payload };
+
+    const nextPayload = { ...payload };
+    if (nextPayload.featurePermissions && App.AgentFeatures) {
+      nextPayload.featurePermissions = App.AgentFeatures.explicitPermissions(nextPayload.featurePermissions);
+    }
+
+    App.MockData.agents[idx] = { ...App.MockData.agents[idx], ...nextPayload };
     const user = App.MockData.users.find((u) => u.id === agentId);
     if (user) {
-      if (payload.name) user.name = payload.name;
-      if (payload.email) user.email = payload.email;
-      if (payload.phone) user.phone = payload.phone;
-      if (payload.balance != null) user.balance = payload.balance;
+      if (nextPayload.name) user.name = nextPayload.name;
+      if (nextPayload.email) user.email = nextPayload.email;
+      if (nextPayload.phone) user.phone = nextPayload.phone;
+      if (nextPayload.balance != null) user.balance = nextPayload.balance;
+      if (nextPayload.featurePermissions) user.featurePermissions = nextPayload.featurePermissions;
     }
+
+    if (nextPayload.featurePermissions) {
+      this._persistAgentPermissions(agentId, nextPayload.featurePermissions);
+      this._logAudit(
+        'agent_permissions',
+        'กำหนดสิทธิ์นายหน้า',
+        `อัปเดตสิทธิ์ฟังก์ชัน ${App.MockData.agents[idx].code}`
+      );
+    }
+
     return { ...App.MockData.agents[idx] };
   },
 
@@ -177,7 +247,10 @@ App.MockAPI = {
       balance: payload.initialBalance || 0,
       creditLimit: payload.creditLimit || 50000,
       status: 'active',
-      createdAt: new Date().toISOString().slice(0, 10)
+      createdAt: new Date().toISOString().slice(0, 10),
+      featurePermissions: App.AgentFeatures
+        ? App.AgentFeatures.normalize(payload.featurePermissions)
+        : undefined
     };
     App.MockData.agents.push(agent);
     App.MockData.users.push({
@@ -190,7 +263,8 @@ App.MockAPI = {
       email: payload.email || '',
       phone: payload.phone || '',
       initials: payload.name?.slice(0, 2).toUpperCase() || 'AG',
-      balance: agent.balance
+      balance: agent.balance,
+      featurePermissions: agent.featurePermissions
     });
 
     if (agent.balance > 0) {
@@ -203,6 +277,9 @@ App.MockAPI = {
       });
     }
     this._logAudit('agent_create', 'เพิ่มนายหน้า', `สร้างบัญชี ${agent.code} — ${agent.name}`);
+    if (agent.featurePermissions) {
+      this._persistAgentPermissions(id, agent.featurePermissions);
+    }
     return { ...agent };
   },
 
@@ -782,3 +859,5 @@ App.MockAPI = {
     return { code, ...App.MockData.productSettings[code] };
   }
 };
+
+App.MockAPI._hydrateAgentPermissions();
