@@ -1,4 +1,4 @@
-/* Receipt document — screen preview & print (ตรอ.กล้าดี) */
+/* Receipt document — screen preview & print */
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
 
 .receipt-print-modal {
@@ -47,7 +47,6 @@
   color: #fff;
   border: none;
 }
-/* Preview: แสดงเฉพาะกระดาษ ไม่มีกรอบเทา */
 .receipt-print-modal__body {
   padding: 0;
   margin: 0;
@@ -63,11 +62,17 @@
   margin: 0 auto;
   padding: 10mm 10mm 12mm;
   background: #fff;
-  color: #000;
+  color: #111;
   font-family: 'Sarabun', 'TH Sarabun New', sans-serif;
   font-size: 14px;
-  line-height: 1.35;
+  line-height: 1.4;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.receipt-doc *,
+.receipt-doc *::before,
+.receipt-doc *::after {
   box-sizing: border-box;
 }
 .receipt-doc p {
@@ -75,109 +80,150 @@
 }
 .receipt-doc table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 .receipt-doc th,
 .receipt-doc td {
-  border: 1px solid #000;
-  padding: 4px 6px;
+  border: 1px solid #222;
+  padding: 7px 8px;
   vertical-align: middle;
-  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .receipt-doc th {
-  font-weight: 600;
-  background: #fff;
+  font-weight: 650;
+  background: #f7f8fa;
 }
 .receipt-doc .c { text-align: center; }
 .receipt-doc .l { text-align: left; }
-.receipt-doc .r { text-align: right; white-space: nowrap; }
-
-/* 8 คอลัมน์เท่ากัน — เส้นตารางตรงทุกแถว */
-.receipt-doc__col {
-  width: 12.5%;
-}
+.receipt-doc .r { text-align: right; font-variant-numeric: tabular-nums; }
 
 .receipt-doc__head {
   display: grid;
-  grid-template-columns: 1fr auto minmax(240px, 280px);
-  gap: 10px 16px;
+  grid-template-columns: minmax(0, 1.2fr) auto minmax(200px, 0.9fr);
+  gap: 12px 14px;
   align-items: start;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+}
+.receipt-doc__shop {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
 }
 .receipt-doc__shop-name {
   font-size: 16px;
   font-weight: 700;
+  margin-bottom: 4px !important;
 }
 .receipt-doc__brand {
   text-align: center;
 }
 .receipt-doc__logo {
-  width: 88px;
-  height: 88px;
+  width: 80px;
+  height: 80px;
   display: block;
-  margin: 0 auto 4px;
+  margin: 0 auto 6px;
   object-fit: contain;
 }
 .receipt-doc__doc-title {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .receipt-doc__meta {
   width: 100%;
-  min-width: 240px;
-  font-size: 13px;
+  font-size: 12.5px;
 }
 .receipt-doc__meta th {
-  width: 52%;
-  min-width: 112px;
-  font-weight: 600;
+  width: 48%;
+  font-weight: 650;
   text-align: left;
   white-space: nowrap;
-  padding: 5px 8px;
+  padding: 6px 8px;
+  background: #f7f8fa;
 }
 .receipt-doc__meta td {
   text-align: left;
-  padding: 5px 8px;
+  padding: 6px 8px;
+  background: #fff;
+}
+
+/* Customer info — separate table so columns don't fight the items grid */
+.receipt-doc__customerTable {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+}
+.receipt-doc__customerTable th {
+  width: 11%;
+  text-align: center;
   white-space: nowrap;
+  font-size: 12px;
+  padding: 6px 4px;
+}
+.receipt-doc__customerTable td {
+  width: 14%;
+  text-align: center;
+  padding: 6px 6px;
+  background: #fff;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.receipt-doc__customerTable th:nth-child(5),
+.receipt-doc__customerTable td:nth-child(6) {
+  width: 12%;
+}
+.receipt-doc__customerTable td:nth-child(6) {
+  width: 18%;
 }
 
 .receipt-doc__sheet {
   margin-top: 0;
   font-size: 13px;
 }
-.receipt-doc__customer th {
-  font-weight: 600;
-  text-align: center;
-  white-space: nowrap;
-  font-size: 12px;
-}
-.receipt-doc__customer td {
-  text-align: center;
-}
+.receipt-doc__col-no { width: 10%; }
+.receipt-doc__col-item { width: 46%; }
+.receipt-doc__col-qty { width: 12%; }
+.receipt-doc__col-price { width: 16%; }
+.receipt-doc__col-total { width: 16%; }
+
 .receipt-doc__items-head th {
   text-align: center;
-  font-weight: 600;
+  font-weight: 650;
   font-size: 12px;
+  padding: 8px 6px;
 }
 .receipt-doc__sheet tbody td {
-  height: 26px;
+  min-height: 30px;
+  height: 30px;
+  background: #fff;
+}
+.receipt-doc__sheet tbody td.l {
+  padding-left: 10px;
+}
+.receipt-doc__sheet tbody td.r {
+  padding-right: 10px;
+  white-space: nowrap;
 }
 .receipt-doc__total th,
 .receipt-doc__total td {
-  font-weight: 600;
+  font-weight: 650;
+  background: #f7f8fa;
 }
 .receipt-doc__words {
   text-align: left !important;
   font-weight: 400 !important;
-  padding-left: 8px !important;
+  padding-left: 10px !important;
   white-space: normal !important;
+  background: #fff !important;
 }
 .receipt-doc__grand {
   font-weight: 700 !important;
   font-size: 14px;
+  white-space: nowrap !important;
 }
 
 .receipt-doc__foot {
@@ -210,7 +256,6 @@
   white-space: nowrap;
 }
 
-/* พิมพ์: เฉพาะ #receiptDocPrint */
 @media print {
   body.receipt-modal-open {
     overflow: visible !important;
@@ -252,6 +297,7 @@
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
+    overflow: visible !important;
   }
 }
 
@@ -266,14 +312,15 @@
     order: -1;
   }
   .receipt-doc {
-    padding: 8mm 6mm;
+    padding: 8mm 5mm;
     font-size: 12px;
   }
-  .receipt-doc__sheet {
+  .receipt-doc__sheet,
+  .receipt-doc__customerTable {
     font-size: 11px;
   }
   .receipt-doc th,
   .receipt-doc td {
-    padding: 3px 4px;
+    padding: 5px 4px;
   }
 }

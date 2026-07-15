@@ -8,5 +8,6 @@ App.Config = {
   API_BASE_URL: '/api/v1',
   SESSION_KEY: 'kladeebroker_session',
   AGENT_PERMISSIONS_KEY: 'kladeebroker_agent_permissions',
+  RECEIPT_PAPER_KEY: 'kladeebroker_receipt_paper',
   MOCK_DELAY_MS: 300
 };

@@ -5,7 +5,7 @@ const partial = fs.readFileSync(path.join(__dirname, '../partials/admin-sidebar-
 const escaped = partial.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 
 const footer = `
-window.ADMIN_SIDEBAR_NAV_COUNT = 15;
+window.ADMIN_SIDEBAR_NAV_COUNT = 16;
 
 window.renderAdminSidebarNav = function renderAdminSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-admin-sidebar]');

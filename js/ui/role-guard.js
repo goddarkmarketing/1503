@@ -17,7 +17,7 @@ App.RoleGuard = {
     if (rootIdx >= 0 && rootIdx < parts.length - 1) {
       return parts.slice(rootIdx + 1).join('/');
     }
-    if (parts.length >= 2 && ['compulsory', 'agent', 'admin'].includes(parts[parts.length - 2])) {
+    if (parts.length >= 2 && ['compulsory', 'agent', 'admin', 'pa', 'voluntary', 'travel'].includes(parts[parts.length - 2])) {
       return parts.slice(-2).join('/');
     }
     return parts[parts.length - 1] || '';

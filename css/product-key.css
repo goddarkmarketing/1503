@@ -1,0 +1,424 @@
+/* Product key-in page: brochure left + form right (layout A) */
+
+.form-page .main-content:has(.product-key) {
+  padding: 0.75rem 1rem 1rem;
+  box-sizing: border-box;
+}
+
+.product-key {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.product-key__form > .form-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  min-height: 0;
+  max-width: none;
+}
+
+.product-key__form > .form-card .form-header {
+  border-radius: 0;
+}
+
+/* Indara PRB form beside brochure — tighter columns, no label wrap */
+.product-key__form {
+  container-type: inline-size;
+  container-name: pkForm;
+  min-width: 0;
+}
+
+.product-key__form .form-card {
+  --form-gutter: 16px;
+}
+
+.product-key__form .policy-grid {
+  grid-template-columns: 1fr;
+}
+
+.product-key__form .policy-col:first-child {
+  border-right: none;
+  border-bottom: 1px solid var(--form-border);
+  padding-bottom: 16px;
+}
+
+.product-key__form .policy-col:last-child {
+  padding-top: 8px;
+}
+
+.product-key__form .form-section:not(.form-section-highlight) .form-section-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  align-items: start;
+}
+
+.product-key__form .form-section:not(.form-section-highlight) .form-section-body > .form-field-h {
+  min-width: 0;
+  width: auto;
+}
+
+.product-key__form .form-section-highlight {
+  margin-left: calc(-1 * var(--form-gutter));
+  margin-right: calc(-1 * var(--form-gutter));
+  padding: 14px var(--form-gutter);
+}
+
+.product-key__form .field-premium > .form-label {
+  display: none;
+}
+
+.product-key__form .premium-inputs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.product-key__form .premium-sublabel {
+  font-size: 0.68rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-key__form .premium-abbr {
+  font-size: 0.62rem;
+  padding: 0 4px;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+.product-key__form .premium-item .form-input {
+  padding: 7px 8px;
+  min-height: 36px;
+  font-size: 0.875rem;
+}
+
+.product-key__form .form-input.total-premium {
+  height: 42px;
+  font-size: 1rem;
+}
+
+@container pkForm (max-width: 420px) {
+  .premium-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .premium-sublabel {
+    white-space: normal;
+  }
+
+  .form-section:not(.form-section-highlight) .form-section-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Shared card chrome (form + brochure) */
+.product-key__card,
+.product-key__brochure {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-key__card {
+  min-height: 0;
+}
+
+.product-key-card__head,
+.brochure-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.product-key-card__title,
+.brochure-panel__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.product-key-card__logo {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 4px;
+}
+
+.product-key-card__body {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  background: #fff;
+}
+
+.product-key__fields {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+}
+
+.product-key__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem 1rem;
+}
+
+.product-key__grid .form-field-h--full {
+  grid-column: 1 / -1;
+}
+
+.product-key__premium {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+}
+
+.product-key__premium-label {
+  font-size: 0.875rem;
+  color: #166534;
+  font-weight: 600;
+}
+
+.product-key__premium-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #14532d;
+  font-variant-numeric: tabular-nums;
+}
+
+.product-key__premium-value span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+.product-key__hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.product-key-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.product-key-card__foot-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.product-key__brochure {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 6rem);
+}
+
+.brochure-panel__tabs {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.brochure-panel__tab {
+  flex: 1;
+  margin: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.7rem 0.5rem;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.brochure-panel__tab:hover {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.brochure-panel__tab.is-active {
+  background: transparent;
+  border-bottom-color: #0f766e;
+  color: #0f766e;
+}
+
+.brochure-panel__stage {
+  flex: 1;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  overflow: auto;
+  background: #f1f5f9;
+}
+
+.brochure-panel__img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  cursor: zoom-in;
+  background: #fff;
+}
+
+.brochure-panel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.brochure-panel__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.brochure-panel__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.brochure-panel__btn:not(:disabled):hover {
+  border-color: #0f766e;
+  color: #0f766e;
+}
+
+.brochure-panel__page {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.brochure-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(15, 23, 42, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  cursor: zoom-out;
+}
+
+.brochure-lightbox[hidden] {
+  display: none;
+}
+
+.brochure-lightbox img {
+  max-width: min(960px, 100%);
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  cursor: default;
+}
+
+@media (max-width: 1100px) {
+  .form-page .main-content:has(.product-key) {
+    padding: 0.65rem 0.75rem 0.9rem;
+  }
+
+  .product-key {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .product-key__brochure {
+    position: static;
+    max-height: none;
+  }
+
+  .brochure-panel__stage {
+    max-height: 55vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .product-key__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-key__premium {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-key-card__foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .product-key-card__foot .btn-next {
+    width: 100%;
+    justify-content: center;
+  }
+}

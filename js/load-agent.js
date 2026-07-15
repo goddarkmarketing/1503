@@ -16,6 +16,7 @@
     'services/commission-service.js',
     'services/credit-service.js',
     'services/agent-service.js',
+    'services/receipt-service.js',
     'services/notification-service.js',
     'services/team-service.js',
     'ui/role-guard.js',

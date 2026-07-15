@@ -23,11 +23,13 @@ const PAGES = [
   'admin/reports/daily-summary.html',
   'admin/reports/monthly.html',
   'admin/reports/team.html',
+  'admin/receipt/issue.html',
   'admin/receipt/inquiry.html',
   'admin/receipt/daily-summary.html',
   'admin/receipt/daily-detail.html',
   'admin/insurers.html',
   'admin/products.html',
+  'admin/receipt-settings.html',
   'admin/audit-log.html',
   'admin/reports.html'
 ];

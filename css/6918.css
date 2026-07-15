@@ -307,7 +307,7 @@ br{font-family: 'Dotum';}
 .mCon2 .con2 ul li a:hover span::after{left: 0;width: 100%;}
 .mCon2 .con2 ul li a:hover{text-shadow: 5px 5px 20px rgba(159, 186, 219, 0.46);background-position: left 8px;}
 
-/* mCon2 — ปุ่มออกกรมธรรม์ด่วน + โปรโมติดต่อ */
+/* mCon2 — การ์ดออกกรมธรรม์ด่วนปุ่มเดียว + โปรโมติดต่อ */
 .mCon2.mCon2--promo{
 	--mcon2-stack-h:480px;
 	--mcon2-stack-gap:12px;
@@ -321,81 +321,262 @@ br{font-family: 'Dotum';}
 	flex:1 1 0;
 	min-height:0;
 	display:flex;
-	flex-direction:column;
-	gap:8px;
-	padding:10px;
-	border-radius:14px;
-	background:linear-gradient(160deg,#f4f7fb 0%,#eef6f2 100%);
-	border:1px solid rgba(31,55,157,0.08);
+	padding:0;
+	border:0;
+	background:transparent;
 	box-sizing:border-box;
 }
-.mCon2.mCon2--promo .mQuickBtn{
-	flex:1 1 0;
+.mCon2.mCon2--promo .mQuickCard{
+	--mq-ink:#0f1f4d;
+	--mq-muted:rgba(15,31,77,0.62);
+	--mq-line:rgba(15,31,77,0.08);
+	flex:1 1 auto;
+	display:flex;
+	flex-direction:column;
+	align-items:stretch;
+	justify-content:space-between;
+	gap:18px;
+	width:100%;
 	min-height:0;
+	padding:22px 22px 20px;
+	border-radius:16px;
+	text-decoration:none;
+	color:var(--mq-ink);
+	background:
+		linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+	border:1px solid var(--mq-line);
+	box-shadow:
+		0 1px 2px rgba(15,31,77,0.04),
+		0 10px 28px rgba(15,31,77,0.07);
+	box-sizing:border-box;
+	transition:transform 0.2s ease,box-shadow 0.2s ease,border-color 0.2s ease;
+	position:relative;
+	overflow:hidden;
+}
+.mCon2.mCon2--promo .mQuickCard--banner{
+	display:block;
+	padding:0;
+	gap:0;
+	background:#fff;
+	border:1px solid var(--mq-line);
+}
+.mCon2.mCon2--promo .mQuickCard--banner::before,
+.mCon2.mCon2--promo .mQuickCard--banner::after{
+	display:none;
+}
+.mCon2.mCon2--promo .mQuickCard__banner{
+	display:block;
+	width:100%;
+	height:100%;
+	object-fit:cover;
+	object-position:center;
+}
+.mCon2.mCon2--promo .mQuickCard::before{
+	content:'';
+	position:absolute;
+	top:0;
+	left:0;
+	right:0;
+	height:4px;
+	background:linear-gradient(90deg, #1f379d 0%, #047c5d 100%);
+	pointer-events:none;
+}
+.mCon2.mCon2--promo .mQuickCard::after{
+	content:'';
+	position:absolute;
+	right:-48px;
+	bottom:-56px;
+	width:160px;
+	height:160px;
+	border-radius:50%;
+	background:radial-gradient(circle, rgba(4,124,93,0.1) 0%, transparent 68%);
+	pointer-events:none;
+}
+.mCon2.mCon2--promo .mQuickCard:hover{
+	transform:translateY(-2px);
+	border-color:rgba(4,124,93,0.22);
+	box-shadow:
+		0 2px 4px rgba(15,31,77,0.04),
+		0 16px 36px rgba(15,31,77,0.1);
+}
+.mCon2.mCon2--promo .mQuickCard:focus-visible{
+	outline:2px dashed #047c5d;
+	outline-offset:3px;
+}
+.mCon2.mCon2--promo .mQuickCard__top{
+	position:relative;
+	z-index:1;
 	display:flex;
 	align-items:center;
+	justify-content:space-between;
 	gap:12px;
-	padding:0 12px 0 10px;
-	border-radius:12px;
-	text-decoration:none;
-	color:#1a2744;
-	background:#fff;
-	border:1px solid rgba(15,23,42,0.06);
-	box-shadow:0 2px 8px rgba(15,23,42,0.05);
-	transition:transform 0.18s ease,box-shadow 0.18s ease,border-color 0.18s ease;
 }
-.mCon2.mCon2--promo .mQuickBtn:hover{
-	transform:translateY(-1px);
-	box-shadow:0 6px 16px rgba(15,23,42,0.1);
-	border-color:rgba(4,124,93,0.28);
-}
-.mCon2.mCon2--promo .mQuickBtn:focus-visible{
-	outline:2px dashed #047c5d;
-	outline-offset:2px;
-}
-.mCon2.mCon2--promo .mQuickBtn__icon{
-	flex:0 0 40px;
-	width:40px;
-	height:40px;
+.mCon2.mCon2--promo .mQuickCard__icon{
 	display:inline-flex;
 	align-items:center;
 	justify-content:center;
-	border-radius:11px;
+	width:44px;
+	height:44px;
+	border-radius:12px;
 	color:#fff;
-	background:linear-gradient(135deg,#1f379d,#008654);
+	background:linear-gradient(145deg, #1f379d 0%, #047c5d 100%);
+	box-shadow:0 6px 14px rgba(31,55,157,0.22);
 }
-.mCon2.mCon2--promo .mQuickBtn--hub .mQuickBtn__icon{background:linear-gradient(135deg,#1f379d,#4f59a7);}
-.mCon2.mCon2--promo .mQuickBtn--prb .mQuickBtn__icon{background:linear-gradient(135deg,#047c5d,#1f379d);}
-.mCon2.mCon2--promo .mQuickBtn--2plus .mQuickBtn__icon{background:linear-gradient(135deg,#1f379d,#008654);}
-.mCon2.mCon2--promo .mQuickBtn--3plus .mQuickBtn__icon{background:linear-gradient(135deg,#008654,#047c5d);}
-.mCon2.mCon2--promo .mQuickBtn__text{
-	flex:1 1 auto;
-	min-width:0;
+.mCon2.mCon2--promo .mQuickCard__badge{
+	display:inline-flex;
+	align-items:center;
+	padding:5px 10px;
+	border-radius:999px;
+	font-size:11px;
+	font-weight:700;
+	letter-spacing:0.02em;
+	color:#1f379d;
+	background:rgba(31,55,157,0.08);
+	border:1px solid rgba(31,55,157,0.1);
+}
+.mCon2.mCon2--promo .mQuickCard__body{
+	position:relative;
+	z-index:1;
 	display:flex;
 	flex-direction:column;
-	gap:2px;
+	gap:6px;
+	flex:1 1 auto;
+	min-height:0;
+	justify-content:center;
 }
-.mCon2.mCon2--promo .mQuickBtn__title{
+.mCon2.mCon2--promo .mQuickCard__eyebrow{
+	font-size:12px;
+	font-weight:600;
+	line-height:1.3;
+	color:var(--mq-muted);
+}
+.mCon2.mCon2--promo .mQuickCard__title{
+	font-size:22px;
+	font-weight:800;
+	line-height:1.25;
+	letter-spacing:-0.02em;
+	color:var(--mq-ink);
+}
+.mCon2.mCon2--promo .mQuickCard__marquee{
+	display:block;
+	margin-top:10px;
+	width:100%;
+	overflow:hidden;
+	-webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+	mask-image:linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+	-webkit-mask-size:100% 100%;
+	mask-size:100% 100%;
+	-webkit-mask-repeat:no-repeat;
+	mask-repeat:no-repeat;
+}
+.mCon2.mCon2--promo .mQuickCard__track{
+	display:flex;
+	width:max-content;
+	align-items:center;
+	gap:10px;
+	animation:mQuickCardMarquee 14s linear infinite;
+	will-change:transform;
+}
+.mCon2.mCon2--promo .mQuickCard:hover .mQuickCard__track{
+	animation-play-state:paused;
+}
+.mCon2.mCon2--promo .mQuickCard__logo{
+	flex:0 0 auto;
+	display:block;
+	width:64px;
+	height:40px;
+	border-radius:10px;
+	border:1px solid rgba(15,31,77,0.08);
+	box-shadow:0 1px 3px rgba(15,31,77,0.05);
+	box-sizing:border-box;
+	background-color:#fff;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:contain;
+}
+.mCon2.mCon2--promo .mQuickCard__logo--ergo{
+	background-image:url("../images/partners/ergo.jpg");
+}
+.mCon2.mCon2--promo .mQuickCard__logo--bki{
+	background-image:url("../images/partners/bangkok-insurance.jpg");
+}
+.mCon2.mCon2--promo .mQuickCard__logo--axa{
+	background-image:url("../images/partners/axa.jpg");
+}
+.mCon2.mCon2--promo .mQuickCard__logo--indara{
+	background-image:url("../images/partners/indara.jpg");
+}
+.mCon2.mCon2--promo .mQuickCard__cta{
+	position:relative;
+	z-index:1;
+	margin-top:auto;
+	display:inline-flex;
+	align-items:center;
+	justify-content:center;
+	align-self:stretch;
+	gap:8px;
+	min-height:44px;
+	padding:0 16px;
+	border-radius:12px;
 	font-size:14px;
 	font-weight:700;
-	line-height:1.25;
-	letter-spacing:-0.01em;
+	color:#fff;
+	background:linear-gradient(90deg, #1f379d 0%, #047c5d 100%);
+	box-shadow:0 6px 16px rgba(31,55,157,0.2);
+	transition:gap 0.18s ease,filter 0.18s ease;
+	overflow:hidden;
+	isolation:isolate;
 }
-.mCon2.mCon2--promo .mQuickBtn__hint{
-	font-size:11px;
-	font-weight:500;
-	color:#6b7280;
-	line-height:1.2;
+.mCon2.mCon2--promo .mQuickCard__cta > *{
+	position:relative;
+	z-index:1;
 }
-.mCon2.mCon2--promo .mQuickBtn__chev{
-	flex:0 0 auto;
-	color:#9aa3b5;
-	display:inline-flex;
-	transition:transform 0.18s ease,color 0.18s ease;
+.mCon2.mCon2--promo .mQuickCard__cta::after{
+	content:'';
+	position:absolute;
+	top:0;
+	left:0;
+	width:45%;
+	height:100%;
+	background:linear-gradient(
+		105deg,
+		transparent 0%,
+		rgba(255,255,255,0.08) 35%,
+		rgba(255,255,255,0.45) 50%,
+		rgba(255,255,255,0.08) 65%,
+		transparent 100%
+	);
+	transform:translateX(-160%) skewX(-18deg);
+	animation:mQuickCardShine 2.8s ease-in-out infinite;
+	pointer-events:none;
+	z-index:0;
 }
-.mCon2.mCon2--promo .mQuickBtn:hover .mQuickBtn__chev{
-	color:#047c5d;
-	transform:translateX(2px);
+.mCon2.mCon2--promo .mQuickCard:hover .mQuickCard__cta{
+	gap:12px;
+	filter:brightness(1.03);
+}
+.mCon2.mCon2--promo .mQuickCard:hover .mQuickCard__cta::after{
+	animation-duration:1.6s;
+}
+@keyframes mQuickCardShine{
+	0%, 35%{ transform:translateX(-160%) skewX(-18deg); }
+	65%, 100%{ transform:translateX(320%) skewX(-18deg); }
+}
+@keyframes mQuickCardMarquee{
+	0%{ transform:translateX(0); }
+	100%{ transform:translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce){
+	.mCon2.mCon2--promo .mQuickCard__cta::after{
+		animation:none;
+		display:none;
+	}
+	.mCon2.mCon2--promo .mQuickCard__track{
+		animation:none;
+		transform:none;
+		flex-wrap:wrap;
+		width:100%;
+	}
 }
 .mCon2.mCon2--promo .mCon2__card{
 	flex:1 1 0;

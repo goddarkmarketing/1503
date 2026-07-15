@@ -16,14 +16,22 @@ App.AgentFeatures = {
       id: 'products',
       label: 'ออกกรมธรรม์',
       items: [
+        { key: 'compulsory-ergo', label: 'พ.ร.บ. — เออร์โก (999)', page: 'compulsory/ergo.html' },
+        { key: 'compulsory-bki', label: 'พ.ร.บ. — BKI กรุงเทพ' },
+        { key: 'compulsory-axa', label: 'พ.ร.บ. — AXA' },
         { key: 'compulsory-indara', label: 'พ.ร.บ. — อินทรประกันภัย', page: 'compulsory/indara.html' },
-        { key: 'compulsory-viriyah', label: 'พ.ร.บ. — วิริยะประกันภัย', page: 'compulsory/viriyah.html' },
-        { key: 'compulsory-tokio', label: 'พ.ร.บ. — โตเกียวมารีนประกันภัย', page: 'compulsory/tokio-marine.html' },
-        { key: 'compulsory-ergo', label: 'พ.ร.บ. — เออร์โกประกันภัย', page: 'compulsory/ergo.html' },
-        { key: 'voluntary-indara', label: 'ภาคสมัครใจ — อินทรประกันภัย' },
-        { key: 'voluntary-ergo', label: 'ภาคสมัครใจ — เออร์โกประกันภัย' },
-        { key: 'voluntary-tokio', label: 'ภาคสมัครใจ — โตเกียวมารีนประกันภัย' },
-        { key: 'pa-ergo', label: 'ประกันอุบัติเหตุ — เออร์โกประกันภัย' },
+        { key: 'voluntary-ergo', label: '2+/3+ — เออร์โก' },
+        { key: 'voluntary-bki', label: '2+/3+ — BKI กรุงเทพ' },
+        { key: 'voluntary-axa', label: '2+/3+ — AXA', page: 'voluntary/axa.html' },
+        { key: 'voluntary-indara', label: '2+/3+ — อินทรประกันภัย', page: 'voluntary/indara.html' },
+        { key: 'pa-ergo', label: 'อุบัติเหตุ — เออร์โก' },
+        { key: 'pa-bki', label: 'อุบัติเหตุ — BKI กรุงเทพ', page: 'pa/bki.html' },
+        { key: 'pa-axa', label: 'อุบัติเหตุ — AXA', page: 'pa/axa.html' },
+        { key: 'pa-indara', label: 'อุบัติเหตุ — อินทรประกันภัย', page: 'pa/indara.html' },
+        { key: 'travel-ergo', label: 'เดินทาง — เออร์โก' },
+        { key: 'travel-bki', label: 'เดินทาง — BKI กรุงเทพ' },
+        { key: 'travel-axa', label: 'เดินทาง — AXA' },
+        { key: 'travel-indara', label: 'เดินทาง — อินทรประกันภัย', page: 'travel/indara.html' },
         { key: 'renew', label: 'ต่ออายุกรมธรรม์', page: 'agent/renew.html' }
       ]
     },
@@ -53,7 +61,8 @@ App.AgentFeatures = {
         { key: 'receipt-issue', label: 'ออกใบเสร็จ', page: 'agent/receipt/issue.html' },
         { key: 'receipt-inquiry', label: 'สอบถามข้อมูลใบเสร็จ', page: 'agent/receipt/inquiry.html' },
         { key: 'receipt-summary', label: 'สรุปประจำวัน', page: 'agent/receipt/daily-summary.html' },
-        { key: 'receipt-detail', label: 'รายละเอียดประจำวัน', page: 'agent/receipt/daily-detail.html' }
+        { key: 'receipt-detail', label: 'รายละเอียดประจำวัน', page: 'agent/receipt/daily-detail.html' },
+        { key: 'receipt-settings', label: 'ตั้งค่าใบเสร็จ', page: 'agent/receipt/settings.html' }
       ]
     },
     {

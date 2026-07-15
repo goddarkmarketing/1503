@@ -5,7 +5,7 @@ const partial = fs.readFileSync(path.join(__dirname, '../partials/agent-sidebar-
 const escaped = partial.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 
 const footer = `
-window.AGENT_SIDEBAR_NAV_COUNT = 11;
+window.AGENT_SIDEBAR_NAV_COUNT = 12;
 
 window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-agent-sidebar]');

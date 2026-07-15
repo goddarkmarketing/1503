@@ -20,13 +20,20 @@ const PAGES = [
   'agent/receipt/inquiry.html',
   'agent/receipt/daily-summary.html',
   'agent/receipt/daily-detail.html',
+  'agent/receipt/settings.html',
   'agent/reports/daily-policies.html',
   'agent/reports/daily-summary.html',
   'agent/reports/monthly.html',
   'agent/reports/team.html',
   'agent/commission.html',
   'agent/credit.html',
-  'compulsory/indara.html'
+  'compulsory/indara.html',
+  'pa/indara.html',
+  'pa/axa.html',
+  'pa/bki.html',
+  'voluntary/axa.html',
+  'voluntary/indara.html',
+  'travel/indara.html'
 ];
 
 function indentNav(html, spaces) {
@@ -51,6 +58,7 @@ function syncFile(relPath) {
   }
 
   const base = (relPath.includes('agent/receipt/') || relPath.includes('agent/reports/')) ? '../../' : '../';
+  // pa/* and voluntary/* also use ../ (one level under root)
   let html = fs.readFileSync(filePath, 'utf8');
 
   const navMatch = html.match(/<nav class="sidebar-nav" data-agent-sidebar[\s\S]*?<\/nav>/);

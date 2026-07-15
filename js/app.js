@@ -172,22 +172,23 @@ function initNavDropdowns() {
   });
 }
 
-/* ── Insurer submenu — coming soon (except compulsory Indara) ── */
+/* ── Insurer submenu — stub links show “กำลังพัฒนา” until API pages exist ── */
 function initDevelopingInsurerLinks() {
   const nav = document.querySelector('.sidebar-nav[data-agent-sidebar]');
   if (!nav || nav.dataset.devLinksBound) return;
   nav.dataset.devLinksBound = '1';
+
+  const productGroups = new Set(['compulsory', 'voluntary', 'pa', 'travel']);
 
   nav.addEventListener('click', (e) => {
     const link = e.target.closest('.nav-submenu .nav-sub-link');
     if (!link) return;
 
     const group = link.closest('[data-nav-group]');
-    if (!group) return;
+    if (!group || !productGroups.has(group.dataset.navGroup)) return;
 
-    const groupId = group.dataset.navGroup;
-    if (groupId !== 'compulsory' && groupId !== 'voluntary' && groupId !== 'pa') return;
-    if (groupId === 'compulsory' && link.dataset.nav === 'compulsory-indara') return;
+    const href = (link.getAttribute('href') || '#').trim();
+    if (href && href !== '#') return;
 
     e.preventDefault();
     showDevelopingModal();

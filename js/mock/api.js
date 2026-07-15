@@ -476,16 +476,17 @@ App.MockAPI = {
       id,
       agentId,
       agentCode: agent?.code || payload.agentCode || '',
-      type: 'prb',
-      typeLabel: 'พ.ร.บ.',
+      type: payload.type || 'prb',
+      typeLabel: payload.typeLabel || 'พ.ร.บ.',
       insurer: payload.insurer || 'อินทรประกันภัย',
       insurerCode: payload.insurerCode || 'indara',
+      productName: payload.productName || '',
       plate: payload.licensePlate || '-',
       premium,
       status: 'active',
       issuedAt: new Date().toISOString().slice(0, 10),
       expiresAt: payload.coverageEnd || null,
-      insuredName: `${payload.firstName || ''} ${payload.lastName || ''}`.trim() || '-',
+      insuredName: `${payload.firstName || ''} ${payload.lastName || ''}`.trim() || payload.insuredName || '-',
       vehicleBrand: payload.carBrand || '',
       vehicleModel: payload.carModel || ''
     };
@@ -852,12 +853,92 @@ App.MockAPI = {
   async updateProductSettings(code, payload) {
     await this._delay();
     if (!App.MockData.productSettings[code]) {
-      App.MockData.productSettings[code] = { prb: false, voluntary: false, accident: false };
+      App.MockData.productSettings[code] = { prb: false, voluntary: false, accident: false, travel: false };
     }
     App.MockData.productSettings[code] = { ...App.MockData.productSettings[code], ...payload };
     this._logAudit('product_update', 'ตั้งค่าผลิตภัณฑ์', `${code}: ${JSON.stringify(payload)}`);
     return { code, ...App.MockData.productSettings[code] };
+  },
+
+  _hydrateReceiptPaperSettings() {
+    if (this._receiptPaperHydrated) return;
+    this._receiptPaperHydrated = true;
+    try {
+      const key = App.Config.RECEIPT_PAPER_KEY;
+      const raw = localStorage.getItem(key);
+      if (!raw) {
+        App.MockData.receiptPaperByOwner = App.MockData.receiptPaperByOwner || {};
+        return;
+      }
+      const stored = JSON.parse(raw);
+      if (!stored || typeof stored !== 'object') return;
+
+      // Legacy flat settings → treat as company default
+      if (stored.name || stored.address || stored.logoUrl) {
+        App.MockData.receiptPaperByOwner = { default: { ...stored } };
+        return;
+      }
+
+      if (stored.byOwner && typeof stored.byOwner === 'object') {
+        App.MockData.receiptPaperByOwner = { ...stored.byOwner };
+      }
+    } catch (e) {
+      console.warn('hydrateReceiptPaperSettings failed', e);
+    }
+  },
+
+  _persistReceiptPaperSettings() {
+    try {
+      localStorage.setItem(
+        App.Config.RECEIPT_PAPER_KEY,
+        JSON.stringify({ byOwner: App.MockData.receiptPaperByOwner || {} })
+      );
+    } catch (e) {
+      console.warn('persistReceiptPaperSettings failed', e);
+    }
+  },
+
+  _paperOwnerId(explicitId) {
+    if (explicitId) return explicitId;
+    const user = App.AuthService?.getCurrentUser?.() || App.Session?.getUser?.();
+    if (!user || user.role === 'admin') return 'default';
+    return user.id || 'default';
+  },
+
+  _resolvePaperSettings(ownerId) {
+    const seed = App.MockData.receiptPaperSettings || {};
+    const map = App.MockData.receiptPaperByOwner || {};
+    const company = map.default || {};
+    if (ownerId === 'default') {
+      return { ...seed, ...company };
+    }
+    const own = map[ownerId] || {};
+    return { ...seed, ...company, ...own };
+  },
+
+  async getReceiptPaperSettings(ownerId) {
+    await this._delay();
+    this._hydrateReceiptPaperSettings();
+    const id = this._paperOwnerId(ownerId);
+    return this._resolvePaperSettings(id);
+  },
+
+  async updateReceiptPaperSettings(payload, ownerId) {
+    await this._delay();
+    this._hydrateReceiptPaperSettings();
+    const id = this._paperOwnerId(ownerId);
+    const next = {
+      ...this._resolvePaperSettings(id),
+      ...payload
+    };
+    if (!App.MockData.receiptPaperByOwner) App.MockData.receiptPaperByOwner = {};
+    App.MockData.receiptPaperByOwner[id] = next;
+    this._persistReceiptPaperSettings();
+    const who = id === 'default' ? 'ค่ากลางระบบ' : id;
+    this._logAudit('receipt_paper', 'ตั้งค่าใบเสร็จ', `อัปเดตหัวกระดาษ (${who}) — ${next.name}`);
+    return { ...next };
   }
 };
 
 App.MockAPI._hydrateAgentPermissions();
+App.MockAPI._hydrateReceiptPaperSettings();

@@ -1,13 +1,21 @@
 /**
- * Build & print ตรอ.กล้าดี receipt document (ต้นฉบับใบเสร็จรับเงิน)
+ * Build & print receipt document (ต้นฉบับใบเสร็จรับเงิน)
+ * Shop branding comes from admin paper settings (localStorage / mock), with defaults.
  */
 (function (global) {
-  const SHOP = {
+  const DEFAULT_SHOP = {
     name: 'ตรอ.กล้าดี',
     address: '1311/35 หมู่ 10 ต.นครสวรรค์ตก อ.เมือง จ.นครสวรรค์ 60000',
     taxId: '1609900051711',
     phone: '0894646551',
+    logoUrl: 'assets/logos/tro-kladee.png',
+    docTitle: 'ต้นฉบับใบเสร็จรับเงิน',
+    footerThanks: 'ขอบคุณทุกท่านที่มาอุดหนุน',
+    signLabel: 'ผู้รับเงิน'
   };
+
+  let shop = { ...DEFAULT_SHOP };
+  let settingsReady = false;
 
   const THAI_MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 
@@ -61,21 +69,110 @@
     return `${ym}${String(stored.seq).padStart(5, '0')}`;
   }
 
-  const LOGO_FILE = 'assets/logos/tro-kladee.png';
+  function storageKey() {
+    return (global.App && App.Config && App.Config.RECEIPT_PAPER_KEY) || 'kladeebroker_receipt_paper';
+  }
+
+  function resolveOwnerId(explicitId) {
+    if (explicitId) return explicitId;
+    try {
+      if (global.App?.ReceiptService?.resolveOwnerId) {
+        return App.ReceiptService.resolveOwnerId();
+      }
+      const user = global.App?.AuthService?.getCurrentUser?.() || global.App?.Session?.getUser?.();
+      if (!user || user.role === 'admin') return 'default';
+      return user.id || 'default';
+    } catch {
+      return 'default';
+    }
+  }
+
+  function readStoredSettings(ownerId) {
+    try {
+      const raw = localStorage.getItem(storageKey());
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+
+      const id = resolveOwnerId(ownerId);
+      const seed = { ...DEFAULT_SHOP };
+
+      // Legacy flat object
+      if (parsed.name || parsed.address || parsed.logoUrl) {
+        return id === 'default' ? { ...seed, ...parsed } : { ...seed, ...parsed };
+      }
+
+      const map = parsed.byOwner && typeof parsed.byOwner === 'object' ? parsed.byOwner : {};
+      const company = map.default || {};
+      if (id === 'default') return { ...seed, ...company };
+      return { ...seed, ...company, ...(map[id] || {}) };
+    } catch {
+      return null;
+    }
+  }
+
+  function applySettings(partial) {
+    if (!partial || typeof partial !== 'object') return shop;
+    shop = { ...DEFAULT_SHOP, ...shop, ...partial };
+    return shop;
+  }
+
+  function getShop() {
+    if (!settingsReady) {
+      applySettings(readStoredSettings());
+      settingsReady = true;
+    }
+    return { ...shop };
+  }
+
+  async function ensureSettings(ownerId) {
+    applySettings(readStoredSettings(ownerId));
+    try {
+      if (global.App?.ReceiptService?.getPaperSettings) {
+        const remote = await App.ReceiptService.getPaperSettings(ownerId);
+        applySettings(remote);
+      }
+    } catch (e) {
+      /* use stored / defaults */
+    }
+    settingsReady = true;
+    return getShop();
+  }
+
+  function resolveAssetUrl(path) {
+    const value = String(path || '').trim();
+    if (!value) return resolveAssetUrl(DEFAULT_SHOP.logoUrl);
+    if (/^(data:|https?:|blob:)/i.test(value)) return value;
+
+    const base = (typeof document !== 'undefined' && document.body?.dataset?.basePath) || '';
+    const rel = value.replace(/^\//, '');
+
+    // Prefer site-root relative via data-base-path (works from agent/receipt/* and admin/*)
+    if (base) {
+      try {
+        return new URL(`${base}${rel}`, window.location.href).href;
+      } catch (e) { /* fall through */ }
+    }
+
+    try {
+      return new URL(`../../${rel}`, window.location.href).href;
+    } catch (e) {
+      return `${base}${rel}`;
+    }
+  }
 
   function getLogoUrl() {
-    if (typeof window !== 'undefined' && window.location?.href) {
-      return new URL(`../../${LOGO_FILE}`, window.location.href).href;
-    }
-    return `../../${LOGO_FILE}`;
+    return resolveAssetUrl(getShop().logoUrl || DEFAULT_SHOP.logoUrl);
   }
 
   function troLogoHtml() {
     const src = esc(getLogoUrl());
-    return `<img class="receipt-doc__logo" src="${src}" width="88" height="88" alt="ตรอ. สถานตรวจสภาพรถเอกชน">`;
+    const name = esc(getShop().name || 'โลโก้');
+    return `<img class="receipt-doc__logo" src="${src}" width="88" height="88" alt="${name}">`;
   }
 
   function buildReceiptHtml(data) {
+    const paper = getShop();
     const lines = (data.lines || []).filter((l) => l.description || l.total > 0);
     const minRows = 4;
     while (lines.length < minRows) lines.push({ description: '', qty: '', price: '', total: '' });
@@ -84,7 +181,7 @@
       const hasAmount = line.total > 0 || line.description;
       return `<tr>
         <td class="c">${hasAmount ? i + 1 : ''}</td>
-        <td class="l" colspan="4">${esc(line.description)}</td>
+        <td class="l">${esc(line.description)}</td>
         <td class="r">${hasAmount && line.qty !== '' ? formatQty(line.qty) : ''}</td>
         <td class="r">${hasAmount && line.price !== '' ? formatMoney(line.price) : ''}</td>
         <td class="r">${hasAmount && line.total !== '' ? formatMoney(line.total) : ''}</td>
@@ -96,14 +193,14 @@
     return `<article class="receipt-doc" id="receiptDocPrint">
   <header class="receipt-doc__head">
     <div class="receipt-doc__shop">
-      <p class="receipt-doc__shop-name">${esc(SHOP.name)}</p>
-      <p>${esc(SHOP.address)}</p>
-      <p>เลขประจำตัวผู้เสียภาษี ${esc(SHOP.taxId)}</p>
-      <p>โทร. ${esc(SHOP.phone)}</p>
+      <p class="receipt-doc__shop-name">${esc(paper.name)}</p>
+      <p>${esc(paper.address)}</p>
+      <p>เลขประจำตัวผู้เสียภาษี ${esc(paper.taxId)}</p>
+      <p>โทร. ${esc(paper.phone)}</p>
     </div>
     <div class="receipt-doc__brand">
       ${troLogoHtml()}
-      <p class="receipt-doc__doc-title">ต้นฉบับใบเสร็จรับเงิน</p>
+      <p class="receipt-doc__doc-title">${esc(paper.docTitle || DEFAULT_SHOP.docTitle)}</p>
     </div>
     <table class="receipt-doc__meta">
       <tr><th>บิลเลขที่</th><td>${esc(data.billNo)}</td></tr>
@@ -112,27 +209,38 @@
     </table>
   </header>
 
-  <table class="receipt-doc__sheet">
-    <colgroup>
-      <col span="8" class="receipt-doc__col">
-    </colgroup>
+  <table class="receipt-doc__customerTable">
     <tbody>
-      <tr class="receipt-doc__customer">
+      <tr>
         <th>ทะเบียน</th><td>${esc(data.plateNo)}</td>
         <th>ยี่ห้อ</th><td>${esc(data.brand)}</td>
         <th>ชื่อ-สกุล</th><td>${esc(data.customerName)}</td>
         <th>เบอร์โทร</th><td>${esc(data.phone)}</td>
       </tr>
+    </tbody>
+  </table>
+
+  <table class="receipt-doc__sheet">
+    <colgroup>
+      <col class="receipt-doc__col-no">
+      <col class="receipt-doc__col-item">
+      <col class="receipt-doc__col-qty">
+      <col class="receipt-doc__col-price">
+      <col class="receipt-doc__col-total">
+    </colgroup>
+    <thead>
       <tr class="receipt-doc__items-head">
         <th class="c">ลำดับ</th>
-        <th class="l" colspan="4">รายการสินค้า/รายละเอียด</th>
+        <th class="l">รายการสินค้า/รายละเอียด</th>
         <th class="r">จำนวน</th>
         <th class="r">ราคา/หน่วย</th>
         <th class="r">รวมเงิน</th>
       </tr>
+    </thead>
+    <tbody>
       ${lineRows}
       <tr class="receipt-doc__total">
-        <td colspan="5" class="receipt-doc__words">${esc(totalText)}</td>
+        <td colspan="2" class="receipt-doc__words">${esc(totalText)}</td>
         <th class="r" colspan="2">รวมเงิน</th>
         <td class="r receipt-doc__grand">${formatMoney(data.grandTotal)}</td>
       </tr>
@@ -142,9 +250,9 @@
   <footer class="receipt-doc__foot">
     <div class="receipt-doc__foot-row">
       <span class="receipt-doc__sign-line"></span>
-      <p class="receipt-doc__thanks">ขอบคุณทุกท่านที่มาอุดหนุน</p>
+      <p class="receipt-doc__thanks">${esc(paper.footerThanks || DEFAULT_SHOP.footerThanks)}</p>
     </div>
-    <span class="receipt-doc__sign-label">ผู้รับเงิน</span>
+    <span class="receipt-doc__sign-label">${esc(paper.signLabel || DEFAULT_SHOP.signLabel)}</span>
   </footer>
 </article>`;
   }
@@ -205,12 +313,25 @@
     }, 300);
   }
 
+  // warm cache early
+  try {
+    applySettings(readStoredSettings());
+    settingsReady = true;
+  } catch (e) { /* ignore */ }
+
   global.ReceiptDocument = {
-    SHOP,
+    DEFAULT_SHOP,
+    get SHOP() {
+      return getShop();
+    },
+    getShop,
+    applySettings,
+    ensureSettings,
     nextBillNo,
     formatThaiDateLong,
     buildReceiptHtml,
     collectFromForm,
     printHtml,
+    resolveAssetUrl,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

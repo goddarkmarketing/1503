@@ -103,8 +103,11 @@
     alert('ค้นหาทะเบียน: ' + plate + ' (เชื่อมต่อ API ภายหลัง)');
   });
 
-  function openPreview(data) {
+  async function openPreview(data) {
     if (!modal || !preview || !window.ReceiptDocument) return;
+    if (typeof ReceiptDocument.ensureSettings === 'function') {
+      await ReceiptDocument.ensureSettings();
+    }
     preview.innerHTML = '';
     const wrap = document.createElement('div');
     wrap.innerHTML = ReceiptDocument.buildReceiptHtml(data);
@@ -130,7 +133,7 @@
     }
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!window.ReceiptDocument) {
       alert('โหลดระบบใบเสร็จไม่สมบูรณ์ กรุณารีเฟรชหน้า');
@@ -147,6 +150,6 @@
       return;
     }
 
-    openPreview(data);
+    await openPreview(data);
   });
 })();

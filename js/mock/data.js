@@ -80,8 +80,8 @@ App.MockData = {
         'receipt-issue': false,
         'receipt-inquiry': false,
         'reports-monthly': false,
-        'compulsory-viriyah': false,
-        'voluntary-tokio': false
+        'compulsory-bki': false,
+        'travel-axa': false
       }
     },
     {
@@ -672,9 +672,23 @@ App.MockData = {
   ],
 
   productSettings: {
-    indara: { prb: true, voluntary: true, accident: false },
-    viriyah: { prb: true, voluntary: false, accident: false },
-    'tokio-marine': { prb: false, voluntary: true, accident: false },
-    ergo: { prb: true, voluntary: true, accident: true }
-  }
+    ergo: { prb: true, voluntary: true, accident: true, travel: true },
+    bki: { prb: true, voluntary: true, accident: true, travel: true },
+    axa: { prb: true, voluntary: true, accident: true, travel: true },
+    indara: { prb: true, voluntary: true, accident: true, travel: true }
+  },
+
+  receiptPaperSettings: {
+    name: 'ตรอ.กล้าดี',
+    address: '1311/35 หมู่ 10 ต.นครสวรรค์ตก อ.เมือง จ.นครสวรรค์ 60000',
+    taxId: '1609900051711',
+    phone: '0894646551',
+    logoUrl: 'assets/logos/tro-kladee.png',
+    docTitle: 'ต้นฉบับใบเสร็จรับเงิน',
+    footerThanks: 'ขอบคุณทุกท่านที่มาอุดหนุน',
+    signLabel: 'ผู้รับเงิน'
+  },
+
+  /** Persisted per-owner overrides: { default: {...}, 'agent-001': {...} } */
+  receiptPaperByOwner: {}
 };

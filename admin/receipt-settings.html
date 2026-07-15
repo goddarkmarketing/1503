@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่าใบเสร็จ — Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css?v=20260713a">
+  <link rel="stylesheet" href="../css/portal.css">
+  <link rel="stylesheet" href="../css/receipt.css?v=20260713d">
+  <link rel="stylesheet" href="../css/receipt-print.css?v=20260713d">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-portal="admin" data-base-path="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+              <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
+                <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
+              </a>
+              <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+            </div>
+      <!-- ADMIN_SIDEBAR_V1 -->
+<nav class="sidebar-nav" data-admin-sidebar>
+        <div class="nav-group" data-nav-zone="main">
+          <p class="nav-group__title">หลัก</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../admin/index.html" class="nav-link" data-nav="home"><i data-lucide="layout-dashboard"></i><span class="nav-link-text">แดชบอร์ด</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="agents">
+          <p class="nav-group__title">นายหน้า &amp; ทีม</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../admin/agents.html" class="nav-link" data-nav="agents"><i data-lucide="users"></i><span class="nav-link-text">จัดการนายหน้า</span></a></li>
+            <li class="nav-item"><a href="../admin/team.html" class="nav-link" data-nav="team"><i data-lucide="users-round"></i><span class="nav-link-text">โครงสร้างทีม</span></a></li>
+            <li class="nav-item"><a href="../admin/users.html" class="nav-link" data-nav="users"><i data-lucide="shield"></i><span class="nav-link-text">ผู้ดูแลระบบ</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="policies">
+          <p class="nav-group__title">กรมธรรม์</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../admin/policies.html" class="nav-link" data-nav="policies"><i data-lucide="file-text"></i><span class="nav-link-text">กรมธรรม์ทั้งหมด</span></a></li>
+            <li class="nav-item"><a href="../admin/pending.html" class="nav-link" data-nav="pending"><i data-lucide="alert-circle"></i><span class="nav-link-text">กรมธรรม์ค้าง</span></a></li>
+            <li class="nav-item"><a href="../admin/renew.html" class="nav-link" data-nav="renew"><i data-lucide="refresh-cw"></i><span class="nav-link-text">ต่ออายุกรมธรรม์</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="reports">
+          <p class="nav-group__title">รายงาน</p>
+          <ul class="nav-group__list">
+            <li class="nav-item has-submenu" data-nav-group="reports">
+              <a href="#" class="nav-link"><i data-lucide="bar-chart-3"></i><span class="nav-link-text">รายงานยอดขาย</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+              <ul class="nav-submenu">
+                <li><a href="../admin/reports/daily-policies.html" class="nav-sub-link" data-nav="reports-daily-policies"><i data-lucide="clipboard-list" class="nav-sub-icon"></i><span>ขายกรมธรรม์ประจำวัน</span></a></li>
+                <li><a href="../admin/reports/daily-summary.html" class="nav-sub-link" data-nav="reports-daily-summary"><i data-lucide="bar-chart-3" class="nav-sub-icon"></i><span>สรุปการขายประจำวัน</span></a></li>
+                <li><a href="../admin/reports/monthly.html" class="nav-sub-link" data-nav="reports-monthly"><i data-lucide="calendar-range" class="nav-sub-icon"></i><span>รายงานรายเดือน</span></a></li>
+                <li><a href="../admin/reports/team.html" class="nav-sub-link" data-nav="reports-team"><i data-lucide="users-round" class="nav-sub-icon"></i><span>รายงานลูกทีม</span></a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="finance">
+          <p class="nav-group__title">การเงิน</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../admin/credit-requests.html" class="nav-link" data-nav="credit-requests"><i data-lucide="inbox"></i><span class="nav-link-text">อนุมัติเติมวงเงิน</span></a></li>
+            <li class="nav-item"><a href="../admin/credit-ledger.html" class="nav-link" data-nav="credit-ledger"><i data-lucide="wallet"></i><span class="nav-link-text">ประวัติวงเงิน</span></a></li>
+            <li class="nav-item"><a href="../admin/commission.html" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="receipt">
+          <p class="nav-group__title">ใบเสร็จ</p>
+          <ul class="nav-group__list">
+            <li class="nav-item has-submenu" data-receipt-nav data-nav-group="receipt">
+              <a href="#" class="nav-link"><i data-lucide="receipt"></i><span class="nav-link-text">ใบเสร็จ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+              <ul class="nav-submenu">
+                <li><a href="../admin/receipt/issue.html" class="nav-sub-link" data-nav="receipt-issue"><i data-lucide="printer" class="nav-sub-icon"></i><span>ออกใบเสร็จ</span></a></li>
+                <li><a href="../admin/receipt/inquiry.html" class="nav-sub-link" data-nav="receipt-inquiry"><i data-lucide="search" class="nav-sub-icon"></i><span>สอบถามข้อมูล</span></a></li>
+                <li><a href="../admin/receipt/daily-summary.html" class="nav-sub-link" data-nav="receipt-summary"><i data-lucide="bar-chart-2" class="nav-sub-icon"></i><span>สรุปประจำวัน</span></a></li>
+                <li><a href="../admin/receipt/daily-detail.html" class="nav-sub-link" data-nav="receipt-detail"><i data-lucide="list" class="nav-sub-icon"></i><span>รายละเอียดประจำวัน</span></a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="nav-group" data-nav-zone="settings">
+          <p class="nav-group__title">ตั้งค่าระบบ</p>
+          <ul class="nav-group__list">
+            <li class="nav-item"><a href="../admin/insurers.html" class="nav-link" data-nav="insurers"><i data-lucide="building-2"></i><span class="nav-link-text">บริษัทประกัน</span></a></li>
+            <li class="nav-item"><a href="../admin/products.html" class="nav-link" data-nav="products"><i data-lucide="settings"></i><span class="nav-link-text">ตั้งค่าผลิตภัณฑ์</span></a></li>
+            <li class="nav-item"><a href="../admin/receipt-settings.html" class="nav-link" data-nav="receipt-settings"><i data-lucide="file-pen"></i><span class="nav-link-text">ตั้งค่าใบเสร็จ</span></a></li>
+            <li class="nav-item"><a href="../admin/audit-log.html" class="nav-link" data-nav="audit"><i data-lucide="scroll-text"></i><span class="nav-link-text">บันทึกระบบ</span></a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+      </header>
+      <main class="main-content">
+        <div class="content-card">
+          <div class="admin-toolbar">
+            <div>
+              <h1 class="admin-page-title">ตั้งค่าใบเสร็จ</h1>
+              <p class="admin-hint">กำหนดโลโก้ ที่อยู่ และข้อความบนกระดาษใบเสร็จ (ค่ากลางระบบ) — นายหน้าสามารถตั้งค่าของตัวเองแยกได้</p>
+            </div>
+            <a href="receipt/issue.html" class="btn-secondary btn-sm"><i data-lucide="printer"></i> ไปหน้าออกใบเสร็จ</a>
+          </div>
+
+          <div class="receipt-settings">
+            <form id="receiptPaperForm" class="receipt-settings__form agent-form" novalidate>
+              <section class="agent-form__section">
+                <div class="agent-form__sectionHead">
+                  <h3 class="agent-form__sectionTitle">ข้อมูลร้าน / หัวกระดาษ</h3>
+                </div>
+                <div class="agent-form__grid">
+                  <div class="form-field full">
+                    <label for="paperName">ชื่อร้าน / กิจการ <span class="form-req">*</span></label>
+                    <input id="paperName" name="name" required placeholder="เช่น ตรอ.กล้าดี">
+                  </div>
+                  <div class="form-field full">
+                    <label for="paperAddress">ที่อยู่</label>
+                    <textarea id="paperAddress" name="address" rows="2" placeholder="ที่อยู่บนใบเสร็จ"></textarea>
+                  </div>
+                  <div class="form-field">
+                    <label for="paperTaxId">เลขประจำตัวผู้เสียภาษี</label>
+                    <input id="paperTaxId" name="taxId" placeholder="เลขผู้เสียภาษี">
+                  </div>
+                  <div class="form-field">
+                    <label for="paperPhone">โทรศัพท์</label>
+                    <input id="paperPhone" name="phone" inputmode="tel" placeholder="เบอร์ติดต่อ">
+                  </div>
+                </div>
+              </section>
+
+              <section class="agent-form__section">
+                <div class="agent-form__sectionHead">
+                  <h3 class="agent-form__sectionTitle">โลโก้</h3>
+                </div>
+                <div class="agent-form__grid">
+                  <div class="form-field full">
+                    <label for="paperLogoFile">อัปโหลดโลโก้</label>
+                    <input id="paperLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+                    <span class="form-field__hint">รองรับ PNG / JPG / WebP / SVG — เก็บในเบราว์เซอร์จนกว่าจะเชื่อม API</span>
+                    <input type="hidden" id="paperLogoUrl" name="logoUrl">
+                  </div>
+                  <div class="form-field">
+                    <label>ตัวอย่างโลโก้</label>
+                    <div class="receipt-settings__logoPreview">
+                      <img id="paperLogoPreview" alt="ตัวอย่างโลโก้" width="88" height="88">
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="agent-form__section">
+                <div class="agent-form__sectionHead">
+                  <h3 class="agent-form__sectionTitle">ข้อความบนใบเสร็จ</h3>
+                </div>
+                <div class="agent-form__grid">
+                  <div class="form-field full">
+                    <label for="paperDocTitle">หัวเอกสาร</label>
+                    <input id="paperDocTitle" name="docTitle" placeholder="ต้นฉบับใบเสร็จรับเงิน">
+                  </div>
+                  <div class="form-field">
+                    <label for="paperFooterThanks">ข้อความขอบคุณ</label>
+                    <input id="paperFooterThanks" name="footerThanks" placeholder="ขอบคุณทุกท่านที่มาอุดหนุน">
+                  </div>
+                  <div class="form-field">
+                    <label for="paperSignLabel">ป้ายลงชื่อ</label>
+                    <input id="paperSignLabel" name="signLabel" placeholder="ผู้รับเงิน">
+                  </div>
+                </div>
+              </section>
+
+              <div class="receipt-settings__actions">
+                <button type="button" class="btn-secondary" id="btnPaperReset">คืนค่าเริ่มต้น</button>
+                <button type="button" class="btn-secondary" id="btnPaperPreview">ดูตัวอย่าง</button>
+                <button type="submit" class="btn-primary" id="btnPaperSave">บันทึกการตั้งค่า</button>
+              </div>
+            </form>
+
+            <aside class="receipt-settings__previewPanel">
+              <h3 class="receipt-settings__previewTitle">ตัวอย่างใบเสร็จ</h3>
+              <div class="receipt-settings__previewScroll" id="receiptPaperLivePreview"></div>
+            </aside>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/admin-sidebar-nav-template.js?v=20260713a"></script>
+  <script src="../js/load-admin.js"></script>
+  <script src="../js/admin-app.js"></script>
+  <script src="../js/utils/baht-text.js?v=20260713c"></script>
+  <script src="../js/utils/receipt-document.js?v=20260713d"></script>
+  <script src="../js/pages/receipt-paper-settings.js?v=20260713c"></script>
+</body>
+</html>

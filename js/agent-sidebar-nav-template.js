@@ -9,26 +9,39 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   <p class="nav-group__title">ออกกรมธรรม์</p>
   <ul class="nav-group__list">
     <li class="nav-item has-submenu" data-nav-group="compulsory">
-      <a href="#" class="nav-link"><i data-lucide="shield"></i><span class="nav-link-text">ภาคบังคับ (พ.ร.บ.)</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+      <a href="#" class="nav-link"><i data-lucide="shield"></i><span class="nav-link-text">พ.ร.บ.</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
       <ul class="nav-submenu">
-        <li><a href="{{BASE}}compulsory/indara.html" class="nav-sub-link" data-nav="compulsory-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span><span class="nav-badge">In-SURE</span></span></a></li>
-        <li><a href="{{BASE}}compulsory/viriyah.html" class="nav-sub-link" data-nav="compulsory-viriyah"><img src="{{BASE}}assets/logos/viriyah.png" alt="วิริยะประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>วิริยะประกันภัย</span><span class="nav-badge">OPApi</span></span></a></li>
-        <li><a href="{{BASE}}compulsory/tokio-marine.html" class="nav-sub-link" data-nav="compulsory-tokio"><img src="{{BASE}}assets/logos/tokio-marine.png" alt="โตเกียวมารีนประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>โตเกียวมารีนประกันภัย</span></span></a></li>
         <li><a href="{{BASE}}compulsory/ergo.html" class="nav-sub-link" data-nav="compulsory-ergo"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="compulsory-bki"><img src="{{BASE}}images/partners/bangkok-insurance.jpg" alt="BKI กรุงเทพประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>BKI กรุงเทพ</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="compulsory-axa"><img src="{{BASE}}images/partners/axa.jpg" alt="AXA" class="sub-logo-img"><span class="nav-sub-link-label"><span>AXA</span></span></a></li>
+        <li><a href="{{BASE}}compulsory/indara.html" class="nav-sub-link" data-nav="compulsory-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
       </ul>
     </li>
     <li class="nav-item has-submenu" data-nav-group="voluntary">
-      <a href="#" class="nav-link"><i data-lucide="file-check"></i><span class="nav-link-text">ภาคสมัครใจ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+      <a href="#" class="nav-link"><i data-lucide="file-check"></i><span class="nav-link-text">2+ / 3+</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
       <ul class="nav-submenu">
-        <li><a href="#" class="nav-sub-link" data-nav="voluntary-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
-        <li><a href="#" class="nav-sub-link" data-nav="voluntary-ergo"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span><span class="nav-badge">In-SURE</span></span></a></li>
-        <li><a href="#" class="nav-sub-link" data-nav="voluntary-tokio"><img src="{{BASE}}assets/logos/tokio-marine.png" alt="โตเกียวมารีนประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>โตเกียวมารีนประกันภัย</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="voluntary-ergo"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="voluntary-bki"><img src="{{BASE}}images/partners/bangkok-insurance.jpg" alt="BKI กรุงเทพประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>BKI กรุงเทพ</span></span></a></li>
+        <li><a href="{{BASE}}voluntary/axa.html" class="nav-sub-link" data-nav="voluntary-axa"><img src="{{BASE}}images/partners/axa.jpg" alt="AXA" class="sub-logo-img"><span class="nav-sub-link-label"><span>AXA</span></span></a></li>
+        <li><a href="{{BASE}}voluntary/indara.html" class="nav-sub-link" data-nav="voluntary-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
       </ul>
     </li>
     <li class="nav-item has-submenu" data-nav-group="pa">
       <a href="#" class="nav-link"><i data-lucide="heart-pulse"></i><span class="nav-link-text">ประกันอุบัติเหตุ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
       <ul class="nav-submenu">
         <li><a href="#" class="nav-sub-link" data-nav="pa-ergo"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
+        <li><a href="{{BASE}}pa/bki.html" class="nav-sub-link" data-nav="pa-bki"><img src="{{BASE}}images/partners/bangkok-insurance.jpg" alt="BKI กรุงเทพประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>BKI กรุงเทพ</span></span></a></li>
+        <li><a href="{{BASE}}pa/axa.html" class="nav-sub-link" data-nav="pa-axa"><img src="{{BASE}}images/partners/axa.jpg" alt="AXA" class="sub-logo-img"><span class="nav-sub-link-label"><span>AXA</span></span></a></li>
+        <li><a href="{{BASE}}pa/indara.html" class="nav-sub-link" data-nav="pa-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
+      </ul>
+    </li>
+    <li class="nav-item has-submenu" data-nav-group="travel">
+      <a href="#" class="nav-link"><i data-lucide="plane"></i><span class="nav-link-text">ประกันเดินทาง</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+      <ul class="nav-submenu">
+        <li><a href="#" class="nav-sub-link" data-nav="travel-ergo"><img src="{{BASE}}assets/logos/ergo.png" alt="เออร์โกประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>เออร์โกประกันภัย</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="travel-bki"><img src="{{BASE}}images/partners/bangkok-insurance.jpg" alt="BKI กรุงเทพประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>BKI กรุงเทพ</span></span></a></li>
+        <li><a href="#" class="nav-sub-link" data-nav="travel-axa"><img src="{{BASE}}images/partners/axa.jpg" alt="AXA" class="sub-logo-img"><span class="nav-sub-link-label"><span>AXA</span></span></a></li>
+        <li><a href="{{BASE}}travel/indara.html" class="nav-sub-link" data-nav="travel-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
       </ul>
     </li>
     <li class="nav-item"><a href="{{BASE}}agent/renew.html" class="nav-link" data-nav="renew"><i data-lucide="refresh-cw"></i><span class="nav-link-text">ต่ออายุ กธ.</span><span class="nav-badge">renew</span></a></li>
@@ -66,6 +79,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
         <li><a href="{{BASE}}agent/receipt/inquiry.html" class="nav-sub-link" data-receipt-page="inquiry" data-nav="receipt-inquiry"><i data-lucide="search" class="nav-sub-icon"></i><span>สอบถามข้อมูล</span></a></li>
         <li><a href="{{BASE}}agent/receipt/daily-summary.html" class="nav-sub-link" data-receipt-page="daily-summary" data-nav="receipt-summary"><i data-lucide="bar-chart-2" class="nav-sub-icon"></i><span>สรุปประจำวัน</span></a></li>
         <li><a href="{{BASE}}agent/receipt/daily-detail.html" class="nav-sub-link" data-receipt-page="daily-detail" data-nav="receipt-detail"><i data-lucide="list" class="nav-sub-icon"></i><span>รายละเอียดประจำวัน</span></a></li>
+        <li><a href="{{BASE}}agent/receipt/settings.html" class="nav-sub-link" data-receipt-page="settings" data-nav="receipt-settings"><i data-lucide="file-pen" class="nav-sub-icon"></i><span>ตั้งค่าใบเสร็จ</span></a></li>
       </ul>
     </li>
   </ul>
@@ -77,7 +91,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   </ul>
 </div>`;
 
-window.AGENT_SIDEBAR_NAV_COUNT = 11;
+window.AGENT_SIDEBAR_NAV_COUNT = 12;
 
 window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-agent-sidebar]');
@@ -89,20 +103,22 @@ window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const base = document.body?.dataset?.basePath || '';
 
   if (itemCount >= window.AGENT_SIDEBAR_NAV_COUNT && hasReceipt && hasGroups) {
-    applyAgentNavPermissions(navRoot);
     return true;
   }
 
   navRoot.innerHTML = window.AGENT_SIDEBAR_NAV_HTML.replace(/\{\{BASE\}\}/g, base);
   navRoot.dataset.sidebarRendered = '1';
-  applyAgentNavPermissions(navRoot);
   return true;
 };
 
-function applyAgentNavPermissions(navRoot) {
-  if (!navRoot || !window.App?.AgentFeatures || !window.App?.AuthService) return;
-  const user = App.AuthService.getCurrentUser();
-  if (user?.role === 'agent') {
-    App.AgentFeatures.applyNav(navRoot, user);
+(function bootAgentSidebarNav() {
+  function run() {
+    if (typeof window.renderAgentSidebarNav === 'function') {
+      window.renderAgentSidebarNav();
+    }
   }
-}
+  run();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  }
+})();

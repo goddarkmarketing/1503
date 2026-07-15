@@ -254,23 +254,66 @@ function openEditModal(agentId) {
 
   const overlay = App.Modal.open({
     title: `แก้ไขนายหน้า — ${agent.code}`,
+    size: 'form',
     body: `
-      <form id="editAgentForm" class="admin-form-grid" style="max-width:none;grid-template-columns:1fr">
-        <div class="form-field"><label>ชื่อ-นามสกุล</label><input name="name" value="${agent.name}" required></div>
-        <div class="form-field"><label>อีเมล</label><input name="email" type="email" value="${agent.email || ''}"></div>
-        <div class="form-field"><label>โทรศัพท์</label><input name="phone" value="${agent.phone || ''}"></div>
-        <div class="form-field"><label>วงเงินสูงสุด (Credit Limit)</label><input name="creditLimit" type="number" min="0" step="0.01" value="${agent.creditLimit || 0}"></div>
+      <form id="editAgentForm" class="agent-form" novalidate>
+        <p class="agent-form__intro">อัปเดตข้อมูลติดต่อและวงเงินสูงสุดของบัญชี <strong>${agent.code}</strong></p>
+
+        <section class="agent-form__section">
+          <div class="agent-form__sectionHead">
+            <h3 class="agent-form__sectionTitle">ข้อมูลติดต่อ</h3>
+          </div>
+          <div class="agent-form__grid">
+            <div class="form-field full">
+              <label for="editName">ชื่อ-นามสกุล <span class="form-req" aria-hidden="true">*</span></label>
+              <input id="editName" name="name" value="${escapeHtml(agent.name)}" required autocomplete="name" placeholder="ชื่อจริง นามสกุล">
+            </div>
+            <div class="form-field">
+              <label for="editEmail">อีเมล</label>
+              <input id="editEmail" name="email" type="email" value="${escapeHtml(agent.email || '')}" autocomplete="email" placeholder="name@example.com">
+            </div>
+            <div class="form-field">
+              <label for="editPhone">โทรศัพท์</label>
+              <input id="editPhone" name="phone" value="${escapeHtml(agent.phone || '')}" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx">
+            </div>
+          </div>
+        </section>
+
+        <section class="agent-form__section">
+          <div class="agent-form__sectionHead">
+            <h3 class="agent-form__sectionTitle">วงเงิน</h3>
+          </div>
+          <div class="agent-form__grid">
+            <div class="form-field">
+              <label for="editCreditLimit">วงเงินสูงสุด (บาท)</label>
+              <input id="editCreditLimit" name="creditLimit" type="number" min="0" step="0.01" value="${agent.creditLimit || 0}">
+              <span class="form-field__hint">Credit Limit ของบัญชีนี้</span>
+            </div>
+            <div class="form-field">
+              <label>วงเงินคงเหลือ</label>
+              <div class="agent-form__readonly">${App.Shell.formatCurrency(agent.balance)}</div>
+              <span class="form-field__hint">ปรับได้จากปุ่ม “ปรับวงเงิน”</span>
+            </div>
+          </div>
+        </section>
       </form>
     `,
     footer: `
       <button type="button" class="btn-secondary" data-dismiss>ยกเลิก</button>
-      <button type="button" class="btn-primary" id="confirmEdit">บันทึก</button>
+      <button type="button" class="btn-primary" id="confirmEdit">บันทึกการแก้ไข</button>
     `
   });
 
   overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
   overlay.querySelector('#confirmEdit')?.addEventListener('click', async () => {
     const form = overlay.querySelector('#editAgentForm');
+    const btn = overlay.querySelector('#confirmEdit');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'กำลังบันทึก...';
     try {
       await App.AgentService.updateAgent(agentId, {
         name: form.name.value.trim(),
@@ -280,8 +323,11 @@ function openEditModal(agentId) {
       });
       await renderAgents();
       App.Modal.close();
+      App.AdminUtils.showToast(`อัปเดต ${agent.code} เรียบร้อยแล้ว`);
     } catch (err) {
-      alert(err.message);
+      btn.disabled = false;
+      btn.textContent = 'บันทึกการแก้ไข';
+      App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');
     }
   });
 }
@@ -289,15 +335,68 @@ function openEditModal(agentId) {
 function openAddAgentModal() {
   const overlay = App.Modal.open({
     title: 'เพิ่มนายหน้าใหม่',
+    size: 'form',
     body: `
-      <form id="addAgentForm" class="admin-form-grid" style="max-width:none;grid-template-columns:1fr">
-        <div class="form-field"><label>รหัสนายหน้า</label><input name="code" required placeholder="เช่น Ag4-301"></div>
-        <div class="form-field"><label>ชื่อ-นามสกุล</label><input name="name" required></div>
-        <div class="form-field"><label>อีเมล</label><input name="email" type="email"></div>
-        <div class="form-field"><label>โทรศัพท์</label><input name="phone"></div>
-        <div class="form-field"><label>วงเงินเริ่มต้น (บาท)</label><input name="initialBalance" type="number" min="0" step="0.01" value="0"></div>
-        <div class="form-field"><label>วงเงินสูงสุด (Credit Limit)</label><input name="creditLimit" type="number" min="0" step="0.01" value="50000"></div>
-        <div class="form-field"><label>รหัสผ่านเริ่มต้น</label><input name="password" value="demo"></div>
+      <form id="addAgentForm" class="agent-form" novalidate>
+        <p class="agent-form__intro">สร้างบัญชีสำหรับเข้าใช้งานพอร์ทัลนายหน้า รหัสนายหน้าจะใช้เป็นชื่อผู้ใช้เข้าสู่ระบบ</p>
+
+        <section class="agent-form__section">
+          <div class="agent-form__sectionHead">
+            <h3 class="agent-form__sectionTitle">ข้อมูลบัญชี</h3>
+            <span class="agent-form__sectionBadge">จำเป็น</span>
+          </div>
+          <div class="agent-form__grid">
+            <div class="form-field">
+              <label for="addCode">รหัสนายหน้า <span class="form-req" aria-hidden="true">*</span></label>
+              <input id="addCode" name="code" required autocomplete="off" placeholder="เช่น Ag4-301" spellcheck="false">
+              <span class="form-field__hint">ใช้เป็น Username เข้าสู่ระบบ</span>
+            </div>
+            <div class="form-field">
+              <label for="addPassword">รหัสผ่านเริ่มต้น <span class="form-req" aria-hidden="true">*</span></label>
+              <input id="addPassword" name="password" required value="demo" autocomplete="new-password" spellcheck="false">
+              <span class="form-field__hint">แจ้งนายหน้าให้เปลี่ยนหลังเข้าใช้ครั้งแรก</span>
+            </div>
+            <div class="form-field full">
+              <label for="addName">ชื่อ-นามสกุล <span class="form-req" aria-hidden="true">*</span></label>
+              <input id="addName" name="name" required autocomplete="name" placeholder="ชื่อจริง นามสกุล">
+            </div>
+          </div>
+        </section>
+
+        <section class="agent-form__section">
+          <div class="agent-form__sectionHead">
+            <h3 class="agent-form__sectionTitle">ข้อมูลติดต่อ</h3>
+            <span class="agent-form__sectionBadge agent-form__sectionBadge--muted">ไม่บังคับ</span>
+          </div>
+          <div class="agent-form__grid">
+            <div class="form-field">
+              <label for="addEmail">อีเมล</label>
+              <input id="addEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com">
+            </div>
+            <div class="form-field">
+              <label for="addPhone">โทรศัพท์</label>
+              <input id="addPhone" name="phone" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx">
+            </div>
+          </div>
+        </section>
+
+        <section class="agent-form__section">
+          <div class="agent-form__sectionHead">
+            <h3 class="agent-form__sectionTitle">วงเงิน</h3>
+          </div>
+          <div class="agent-form__grid">
+            <div class="form-field">
+              <label for="addInitialBalance">วงเงินเริ่มต้น (บาท)</label>
+              <input id="addInitialBalance" name="initialBalance" type="number" min="0" step="0.01" value="0">
+              <span class="form-field__hint">ยอดคงเหลือตอนเปิดบัญชี</span>
+            </div>
+            <div class="form-field">
+              <label for="addCreditLimit">วงเงินสูงสุด (บาท)</label>
+              <input id="addCreditLimit" name="creditLimit" type="number" min="0" step="0.01" value="50000">
+              <span class="form-field__hint">Credit Limit ของบัญชีนี้</span>
+            </div>
+          </div>
+        </section>
       </form>
     `,
     footer: `
@@ -307,10 +406,20 @@ function openAddAgentModal() {
   });
 
   overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
+  overlay.querySelector('#addCode')?.focus();
+
   overlay.querySelector('#confirmAdd')?.addEventListener('click', async () => {
     const form = overlay.querySelector('#addAgentForm');
+    const btn = overlay.querySelector('#confirmAdd');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'กำลังสร้าง...';
     try {
-      await App.AgentService.createAgent({
+      const created = await App.AgentService.createAgent({
         code: form.code.value.trim(),
         name: form.name.value.trim(),
         email: form.email.value.trim(),
@@ -322,10 +431,21 @@ function openAddAgentModal() {
       await renderAgents();
       await renderMiniLedger();
       App.Modal.close();
+      App.AdminUtils.showToast(`สร้างบัญชี ${created?.code || form.code.value.trim()} เรียบร้อยแล้ว`);
     } catch (err) {
-      alert(err.message);
+      btn.disabled = false;
+      btn.textContent = 'สร้างบัญชี';
+      App.AdminUtils.showToast(err.message || 'สร้างบัญชีไม่สำเร็จ', 'error');
     }
   });
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 async function toggleStatus(agentId, currentStatus) {
