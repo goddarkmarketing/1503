@@ -83,7 +83,7 @@ App.ProductCatalog = {
         '2plus': [{ src: 'assets/brochures/axa-motor-2plus.png', label: '2+ ซ่อมอู่' }]
       },
       formKind: 'voluntary-axa',
-      notes: 'รถเอเชีย อายุรถ 1–20 ปี · ใช้ส่วนบุคคลเท่านั้น · รวมภาษีและอากรแสตมป์'
+      notes: 'กรอกข้อมูลรถให้ครบ → กด “ตรวจสอบราคา” · รถเอเชีย อายุรถ 1–20 ปี · ใช้ส่วนบุคคลได้เบี้ยมาตรฐาน · รวมภาษีและอากรแสตมป์'
     },
     'voluntary-indara': {
       id: 'voluntary-indara',
@@ -143,6 +143,22 @@ App.ProductCatalog = {
           { src: 'assets/brochures/indara-motor-cover.png', label: 'หน้าปก' },
           { src: 'assets/brochures/indara-motor-table.png', label: 'ตาราง' }
         ]
+      }
+    },
+
+    'compulsory-ergo': {
+      id: 'compulsory-ergo',
+      type: 'prb',
+      typeLabel: 'พ.ร.บ.',
+      insurer: 'เออร์โกประกันภัย',
+      insurerCode: 'ergo',
+      productName: 'พ.ร.บ. เออร์โกประกันภัย',
+      badge: 'In-SURE',
+      logo: 'assets/logos/ergo.png',
+      navKey: 'compulsory-ergo',
+      brochureTitle: 'โบรชัวร์ — เออร์โกประกันภัย',
+      brochures: {
+        default: []
       }
     }
   },
@@ -222,23 +238,41 @@ App.ProductCatalog = {
     },
 
     'voluntary-axa'(v) {
-      const cover = String(v.coverType || '3plus');
+      const cover = String(v.coverType || v.coverTypeRadio || '3plus');
       const sum = Number(v.sumInsured) || 100000;
-      const area = String(v.area || 'province');
+      let area = String(v.area || '');
+      if (!area && v.regProvince && App.VoluntaryAxaQuote?.resolveArea) {
+        area = App.VoluntaryAxaQuote.resolveArea(v.regProvince);
+      }
+      if (!area) area = 'province';
+
+      if (cover === '3' || cover === 'type3') {
+        let premium = area === 'bkk' ? 2700 : 2501;
+        if (String(v.dashcam) === 'yes') premium = Math.round(premium * 0.98);
+        if (String(v.usageType) === 'commercial') premium = Math.round(premium * 1.08);
+        return premium;
+      }
+
       const rates3 = {
-        100000: { bkk: 5900, province: 5400 },
-        200000: { bkk: 6900, province: 6400 },
-        300000: { bkk: 7900, province: 7400 }
+        100000: { bkk: 6300, province: 5800 },
+        200000: { bkk: 7300, province: 6800 },
+        300000: { bkk: 8300, province: 7800 }
       };
       const rates2 = {
-        100000: { bkk: 6500, province: 5800 },
-        200000: { bkk: 7500, province: 6800 },
-        300000: { bkk: 8500, province: 7800 }
+        100000: { bkk: 6900, province: 6200 },
+        200000: { bkk: 7900, province: 7200 },
+        300000: { bkk: 8900, province: 8200 }
       };
       const table = cover === '2plus' ? rates2 : rates3;
-      const row = table[sum];
+      const row = table[sum] || table[100000];
       if (!row) return null;
-      return area === 'bkk' ? row.bkk : row.province;
+      let premium = area === 'bkk' ? row.bkk : row.province;
+      const deductible = Number(v.deductible);
+      if (deductible > 0) premium = Math.max(0, premium - Math.round(deductible * 0.15));
+      if (String(v.garageType) === 'dealer') premium = Math.round(premium * 1.06);
+      if (String(v.dashcam) === 'yes') premium = Math.round(premium * 0.98);
+      if (String(v.usageType) === 'commercial') premium = Math.round(premium * 1.08);
+      return premium;
     },
 
     'voluntary-indara'(v) {

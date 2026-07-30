@@ -116,3 +116,43 @@ App.AdminUtils = {
     }, 3200);
   }
 };
+
+App.ButtonUI = {
+  setLoading(btn, loading, label) {
+    if (!btn) return;
+    if (loading) {
+      if (btn.dataset.loadingOriginal == null) {
+        btn.dataset.loadingOriginal = btn.innerHTML;
+      }
+      btn.disabled = true;
+      btn.classList.add('is-loading');
+      btn.setAttribute('aria-busy', 'true');
+      const text = label || btn.dataset.loadingText || 'กำลังดำเนินการ...';
+      btn.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span><span>${text}</span>`;
+      return;
+    }
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+    btn.removeAttribute('aria-busy');
+    if (btn.dataset.loadingOriginal != null) {
+      btn.innerHTML = btn.dataset.loadingOriginal;
+      delete btn.dataset.loadingOriginal;
+    }
+  },
+
+  async withLoading(btn, fn, options = {}) {
+    if (!btn || typeof fn !== 'function') return fn?.();
+    if (btn.classList.contains('is-loading') || btn.disabled) return;
+    const label = typeof options === 'string' ? options : options.label;
+    const minMs = typeof options === 'object' && options.minMs != null ? options.minMs : 400;
+    this.setLoading(btn, true, label);
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      const wait = Math.max(0, minMs - (Date.now() - started));
+      if (wait) await new Promise((resolve) => window.setTimeout(resolve, wait));
+      this.setLoading(btn, false);
+    }
+  }
+};

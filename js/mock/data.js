@@ -64,7 +64,25 @@ App.MockData = {
       balance: 34531.73,
       creditLimit: 50000,
       status: 'active',
-      createdAt: '2024-03-15'
+      createdAt: '2024-03-15',
+      commissionRates: {
+        categories: { compulsory: 15, voluntary: 12, pa: 10, travel: 10 },
+        products: {
+          'compulsory-indara': 15,
+          'compulsory-axa': 12,
+          'compulsory-bki': 12,
+          'compulsory-chubb': 15,
+          'compulsory-ergo': 14,
+          'voluntary-indara': 12,
+          'voluntary-axa': 12,
+          'voluntary-bki': 12,
+          'voluntary-chubb': 15,
+          'pa-axa': 10,
+          'pa-bki': 10,
+          'travel-axa': 10,
+          'travel-bki': 10
+        }
+      }
     },
     {
       id: 'agent-002',
@@ -82,6 +100,13 @@ App.MockData = {
         'reports-monthly': false,
         'compulsory-bki': false,
         'travel-axa': false
+      },
+      commissionRates: {
+        indara: 10,
+        axa: 10,
+        bki: 10,
+        chubb: 12,
+        ergo: 12
       }
     },
     {
@@ -105,6 +130,13 @@ App.MockData = {
         'reports-team': false,
         'commission': false,
         'credit': true
+      },
+      commissionRates: {
+        indara: 12,
+        axa: 11,
+        bki: 11,
+        chubb: 13,
+        ergo: 13
       }
     }
   ],
@@ -443,6 +475,7 @@ App.MockData = {
         amount: 96.78,
         status: 'paid',
         period: '2026-06',
+        earnedAt: '2026-06-01',
         paidAt: '2026-06-15'
       },
       {
@@ -457,6 +490,7 @@ App.MockData = {
         amount: 96.78,
         status: 'paid',
         period: '2026-06',
+        earnedAt: '2026-06-10',
         paidAt: '2026-06-18'
       },
       {
@@ -471,6 +505,7 @@ App.MockData = {
         amount: 1020,
         status: 'pending',
         period: '2026-06',
+        earnedAt: '2026-06-18',
         paidAt: null
       },
       {
@@ -485,6 +520,37 @@ App.MockData = {
         amount: 96.78,
         status: 'pending',
         period: '2026-06',
+        earnedAt: '2026-06-22',
+        paidAt: null
+      },
+      {
+        id: 'COM-005',
+        policyNo: 'POL-2026-006',
+        policyType: 'voluntary',
+        policyTypeLabel: 'ภาคสมัครใจ',
+        insurer: 'AXA ประกันภัย',
+        plate: 'กข 7788',
+        premium: 7200,
+        rate: 12,
+        amount: 864,
+        status: 'paid',
+        period: '2026-07',
+        earnedAt: '2026-07-10',
+        paidAt: '2026-07-15'
+      },
+      {
+        id: 'COM-006',
+        policyNo: 'POL-2026-007',
+        policyType: 'prb',
+        policyTypeLabel: 'พ.ร.บ.',
+        insurer: 'CHUBB',
+        plate: 'นว 2468',
+        premium: 645.21,
+        rate: 15,
+        amount: 96.78,
+        status: 'pending',
+        period: '2026-07',
+        earnedAt: '2026-07-17',
         paidAt: null
       }
     ],
@@ -501,10 +567,47 @@ App.MockData = {
         amount: 100.8,
         status: 'paid',
         period: '2026-06',
+        earnedAt: '2026-06-12',
         paidAt: '2026-06-12'
       }
     ]
   },
+
+  creditBankAccounts: [
+    {
+      id: 'bank-kbank',
+      bankName: 'ธนาคารกสิกรไทย',
+      bankShort: 'กสิกรไทย',
+      bankCode: 'KBANK',
+      accountNo: '123-4-56789-0',
+      accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+      branch: 'นครสวรรค์',
+      color: '#1DA858',
+      logo: 'assets/banks/KBANK.png'
+    },
+    {
+      id: 'bank-scb',
+      bankName: 'ธนาคารไทยพาณิชย์',
+      bankShort: 'ไทยพาณิชย์',
+      bankCode: 'SCB',
+      accountNo: '987-6-54321-0',
+      accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+      branch: 'นครสวรรค์',
+      color: '#543186',
+      logo: 'assets/banks/SCB.png'
+    },
+    {
+      id: 'bank-bbl',
+      bankName: 'ธนาคารกรุงเทพ',
+      bankShort: 'กรุงเทพ',
+      bankCode: 'BBL',
+      accountNo: '456-7-89012-3',
+      accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+      branch: 'นครสวรรค์',
+      color: '#29449D',
+      logo: 'assets/banks/BBL.png'
+    }
+  ],
 
   creditRequests: [
     {
@@ -513,6 +616,15 @@ App.MockData = {
       agentCode: 'Ck1-039',
       amount: 10000,
       note: 'ขอเติมวงเงินสำหรับยอดขายสัปดาห์นี้',
+      paymentMethod: 'bank_transfer',
+      bankAccountId: 'bank-kbank',
+      bankName: 'ธนาคารกสิกรไทย',
+      accountNo: '123-4-56789-0',
+      accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+      transferDate: '2026-06-10',
+      transferTime: '09:12',
+      slipFileName: 'slip-cr001.jpg',
+      slipDataUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="480" viewBox="0 0 360 480"><rect width="360" height="480" fill="#f8fafc"/><rect x="24" y="24" width="312" height="432" rx="16" fill="#fff" stroke="#e2e8f0"/><text x="180" y="80" text-anchor="middle" font-family="Arial" font-size="18" fill="#138f2e" font-weight="700">KBANK Slip (Mock)</text><text x="180" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#334155">โอนสำเร็จ</text><text x="180" y="180" text-anchor="middle" font-family="Arial" font-size="28" fill="#0f172a" font-weight="700">10,000.00</text><text x="180" y="220" text-anchor="middle" font-family="Arial" font-size="13" fill="#64748b">บาท</text><text x="40" y="280" font-family="Arial" font-size="12" fill="#64748b">บัญชีปลายทาง</text><text x="40" y="304" font-family="Arial" font-size="14" fill="#0f172a">123-4-56789-0</text><text x="40" y="340" font-family="Arial" font-size="12" fill="#64748b">วันที่โอน</text><text x="40" y="364" font-family="Arial" font-size="14" fill="#0f172a">10/06/2026 09:12</text></svg>'),
       status: 'approved',
       createdAt: '2026-06-10T09:00:00',
       reviewedAt: '2026-06-10T14:30:00',
@@ -524,10 +636,59 @@ App.MockData = {
       agentCode: 'Ck1-039',
       amount: 5000,
       note: 'วงเงินใกล้หมด — ขอเติมด่วน',
+      paymentMethod: 'bank_transfer',
+      bankAccountId: 'bank-scb',
+      bankName: 'ธนาคารไทยพาณิชย์',
+      accountNo: '987-6-54321-0',
+      accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+      transferDate: '2026-06-28',
+      transferTime: '11:05',
+      slipFileName: 'slip-cr002.png',
+      slipDataUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="480" viewBox="0 0 360 480"><rect width="360" height="480" fill="#f8fafc"/><rect x="24" y="24" width="312" height="432" rx="16" fill="#fff" stroke="#e2e8f0"/><text x="180" y="80" text-anchor="middle" font-family="Arial" font-size="18" fill="#4e2a84" font-weight="700">SCB Slip (Mock)</text><text x="180" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#334155">โอนสำเร็จ</text><text x="180" y="180" text-anchor="middle" font-family="Arial" font-size="28" fill="#0f172a" font-weight="700">5,000.00</text><text x="180" y="220" text-anchor="middle" font-family="Arial" font-size="13" fill="#64748b">บาท</text><text x="40" y="280" font-family="Arial" font-size="12" fill="#64748b">บัญชีปลายทาง</text><text x="40" y="304" font-family="Arial" font-size="14" fill="#0f172a">987-6-54321-0</text><text x="40" y="340" font-family="Arial" font-size="12" fill="#64748b">วันที่โอน</text><text x="40" y="364" font-family="Arial" font-size="14" fill="#0f172a">28/06/2026 11:05</text></svg>'),
       status: 'pending',
       createdAt: '2026-06-28T11:00:00',
       reviewedAt: null,
       reviewedByName: null
+    },
+    {
+      id: 'CR-003',
+      agentId: 'agent-001',
+      agentCode: 'Ck1-039',
+      amount: 3000,
+      note: 'สลิปไม่ชัด — ขอส่งใหม่',
+      paymentMethod: 'bank_transfer',
+      bankAccountId: 'bank-bbl',
+      bankName: 'ธนาคารกรุงเทพ',
+      accountNo: '456-7-89012-3',
+      accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+      transferDate: '2026-07-05',
+      transferTime: '16:40',
+      slipFileName: 'slip-cr003.jpg',
+      slipDataUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="480" viewBox="0 0 360 480"><rect width="360" height="480" fill="#f8fafc"/><rect x="24" y="24" width="312" height="432" rx="16" fill="#fff" stroke="#e2e8f0"/><text x="180" y="80" text-anchor="middle" font-family="Arial" font-size="18" fill="#1e3a8a" font-weight="700">BBL Slip (Mock)</text><text x="180" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#334155">โอนสำเร็จ</text><text x="180" y="180" text-anchor="middle" font-family="Arial" font-size="28" fill="#0f172a" font-weight="700">3,000.00</text><text x="180" y="220" text-anchor="middle" font-family="Arial" font-size="13" fill="#64748b">บาท</text></svg>'),
+      status: 'rejected',
+      createdAt: '2026-07-05T16:45:00',
+      reviewedAt: '2026-07-05T18:10:00',
+      reviewedByName: 'ผู้ดูแลระบบ'
+    },
+    {
+      id: 'CR-004',
+      agentId: 'agent-001',
+      agentCode: 'Ck1-039',
+      amount: 8000,
+      note: 'เติมวงเงินประจำเดือนกรกฎาคม',
+      paymentMethod: 'bank_transfer',
+      bankAccountId: 'bank-kbank',
+      bankName: 'ธนาคารกสิกรไทย',
+      accountNo: '123-4-56789-0',
+      accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+      transferDate: '2026-07-12',
+      transferTime: '10:25',
+      slipFileName: 'slip-cr004.png',
+      slipDataUrl: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="480" viewBox="0 0 360 480"><rect width="360" height="480" fill="#f8fafc"/><rect x="24" y="24" width="312" height="432" rx="16" fill="#fff" stroke="#e2e8f0"/><text x="180" y="80" text-anchor="middle" font-family="Arial" font-size="18" fill="#138f2e" font-weight="700">KBANK Slip (Mock)</text><text x="180" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#334155">โอนสำเร็จ</text><text x="180" y="180" text-anchor="middle" font-family="Arial" font-size="28" fill="#0f172a" font-weight="700">8,000.00</text><text x="180" y="220" text-anchor="middle" font-family="Arial" font-size="13" fill="#64748b">บาท</text></svg>'),
+      status: 'approved',
+      createdAt: '2026-07-12T10:30:00',
+      reviewedAt: '2026-07-12T13:00:00',
+      reviewedByName: 'ผู้ดูแลระบบ'
     }
   ],
 
@@ -672,10 +833,11 @@ App.MockData = {
   ],
 
   productSettings: {
-    ergo: { prb: true, voluntary: true, accident: true, travel: true },
-    bki: { prb: true, voluntary: true, accident: true, travel: true },
+    ergo: { prb: true, voluntary: false, accident: false, travel: false },
     axa: { prb: true, voluntary: true, accident: true, travel: true },
-    indara: { prb: true, voluntary: true, accident: true, travel: true }
+    bki: { prb: true, voluntary: true, accident: true, travel: true },
+    chubb: { prb: true, voluntary: true, accident: false, travel: false },
+    indara: { prb: true, voluntary: true, accident: false, travel: false }
   },
 
   receiptPaperSettings: {

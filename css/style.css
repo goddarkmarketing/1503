@@ -301,9 +301,94 @@ button {
 .sidebar.collapsed .nav-chevron,
 .sidebar.collapsed .nav-badge,
 .sidebar.collapsed .nav-sub-link-label {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
+  display: none;
+}
+
+/* Collapsed sidebar — clean icon rail */
+.sidebar.collapsed .sidebar-header {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 8px 12px;
+  min-height: auto;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  justify-content: center;
+  width: 100%;
+}
+
+.sidebar.collapsed .sidebar-logo-text {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  margin: 0;
+}
+
+.sidebar.collapsed .sidebar-nav {
+  padding: 6px 0 10px;
+  overflow-x: hidden;
+  align-items: center;
+}
+
+.sidebar.collapsed .nav-group {
+  width: 100%;
+}
+
+.sidebar.collapsed .nav-group__list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar.collapsed .nav-item {
+  width: 100%;
+}
+
+.sidebar.collapsed .nav-link {
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.sidebar.collapsed .nav-link.active::before {
+  left: 5px;
+  height: 52%;
+}
+
+.sidebar.collapsed .nav-item.has-submenu > .nav-link {
+  padding-right: 0;
+}
+
+.sidebar.collapsed .nav-submenu {
+  display: none !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+}
+
+.sidebar.collapsed .nav-item.has-submenu.submenu-open > .nav-link {
+  background: var(--bg-page);
+}
+
+.sidebar.collapsed .sidebar-footer {
+  padding: 10px 8px 16px;
+}
+
+.sidebar.collapsed .sidebar-footer .nav-link {
+  justify-content: center;
+  gap: 0;
+  padding: 10px 0;
+}
+
+.sidebar.collapsed .sub-logo-img {
+  display: none;
 }
 
 .nav-chevron {
@@ -349,6 +434,40 @@ button {
   line-height: 1.35;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.nav-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: auto;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.nav-link .nav-count-badge {
+  order: 3;
+}
+
+.sidebar.collapsed .nav-count-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  margin: 0;
+  min-width: 16px;
+  height: 16px;
+  font-size: 0.6rem;
+  opacity: 1;
+  width: auto;
 }
 
 .nav-sub-link {
@@ -537,6 +656,66 @@ button {
   font-size: 0.78rem;
   font-weight: 500;
   color: var(--text-muted);
+}
+
+.commission-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  min-width: 210px;
+  padding: 0 14px 0 7px;
+  box-sizing: border-box;
+  color: var(--text-dark);
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.commission-pill:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.1);
+  transform: translateY(-1px);
+}
+
+.commission-pill__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  color: #1d4ed8;
+  border-radius: 8px;
+  background: #eff6ff;
+}
+
+.commission-pill__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.commission-pill__text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.commission-pill__label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.commission-pill__value {
+  color: #1d4ed8;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .balance-refresh {
@@ -1046,10 +1225,17 @@ button {
 
   .top-header .balance-pill {
     margin-left: auto;
+    min-width: auto;
   }
 
-  .balance-label {
+  .balance-label,
+  .commission-pill__label {
     display: none;
+  }
+
+  .commission-pill {
+    min-width: auto;
+    padding-right: 10px;
   }
 
   .user-name {
@@ -1066,6 +1252,22 @@ button {
 }
 
 @media (max-width: 480px) {
+  .top-header {
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .balance-pill,
+  .commission-pill {
+    height: 38px;
+    padding: 0 8px;
+  }
+
+  .balance-pill::before,
+  .commission-pill__icon {
+    display: none;
+  }
+
   .stat-value {
     font-size: 1.7rem;
   }

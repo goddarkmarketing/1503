@@ -189,6 +189,25 @@
   color: #059669;
 }
 
+.finance-card-head__icon--blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.finance-card-head__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.finance-card-head__sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
 .finance-card-head__title {
   margin: 0;
   font-size: 0.95rem;
@@ -334,12 +353,116 @@
   align-items: stretch;
 }
 
+.finance-top-grid--credit {
+  grid-template-columns: minmax(300px, 0.92fr) minmax(340px, 1.08fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.finance-top-grid__left {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.finance-bank-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.finance-bank-card__body {
+  padding: 14px 16px 16px;
+}
+
+.finance-top-grid--credit .finance-balance-card__body {
+  gap: 14px;
+  padding: 16px 18px 18px;
+}
+
+.finance-top-grid--credit .finance-balance-card__value {
+  font-size: 1.75rem;
+}
+
+.finance-top-grid--credit .finance-request-card {
+  position: sticky;
+  top: 12px;
+}
+
 .finance-request-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 18px 20px 20px;
   flex: 1;
+}
+
+.finance-time-24 {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.finance-time-24 select {
+  width: 100%;
+  height: var(--finance-control-h);
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.finance-time-24 select:focus {
+  outline: none;
+  border-color: var(--primary, #1e40af);
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.12);
+  background: #fff;
+}
+
+.finance-time-24__sep {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.finance-time-24__hint {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.finance-request-form__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.finance-request-form__row > .finance-request-form__field {
+  min-width: 0;
+}
+
+.finance-request-form__row-hint {
+  grid-column: 1 / -1;
+  margin: -4px 0 0;
+}
+
+@media (max-width: 520px) {
+  .finance-request-form__row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
 }
 
 .finance-request-form__field {
@@ -490,6 +613,30 @@
   border-bottom: 1px solid var(--border);
 }
 
+.finance-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.finance-section-head .finance-section-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.finance-section-head .btn-secondary.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  white-space: nowrap;
+}
+
 .finance-section {
   margin-bottom: 24px;
 }
@@ -507,9 +654,244 @@
   font-size: 0.88rem;
 }
 
+.finance-field-label {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.finance-req {
+  color: #dc2626;
+}
+
+.credit-bank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.credit-bank-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 12px 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.credit-bank-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.credit-bank-card.is-selected,
+.credit-bank-card:has(input:checked) {
+  border-color: var(--bank-color, #1f379d);
+  background: #fbfdff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bank-color, #1f379d) 18%, transparent);
+}
+
+.credit-bank-card__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.credit-bank-card__logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.credit-bank-card__fallback {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--bank-color, #1f379d);
+}
+
+.credit-bank-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.credit-bank-card__bank {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.credit-bank-card__no {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0f1f4d;
+  font-variant-numeric: tabular-nums;
+}
+
+.credit-bank-card__name,
+.credit-bank-card__branch {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.credit-bank-card__copy {
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  color: #1f379d;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.credit-bank-card__copy:hover {
+  background: #eef2ff;
+}
+
+.credit-slip-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 120px;
+  padding: 18px 14px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.credit-slip-upload:hover,
+.credit-slip-upload.is-dragover,
+.credit-slip-upload.has-file {
+  border-color: #1f379d;
+  background: #f5f7ff;
+}
+
+.credit-slip-upload__icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #e8edff;
+  color: #1f379d;
+}
+
+.credit-slip-upload__icon i,
+.credit-slip-upload__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.credit-slip-upload__title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.credit-slip-upload__hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.credit-slip-preview {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.credit-slip-preview img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  background: #f8fafc;
+}
+
+.credit-slip-preview__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.credit-pay-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.credit-pay-cell strong {
+  font-size: 0.84rem;
+  color: var(--text-dark);
+}
+
+.credit-pay-cell span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-text {
+  border: 0;
+  background: none;
+  color: #1f379d;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-text:hover {
+  text-decoration: underline;
+}
+
+.finance-form-message.is-error {
+  color: var(--accent-red);
+}
+
+.finance-form-message.is-success {
+  color: var(--accent-green, #16a34a);
+}
+
 @media (max-width: 860px) {
-  .finance-top-grid {
+  .finance-top-grid,
+  .finance-top-grid--credit {
     grid-template-columns: 1fr;
+  }
+
+  .finance-top-grid--credit .finance-request-card {
+    position: static;
   }
 
   .finance-balance-stats {
@@ -534,5 +916,14 @@
 
   .finance-balance-card__value {
     font-size: 1.65rem;
+  }
+
+  .credit-bank-card {
+    grid-template-columns: 44px 1fr;
+  }
+
+  .credit-bank-card__copy {
+    grid-column: 2;
+    justify-self: start;
   }
 }

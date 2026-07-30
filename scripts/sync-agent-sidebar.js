@@ -27,6 +27,8 @@ const PAGES = [
   'agent/reports/team.html',
   'agent/commission.html',
   'agent/credit.html',
+  'agent/credit-history.html',
+  'compulsory/ergo.html',
   'compulsory/indara.html',
   'pa/indara.html',
   'pa/axa.html',

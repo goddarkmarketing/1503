@@ -1,11 +1,14 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
+  const cache = '20260717o';
+  document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'config/app-config.js',
     'mock/data.js',
     'core/permissions.js',
     'core/agent-features.js',
+    'core/agent-commission-rates.js',
     'mock/api.js',
     'services/api-client.js',
     'core/session.js',
@@ -28,6 +31,6 @@
     'ui/table-ui.js',
     'ui/admin-modal.js'
   ].forEach((file) => {
-    document.write(`<script src="${root}${file}"><\/script>`);
+    document.write(`<script src="${root}${file}?v=${cache}"><\/script>`);
   });
 })();

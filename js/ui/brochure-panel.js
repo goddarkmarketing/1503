@@ -10,10 +10,29 @@ App.BrochurePanel = {
     const pagesByTab = options.pagesByTab || { default: options.pages || [] };
     const tabDefs = options.tabs || Object.keys(pagesByTab).map((id) => ({ id, label: id }));
     const intervalMs = options.autoMs || 4000;
+    const layoutRoot = options.layoutRoot || root.closest('.product-key');
+    const collapsible = !!options.collapsible;
+    let collapsed = collapsible ? options.collapsed !== false : false;
     let activeTab = options.initialTab || tabDefs[0]?.id || 'default';
     let index = 0;
     let timer = null;
     let paused = false;
+
+    function applyCollapsedState() {
+      if (!collapsible) return;
+      root.classList.toggle('is-collapsed', collapsed);
+      layoutRoot?.classList.toggle('is-brochure-collapsed', collapsed);
+      options.onCollapseChange?.(collapsed);
+    }
+
+    function setCollapsed(next) {
+      if (!collapsible) return;
+      collapsed = !!next;
+      applyCollapsedState();
+      if (collapsed) stopAuto();
+      else if (!paused) startAuto();
+      render();
+    }
 
     function currentPages() {
       return pagesByTab[activeTab] || pagesByTab.default || [];
@@ -28,7 +47,7 @@ App.BrochurePanel = {
 
     function startAuto() {
       stopAuto();
-      if (paused || currentPages().length < 2) return;
+      if (collapsed || paused || currentPages().length < 2) return;
       timer = setInterval(() => {
         if (isLightboxOpen()) return;
         index = (index + 1) % currentPages().length;
@@ -41,12 +60,38 @@ App.BrochurePanel = {
       return !!(lb && !lb.hidden);
     }
 
+    function collapseToggleHtml() {
+      const label = collapsed ? 'แสดงโบรชัวร์' : 'พับโบรชัวร์';
+      const icon = collapsed ? 'chevrons-down' : 'chevrons-up';
+      return `
+        <button type="button" class="brochure-panel__collapseBtn" data-brochure-collapse aria-expanded="${collapsed ? 'false' : 'true'}">
+          <i data-lucide="${icon}" style="width:16px;height:16px"></i>
+          <span>${label}</span>
+        </button>`;
+    }
+
+    function bindCollapseToggle() {
+      root.querySelector('[data-brochure-collapse]')?.addEventListener('click', () => {
+        setCollapsed(!collapsed);
+        if (window.lucide?.createIcons) lucide.createIcons();
+      });
+      if (window.lucide?.createIcons) lucide.createIcons();
+    }
+
     function render(opts = {}) {
       const pages = currentPages();
       if (!pages.length) {
         stopAuto();
-        root.innerHTML = `<div class="brochure-panel__head"><h2 class="brochure-panel__title">${options.title || 'โบรชัวร์'}</h2></div>
+        root.innerHTML = `
+          <div class="brochure-panel__head">
+            <div class="brochure-panel__headMain">
+              <h2 class="brochure-panel__title">${options.title || 'โบรชัวร์'}</h2>
+            </div>
+            ${collapsible ? collapseToggleHtml() : ''}
+          </div>
           <div class="brochure-panel__stage"><p style="color:#64748b;font-size:0.9rem">ยังไม่มีโบรชัวร์</p></div>`;
+        bindCollapseToggle();
+        applyCollapsedState();
         return;
       }
       if (index >= pages.length) index = 0;
@@ -55,7 +100,11 @@ App.BrochurePanel = {
       const showTabs = tabDefs.length > 1;
       root.innerHTML = `
         <div class="brochure-panel__head">
-          <h2 class="brochure-panel__title">${options.title || 'โบรชัวร์'}</h2>
+          <div class="brochure-panel__headMain">
+            <h2 class="brochure-panel__title">${options.title || 'โบรชัวร์'}</h2>
+            ${collapsed ? '<span class="brochure-panel__collapsedHint">พับอยู่ — กดเพื่อดูรายละเอียดแผน</span>' : ''}
+          </div>
+          ${collapsible ? collapseToggleHtml() : ''}
         </div>
         ${showTabs ? `<div class="brochure-panel__tabs" role="tablist">
           ${tabDefs.map((t) => `<button type="button" class="brochure-panel__tab${t.id === activeTab ? ' is-active' : ''}" data-tab="${t.id}" role="tab" aria-selected="${t.id === activeTab}">${t.label}</button>`).join('')}
@@ -69,6 +118,8 @@ App.BrochurePanel = {
           <button type="button" class="brochure-panel__btn" data-brochure-next aria-label="หน้าถัดไป">›</button>
         </div>
       `;
+
+      bindCollapseToggle();
 
       root.querySelectorAll('[data-tab]').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -96,6 +147,7 @@ App.BrochurePanel = {
         openLightbox(page.src);
       });
 
+      applyCollapsedState();
       if (!opts.keepTimer) startAuto();
     }
 
@@ -109,7 +161,7 @@ App.BrochurePanel = {
         lb.innerHTML = '<img alt="โบรชัวร์ขยาย">';
         lb.addEventListener('click', () => {
           lb.hidden = true;
-          if (!paused) startAuto();
+          if (!paused && !collapsed) startAuto();
         });
         document.body.appendChild(lb);
       }
@@ -125,9 +177,10 @@ App.BrochurePanel = {
     });
     root.addEventListener('mouseleave', () => {
       paused = false;
-      if (!isLightboxOpen()) startAuto();
+      if (!isLightboxOpen() && !collapsed) startAuto();
     });
 
+    applyCollapsedState();
     render();
     return {
       setTab(tabId) {
@@ -139,6 +192,10 @@ App.BrochurePanel = {
       },
       getTab() {
         return activeTab;
+      },
+      setCollapsed,
+      isCollapsed() {
+        return collapsed;
       },
       destroy() {
         stopAuto();

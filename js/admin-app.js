@@ -1,12 +1,12 @@
 /**
  * Admin portal shared init — sidebar, charts, shell.
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const basePath = document.body.dataset.basePath || '../';
 
   if (window.App) {
     App.RoleGuard.enforce('admin', { basePath });
-    App.Shell.init({ basePath, hideBalance: true });
+    await App.Shell.init({ basePath, hideBalance: true });
   }
 
   if (typeof window.renderAdminSidebarNav === 'function') {
@@ -15,6 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const adminNav = document.querySelector('.sidebar-nav[data-admin-sidebar]');
   if (adminNav) markAdminNavActive(adminNav);
+
+  if (window.App?.AdminNotificationService) {
+    const pagePath = App.RoleGuard?.currentPagePath?.() || '';
+    await App.AdminNotificationService.acknowledgeCurrentPage(pagePath);
+    if (adminNav) await App.AdminNotificationService.applySidebarBadges(adminNav);
+    if (typeof App.Shell?.refreshNotifications === 'function') {
+      await App.Shell.refreshNotifications();
+    }
+    initAdminNotificationBadges(adminNav);
+  }
 
   initLucideIcons();
   initSidebar();
@@ -65,6 +75,23 @@ function markAdminNavActive(navRoot) {
   if (parentSubmenu) parentSubmenu.classList.add('submenu-open');
 }
 
+function initAdminNotificationBadges(adminNav) {
+  if (!adminNav || !window.App?.AdminNotificationService) return;
+
+  const refresh = async () => {
+    await App.AdminNotificationService.applySidebarBadges(adminNav);
+    if (typeof App.Shell?.refreshNotifications === 'function') {
+      await App.Shell.refreshNotifications();
+    }
+  };
+
+  window.addEventListener('storage', (event) => {
+    if (event.key === App.Config?.CREDIT_DATA_KEY) refresh();
+  });
+
+  window.setInterval(refresh, 8000);
+}
+
 function initSidebar() {
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('sidebarToggle');
@@ -76,7 +103,13 @@ function initSidebar() {
       sidebar.classList.toggle('mobile-open');
       overlay?.classList.toggle('active');
     } else {
+      const willCollapse = !sidebar.classList.contains('collapsed');
       sidebar.classList.toggle('collapsed');
+      if (willCollapse) {
+        sidebar.querySelectorAll('.nav-item.has-submenu.submenu-open').forEach((el) => {
+          el.classList.remove('submenu-open');
+        });
+      }
     }
   });
 
@@ -92,16 +125,35 @@ function initSidebar() {
 }
 
 function initNavDropdowns() {
+  const sidebar = document.getElementById('sidebar');
+
   document.querySelectorAll('.nav-item.has-submenu').forEach((item) => {
     const link = item.querySelector(':scope > .nav-link');
     if (!link) return;
+
+    const label = link.querySelector('.nav-link-text')?.textContent?.trim();
+    if (label) link.setAttribute('title', label);
+
     if (item.querySelector('.nav-sub-link.active') || link.classList.contains('active')) {
       item.classList.add('submenu-open');
     }
     link.addEventListener('click', (e) => {
       e.preventDefault();
+      if (sidebar?.classList.contains('collapsed') && window.innerWidth > 768) {
+        sidebar.classList.remove('collapsed');
+        sidebar.querySelectorAll('.nav-item.has-submenu.submenu-open').forEach((el) => {
+          if (el !== item) el.classList.remove('submenu-open');
+        });
+        item.classList.add('submenu-open');
+        return;
+      }
       item.classList.toggle('submenu-open');
     });
+  });
+
+  document.querySelectorAll('.nav-link:not([title])').forEach((link) => {
+    const label = link.querySelector('.nav-link-text')?.textContent?.trim();
+    if (label) link.setAttribute('title', label);
   });
 }
 

@@ -5,6 +5,7 @@ window.App = window.App || {};
 
 App.MockAPI = {
   _permissionsHydrated: false,
+  _commissionRatesHydrated: false,
 
   _hydrateAgentPermissions() {
     if (this._permissionsHydrated) return;
@@ -26,6 +27,80 @@ App.MockAPI = {
       });
     } catch (e) {
       console.warn('hydrateAgentPermissions failed', e);
+    }
+  },
+
+  _hydrateAgentCommissionRates() {
+    if (this._commissionRatesHydrated) return;
+    this._commissionRatesHydrated = true;
+    if (!App.AgentCommissionRates) return;
+    try {
+      const raw = localStorage.getItem(App.Config.AGENT_COMMISSION_RATES_KEY);
+      if (!raw) return;
+      const map = JSON.parse(raw);
+      if (!map || typeof map !== 'object') return;
+      App.MockData.agents.forEach((agent) => {
+        if (!map[agent.id]) return;
+        agent.commissionRates = App.AgentCommissionRates.normalize(map[agent.id]);
+      });
+    } catch (e) {
+      console.warn('hydrateAgentCommissionRates failed', e);
+    }
+  },
+
+  _persistAgentCommissionRates(agentId, rates) {
+    if (!App.AgentCommissionRates) return;
+    try {
+      const raw = localStorage.getItem(App.Config.AGENT_COMMISSION_RATES_KEY);
+      const map = raw ? JSON.parse(raw) : {};
+      map[agentId] = App.AgentCommissionRates.normalize(rates);
+      localStorage.setItem(App.Config.AGENT_COMMISSION_RATES_KEY, JSON.stringify(map));
+    } catch (e) {
+      console.warn('persistAgentCommissionRates failed', e);
+    }
+  },
+
+  _hydrateCreditData() {
+    try {
+      const raw = localStorage.getItem(App.Config.CREDIT_DATA_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return;
+
+      if (Array.isArray(data.creditRequests)) {
+        App.MockData.creditRequests = data.creditRequests;
+      }
+      if (Array.isArray(data.creditLedger)) {
+        App.MockData.creditLedger = data.creditLedger;
+      }
+      if (data.balances && typeof data.balances === 'object') {
+        Object.keys(data.balances).forEach((agentId) => {
+          const balance = Number(data.balances[agentId]);
+          if (!Number.isFinite(balance)) return;
+          const agent = App.MockData.agents.find((a) => a.id === agentId);
+          if (agent) agent.balance = balance;
+          const user = App.MockData.users.find((u) => u.id === agentId);
+          if (user) user.balance = balance;
+        });
+      }
+    } catch (e) {
+      console.warn('hydrateCreditData failed', e);
+    }
+  },
+
+  _persistCreditData() {
+    try {
+      const balances = {};
+      (App.MockData.agents || []).forEach((a) => {
+        balances[a.id] = a.balance;
+      });
+      localStorage.setItem(App.Config.CREDIT_DATA_KEY, JSON.stringify({
+        creditRequests: App.MockData.creditRequests || [],
+        creditLedger: App.MockData.creditLedger || [],
+        balances
+      }));
+    } catch (e) {
+      console.warn('persistCreditData failed', e);
     }
   },
 
@@ -137,6 +212,7 @@ App.MockAPI = {
 
   async getBalance(agentId) {
     await this._delay();
+    this._hydrateCreditData();
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     return { balance: agent.balance, currency: 'THB' };
@@ -156,12 +232,14 @@ App.MockAPI = {
   async getAgents() {
     await this._delay();
     this._hydrateAgentPermissions();
+    this._hydrateAgentCommissionRates();
     return [...App.MockData.agents];
   },
 
   async getAgent(agentId) {
     await this._delay();
     this._hydrateAgentPermissions();
+    this._hydrateAgentCommissionRates();
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     return { ...agent };
@@ -175,6 +253,9 @@ App.MockAPI = {
     const nextPayload = { ...payload };
     if (nextPayload.featurePermissions && App.AgentFeatures) {
       nextPayload.featurePermissions = App.AgentFeatures.explicitPermissions(nextPayload.featurePermissions);
+    }
+    if (nextPayload.commissionRates && App.AgentCommissionRates) {
+      nextPayload.commissionRates = App.AgentCommissionRates.normalize(nextPayload.commissionRates);
     }
 
     App.MockData.agents[idx] = { ...App.MockData.agents[idx], ...nextPayload };
@@ -196,11 +277,21 @@ App.MockAPI = {
       );
     }
 
+    if (nextPayload.commissionRates) {
+      this._persistAgentCommissionRates(agentId, nextPayload.commissionRates);
+      this._logAudit(
+        'agent_commission_rates',
+        'กำหนดอัตราคอมมิชชัน',
+        `อัปเดต % คอมมิชชันของ ${App.MockData.agents[idx].code}`
+      );
+    }
+
     return { ...App.MockData.agents[idx] };
   },
 
-  async adjustAgentBalance(agentId, amount, note, { skipAudit = false } = {}) {
+  async adjustAgentBalance(agentId, amount, note, { skipAudit = false, skipHydrate = false } = {}) {
     await this._delay();
+    if (!skipHydrate) this._hydrateCreditData();
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     const prev = agent.balance;
@@ -222,6 +313,7 @@ App.MockAPI = {
         `${amount >= 0 ? 'เติม' : 'หัก'} ${agent.code} ${amount >= 0 ? '+' : ''}${amount.toLocaleString('th-TH')} บาท (ยอดก่อน ${prev.toLocaleString('th-TH')})`
       );
     }
+    this._persistCreditData();
 
     return {
       agentId,
@@ -250,6 +342,9 @@ App.MockAPI = {
       createdAt: new Date().toISOString().slice(0, 10),
       featurePermissions: App.AgentFeatures
         ? App.AgentFeatures.normalize(payload.featurePermissions)
+        : undefined,
+      commissionRates: App.AgentCommissionRates
+        ? App.AgentCommissionRates.normalize(payload.commissionRates)
         : undefined
     };
     App.MockData.agents.push(agent);
@@ -280,6 +375,9 @@ App.MockAPI = {
     if (agent.featurePermissions) {
       this._persistAgentPermissions(id, agent.featurePermissions);
     }
+    if (agent.commissionRates) {
+      this._persistAgentCommissionRates(id, agent.commissionRates);
+    }
     return { ...agent };
   },
 
@@ -298,6 +396,7 @@ App.MockAPI = {
 
   async getCreditLedger({ agentId, dateFrom, dateTo } = {}) {
     await this._delay();
+    this._hydrateCreditData();
     let list = [...App.MockData.creditLedger];
     if (agentId) list = list.filter((e) => e.agentId === agentId);
     if (dateFrom) list = list.filter((e) => e.createdAt.slice(0, 10) >= dateFrom);
@@ -316,6 +415,7 @@ App.MockAPI = {
 
   async getAdminStats() {
     await this._delay();
+    this._hydrateCreditData();
     const agents = App.MockData.agents;
     const activeAgents = agents.filter((a) => a.status === 'active').length;
     const totalBalance = agents.reduce((sum, a) => sum + a.balance, 0);
@@ -342,6 +442,7 @@ App.MockAPI = {
 
   async getAdminNavBadgeCounts() {
     await this._delay();
+    this._hydrateCreditData();
     const pendingPolicies = App.MockData.policies.filter((p) => p.status === 'pending').length;
     const pendingCreditRequests = App.MockData.creditRequests.filter((r) => r.status === 'pending').length;
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -620,22 +721,30 @@ App.MockAPI = {
     }).sort((a, b) => b.totalPremium - a.totalPremium);
   },
 
-  async getCommissions(agentId, { period, status } = {}) {
+  async getCommissions(agentId, { period, periodType = 'month', status } = {}) {
     await this._delay();
     let list = [...(App.MockData.commissions[agentId] || [])];
-    if (period) list = list.filter((c) => c.period === period);
+    if (period) {
+      list = list.filter((c) => {
+        const earnedAt = c.earnedAt || `${c.period || ''}-01`;
+        if (periodType === 'day') return earnedAt === period;
+        if (periodType === 'year') return earnedAt.startsWith(`${period}-`);
+        return c.period === period;
+      });
+    }
     if (status) list = list.filter((c) => c.status === status);
-    return list;
+    return list.sort((a, b) => (b.earnedAt || '').localeCompare(a.earnedAt || ''));
   },
 
-  async getCommissionSummary(agentId, period) {
+  async getCommissionSummary(agentId, filters = {}) {
     await this._delay();
-    const list = await this.getCommissions(agentId, { period });
+    if (typeof filters === 'string') filters = { period: filters, periodType: 'month' };
+    const list = await this.getCommissions(agentId, filters);
     const paid = list.filter((c) => c.status === 'paid');
     const pending = list.filter((c) => c.status === 'pending');
     const sum = (arr) => arr.reduce((s, c) => s + c.amount, 0);
     return {
-      period: period || 'ทั้งหมด',
+      period: filters.period || 'ทั้งหมด',
       total: Math.round(sum(list) * 100) / 100,
       paid: Math.round(sum(paid) * 100) / 100,
       pending: Math.round(sum(pending) * 100) / 100,
@@ -643,42 +752,79 @@ App.MockAPI = {
     };
   },
 
-  async getCreditRequests(agentId) {
-    await this._delay();
-    return App.MockData.creditRequests
-      .filter((r) => r.agentId === agentId)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  async getCreditBankAccounts() {
+    await this._delay(80);
+    return (App.MockData.creditBankAccounts || []).map((a) => ({ ...a }));
   },
 
-  async createCreditRequest(agentId, { amount, note }) {
+  async getCreditRequests(agentId, { period, periodType = 'month', status } = {}) {
     await this._delay();
+    this._hydrateCreditData();
+    let list = App.MockData.creditRequests.filter((r) => r.agentId === agentId);
+    if (period) {
+      list = list.filter((r) => {
+        const createdDate = String(r.createdAt || '').slice(0, 10);
+        if (periodType === 'day') return createdDate === period;
+        if (periodType === 'year') return createdDate.startsWith(`${period}-`);
+        return createdDate.startsWith(`${period}-`);
+      });
+    }
+    if (status) list = list.filter((r) => r.status === status);
+    return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async createCreditRequest(agentId, payload = {}) {
+    await this._delay();
+    this._hydrateCreditData();
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('ไม่พบนายหน้า');
-    const num = Number(amount);
+    const num = Number(payload.amount);
     if (!num || num < 1000) throw new Error('กรุณาระบุจำนวนเงินขั้นต่ำ 1,000 บาท');
     if (num > 50000) throw new Error('จำนวนเงินสูงสุด 50,000 บาท');
+    if (!payload.slipDataUrl) throw new Error('กรุณาอัปโหลดหลักฐานการโอนเงิน');
+    if (!payload.transferDate) throw new Error('กรุณาระบุวันที่โอนเงิน');
+    if (!payload.transferTime) throw new Error('กรุณาระบุเวลาที่โอน');
+
+    const banks = App.MockData.creditBankAccounts || [];
+    const bank =
+      banks.find((b) => b.id === payload.bankAccountId) ||
+      banks[0] ||
+      null;
+    if (!bank) throw new Error('ไม่พบบัญชีธนาคารสำหรับรับโอน');
+
     const entry = {
       id: `CR-${String(App.MockData.creditRequests.length + 1).padStart(3, '0')}`,
       agentId,
       agentCode: agent.code,
       amount: num,
-      note: note || '',
+      note: payload.note || '',
+      paymentMethod: 'bank_transfer',
+      bankAccountId: bank.id,
+      bankName: bank.bankName,
+      accountNo: bank.accountNo,
+      accountName: bank.accountName,
+      transferDate: payload.transferDate,
+      transferTime: payload.transferTime,
+      slipFileName: payload.slipFileName || 'slip.jpg',
+      slipDataUrl: payload.slipDataUrl,
       status: 'pending',
       createdAt: new Date().toISOString(),
       reviewedAt: null,
       reviewedByName: null
     };
     App.MockData.creditRequests.unshift(entry);
+    this._persistCreditData();
     this._logAudit(
       'credit_request',
       'ขอเติมวงเงิน',
-      `${agent.code} ขอเติม ${num.toLocaleString('th-TH')} บาท`
+      `${agent.code} ขอเติม ${num.toLocaleString('th-TH')} บาท ผ่าน ${bank.bankName}`
     );
     return { ...entry };
   },
 
   async getOwnCreditLedger(agentId) {
     await this._delay();
+    this._hydrateCreditData();
     return App.MockData.creditLedger
       .filter((e) => e.agentId === agentId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -718,6 +864,7 @@ App.MockAPI = {
 
   async getAllCreditRequests({ status } = {}) {
     await this._delay();
+    this._hydrateCreditData();
     let list = [...App.MockData.creditRequests];
     if (status) list = list.filter((r) => r.status === status);
     return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -725,13 +872,17 @@ App.MockAPI = {
 
   async reviewCreditRequest(requestId, action) {
     await this._delay();
+    this._hydrateCreditData();
     const req = App.MockData.creditRequests.find((r) => r.id === requestId);
     if (!req) throw new Error('ไม่พบคำขอ');
     if (req.status !== 'pending') throw new Error('คำขอนี้ดำเนินการแล้ว');
     const actor = this._actor();
     if (action === 'approve') {
       req.status = 'approved';
-      await this.adjustAgentBalance(req.agentId, req.amount, `อนุมัติคำขอ ${req.id}`, { skipAudit: true });
+      await this.adjustAgentBalance(req.agentId, req.amount, `อนุมัติคำขอ ${req.id}`, {
+        skipAudit: true,
+        skipHydrate: true
+      });
     } else if (action === 'reject') {
       req.status = 'rejected';
     } else {
@@ -739,6 +890,7 @@ App.MockAPI = {
     }
     req.reviewedAt = new Date().toISOString();
     req.reviewedByName = actor.name;
+    this._persistCreditData();
     this._logAudit(
       'credit_review',
       action === 'approve' ? 'อนุมัติเติมวงเงิน' : 'ปฏิเสธเติมวงเงิน',
@@ -942,3 +1094,4 @@ App.MockAPI = {
 
 App.MockAPI._hydrateAgentPermissions();
 App.MockAPI._hydrateReceiptPaperSettings();
+App.MockAPI._hydrateCreditData();

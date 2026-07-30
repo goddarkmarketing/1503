@@ -1,22 +1,34 @@
 window.App = window.App || {};
 
 App.CreditService = {
-  async getRequests() {
-    const agentId = App.Session.getAgentId();
+  async getBankAccounts() {
     if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.getCreditRequests(agentId);
+      return App.MockAPI.getCreditBankAccounts();
     }
-    return App.API.request(`/agents/${agentId}/credit-requests`);
+    return App.API.request('/credit/bank-accounts');
   },
 
-  async createRequest(amount, note) {
+  async getRequests(filters = {}) {
     const agentId = App.Session.getAgentId();
     if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.createCreditRequest(agentId, { amount, note });
+      return App.MockAPI.getCreditRequests(agentId, filters);
+    }
+    const params = new URLSearchParams(filters).toString();
+    return App.API.request(`/agents/${agentId}/credit-requests${params ? `?${params}` : ''}`);
+  },
+
+  async createRequest(amountOrPayload, note) {
+    const payload =
+      amountOrPayload && typeof amountOrPayload === 'object'
+        ? amountOrPayload
+        : { amount: amountOrPayload, note };
+    const agentId = App.Session.getAgentId();
+    if (App.Config.USE_MOCK_API) {
+      return App.MockAPI.createCreditRequest(agentId, payload);
     }
     return App.API.request(`/agents/${agentId}/credit-requests`, {
       method: 'POST',
-      body: JSON.stringify({ amount, note })
+      body: JSON.stringify(payload)
     });
   },
 

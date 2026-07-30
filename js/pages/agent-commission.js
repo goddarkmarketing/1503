@@ -5,7 +5,8 @@
   const tbody = document.getElementById('commissionTableBody');
   if (!tbody) return;
 
-  const periodSelect = document.getElementById('commissionPeriod');
+  const periodInput = document.getElementById('commissionPeriod');
+  const periodTypeSelect = document.getElementById('commissionPeriodType');
   const statusSelect = document.getElementById('commissionStatus');
 
   function formatMoney(n) {
@@ -16,21 +17,42 @@
     return { paid: 'จ่ายแล้ว', pending: 'ค้างจ่าย' }[status] || status;
   }
 
-  function fillPeriodOptions() {
-    if (!periodSelect) return;
-    const now = new Date();
-    const options = [];
-    for (let i = 0; i < 6; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long' });
-      options.push(`<option value="${val}">${label}</option>`);
-    }
-    periodSelect.innerHTML = options.join('');
+  function localDateValue(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
-  async function loadSummary(period) {
-    const summary = await App.CommissionService.getSummary(period);
+  function updatePeriodControl() {
+    if (!periodInput) return;
+    const now = new Date();
+    const today = localDateValue(now);
+    const type = periodTypeSelect?.value || 'month';
+
+    periodInput.removeAttribute('min');
+    periodInput.removeAttribute('max');
+    periodInput.removeAttribute('step');
+
+    if (type === 'day') {
+      periodInput.type = 'date';
+      periodInput.max = today;
+      periodInput.value = today;
+    } else if (type === 'year') {
+      periodInput.type = 'number';
+      periodInput.min = '2020';
+      periodInput.max = String(now.getFullYear());
+      periodInput.step = '1';
+      periodInput.value = String(now.getFullYear());
+    } else {
+      periodInput.type = 'month';
+      periodInput.max = today.slice(0, 7);
+      periodInput.value = today.slice(0, 7);
+    }
+  }
+
+  async function loadSummary(filters) {
+    const summary = await App.CommissionService.getSummary(filters);
     const el = (id) => document.getElementById(id);
     if (el('statCommissionTotal')) el('statCommissionTotal').textContent = formatMoney(summary.total);
     if (el('statCommissionPaid')) el('statCommissionPaid').textContent = formatMoney(summary.paid);
@@ -41,7 +63,7 @@
   function renderTable() {
     const pg = App.TableUI.paginate(cache, page);
     if (!pg.items.length) {
-      App.TableUI.showEmpty(tbody, 9, 'ไม่พบรายการค่าคอมมิชชัน');
+      App.TableUI.showEmpty(tbody, 10, 'ไม่พบรายการค่าคอมมิชชัน');
       document.getElementById('commissionPagination').innerHTML = '';
       return;
     }
@@ -51,6 +73,7 @@
         <td>${c.policyTypeLabel}</td>
         <td>${c.insurer}</td>
         <td>${c.plate}</td>
+        <td class="col-center">${c.earnedAt ? App.AdminUtils.formatThaiDate(c.earnedAt) : '-'}</td>
         <td class="col-money">${formatMoney(c.premium)}</td>
         <td class="col-center">${c.rate}%</td>
         <td class="col-money">${formatMoney(c.amount)}</td>
@@ -65,22 +88,27 @@
   }
 
   async function search() {
-    App.TableUI.showLoading(tbody, 9);
-    const period = periodSelect?.value || '';
+    App.TableUI.showLoading(tbody, 10);
+    const period = periodInput?.value || '';
+    const periodType = periodTypeSelect?.value || 'month';
     const status = statusSelect?.value || '';
-    const filters = {};
+    const filters = { periodType };
     if (period) filters.period = period;
     if (status) filters.status = status;
     cache = await App.CommissionService.getCommissions(filters);
     page = 1;
-    await loadSummary(period);
+    await loadSummary({ period, periodType });
     renderTable();
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
-  fillPeriodOptions();
+  updatePeriodControl();
   document.getElementById('btnCommissionSearch')?.addEventListener('click', search);
-  periodSelect?.addEventListener('change', search);
+  periodTypeSelect?.addEventListener('change', () => {
+    updatePeriodControl();
+    search();
+  });
+  periodInput?.addEventListener('change', search);
   statusSelect?.addEventListener('change', search);
   search();
 })();

@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>อนุมัติเติมวงเงิน — Admin</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../css/style.css?v=20260717i">
+  <link rel="stylesheet" href="../css/admin.css?v=20260717k">
   <link rel="stylesheet" href="../css/portal.css">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
@@ -100,20 +100,35 @@
       <main class="main-content">
         <div class="content-card">
           <div class="admin-toolbar">
-            <div>
+            <div class="admin-toolbar__head">
               <h1 class="admin-page-title">อนุมัติเติมวงเงิน</h1>
-              <p class="admin-hint">ตรวจสอบและอนุมัติคำขอจากนายหน้า</p>
+              <p class="admin-hint">ตรวจสอบยอดเงินและสลิปโอนก่อนอนุมัติวงเงินให้นายหน้า</p>
             </div>
-            <select id="creditRequestFilter" class="admin-select">
-              <option value="">ทุกสถานะ</option>
-              <option value="pending">รออนุมัติ</option>
-              <option value="approved">อนุมัติแล้ว</option>
-              <option value="rejected">ปฏิเสธ</option>
-            </select>
+            <div class="admin-toolbar-filters">
+              <label class="admin-toolbar-filters__field" for="creditRequestFilter">
+                <span class="admin-toolbar-filters__label">สถานะ</span>
+                <select id="creditRequestFilter" class="admin-select admin-select--toolbar">
+                  <option value="">ทุกสถานะ</option>
+                  <option value="pending">รออนุมัติ</option>
+                  <option value="approved">อนุมัติแล้ว</option>
+                  <option value="rejected">ปฏิเสธ</option>
+                </select>
+              </label>
+            </div>
           </div>
           <div class="data-table-wrap">
             <table class="data-table">
-              <thead><tr><th>วันที่ขอ</th><th>นายหน้า</th><th>จำนวน</th><th>หมายเหตุ</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>วันที่ขอ</th>
+                  <th>นายหน้า</th>
+                  <th>จำนวน</th>
+                  <th>ธนาคาร</th>
+                  <th>สลิป</th>
+                  <th>สถานะ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
               <tbody id="creditRequestsBody"></tbody>
             </table>
           </div>
@@ -122,8 +137,8 @@
     </div>
   </div>
   <script src="../js/admin-sidebar-nav-template.js?v=20260702a"></script>
-  <script src="../js/load-admin.js"></script>
-  <script src="../js/admin-app.js"></script>
-  <script src="../js/pages/admin-credit-requests.js"></script>
+  <script src="../js/load-admin.js?v=20260717k"></script>
+  <script src="../js/admin-app.js?v=20260717i"></script>
+  <script src="../js/pages/admin-credit-requests.js?v=20260717k"></script>
 </body>
 </html>

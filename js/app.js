@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (window.App) {
     App.RoleGuard.enforce('agent', { basePath });
-    App.Shell.init({
+    await App.Shell.init({
       basePath,
       profilePath: `${basePath}agent/profile.html`
     });
@@ -124,7 +124,13 @@ function initSidebar() {
       sidebar.classList.toggle('mobile-open');
       overlay?.classList.toggle('active');
     } else {
+      const willCollapse = !sidebar.classList.contains('collapsed');
       sidebar.classList.toggle('collapsed');
+      if (willCollapse) {
+        sidebar.querySelectorAll('.nav-item.has-submenu.submenu-open').forEach((el) => {
+          el.classList.remove('submenu-open');
+        });
+      }
     }
   });
 
@@ -148,9 +154,14 @@ function initSidebar() {
 
 /* ── Nav Dropdowns ── */
 function initNavDropdowns() {
+  const sidebar = document.getElementById('sidebar');
+
   document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
     const link = item.querySelector(':scope > .nav-link');
     if (!link) return;
+
+    const label = link.querySelector('.nav-link-text')?.textContent?.trim();
+    if (label) link.setAttribute('title', label);
 
     if (item.querySelector('.nav-sub-link.active') || link.classList.contains('active')) {
       item.classList.add('submenu-open');
@@ -158,11 +169,23 @@ function initNavDropdowns() {
 
     link.addEventListener('click', (e) => {
       e.preventDefault();
+      if (sidebar?.classList.contains('collapsed') && window.innerWidth > 768) {
+        sidebar.classList.remove('collapsed');
+        sidebar.querySelectorAll('.nav-item.has-submenu.submenu-open').forEach((el) => {
+          if (el !== item) el.classList.remove('submenu-open');
+        });
+        item.classList.add('submenu-open');
+        return;
+      }
       item.classList.toggle('submenu-open');
     });
   });
 
   document.querySelectorAll('.nav-link').forEach(link => {
+    if (!link.getAttribute('title')) {
+      const label = link.querySelector('.nav-link-text')?.textContent?.trim();
+      if (label) link.setAttribute('title', label);
+    }
     if (link.closest('.has-submenu') && link.parentElement.classList.contains('has-submenu')) return;
 
     link.addEventListener('click', () => {
@@ -172,7 +195,9 @@ function initNavDropdowns() {
   });
 }
 
-/* ── Insurer submenu — stub links show “กำลังพัฒนา” until API pages exist ── */
+/* ── Insurer submenu — only open products navigate; others show “กำลังพัฒนา” ── */
+const OPEN_PRODUCT_NAVS = new Set(['compulsory-ergo', 'voluntary-axa']);
+
 function initDevelopingInsurerLinks() {
   const nav = document.querySelector('.sidebar-nav[data-agent-sidebar]');
   if (!nav || nav.dataset.devLinksBound) return;
@@ -187,8 +212,8 @@ function initDevelopingInsurerLinks() {
     const group = link.closest('[data-nav-group]');
     if (!group || !productGroups.has(group.dataset.navGroup)) return;
 
-    const href = (link.getAttribute('href') || '#').trim();
-    if (href && href !== '#') return;
+    const navKey = link.getAttribute('data-nav') || '';
+    if (OPEN_PRODUCT_NAVS.has(navKey)) return;
 
     e.preventDefault();
     showDevelopingModal();

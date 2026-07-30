@@ -47,7 +47,19 @@ body[data-portal="admin"] .sidebar-brand__img {
 }
 
 body[data-portal="admin"] .sidebar.collapsed .sidebar-brand__img {
-  height: 34px;
+  height: 28px;
+  max-width: 40px;
+  object-fit: contain;
+}
+
+body[data-portal="admin"] .sidebar.collapsed .sidebar-header {
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 8px 12px;
+}
+
+body[data-portal="admin"] .sidebar.collapsed .nav-submenu {
+  display: none !important;
 }
 
 body[data-portal="admin"] .sidebar-toggle {
@@ -319,21 +331,54 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 20px;
+}
+
+.admin-toolbar__head {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.admin-toolbar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.admin-toolbar-filters__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.admin-toolbar-filters__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.2;
 }
 
 .admin-toolbar > .admin-page-title {
   margin-bottom: 0;
 }
 
-.admin-toolbar > div .admin-page-title {
+.admin-toolbar > div .admin-page-title,
+.admin-toolbar__head .admin-page-title {
   margin-bottom: 6px;
 }
 
 .admin-toolbar .admin-hint {
   margin-bottom: 0;
+}
+
+.admin-toolbar .admin-filter-bar {
+  margin-bottom: 0;
+  align-items: flex-end;
 }
 
 .admin-form-grid {
@@ -412,6 +457,37 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
 .btn-sm {
   padding: 6px 12px;
   font-size: 0.8rem;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: btn-spin 0.65s linear infinite;
+  vertical-align: -0.1em;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+button.is-loading,
+.btn-primary.is-loading,
+.btn-secondary.is-loading,
+.btn-success.is-loading,
+.btn-danger.is-loading,
+.btn-success-outline.is-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0.85;
+  cursor: wait;
+  pointer-events: none;
 }
 
 .admin-card {
@@ -851,17 +927,55 @@ body.modal-open {
   .admin-stats-row {
     grid-template-columns: 1fr;
   }
+
+  .admin-toolbar-filters {
+    width: 100%;
+  }
+
+  .admin-toolbar-filters__field,
+  .admin-select--toolbar {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .admin-select {
-  height: var(--admin-control-h);
-  min-height: var(--admin-control-h);
-  padding: 0 12px;
+  height: 40px;
+  min-height: 40px;
+  min-width: 180px;
+  padding: 0 36px 0 12px;
+  font-family: inherit;
   font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark);
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 8px;
-  background: #fff;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
   box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.admin-select:hover {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+}
+
+.admin-select:focus {
+  outline: none;
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
+  background-color: #fff;
+}
+
+.admin-select--toolbar {
+  min-width: 200px;
 }
 
 .admin-quick-links {
@@ -990,6 +1104,186 @@ body.modal-open {
 .agent-form__sectionBadge--muted {
   color: #64748b;
   background: #f1f5f9;
+}
+
+.agent-form__sectionHint {
+  margin: -4px 0 14px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.agent-commission-rates {
+  display: grid;
+  gap: 10px;
+}
+
+.agent-commission-rates__group {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.agent-commission-rates__category {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  background: #f8fafc;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.agent-commission-rates__category:hover {
+  background: #f1f5f9;
+}
+
+.agent-commission-rates__category-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.agent-commission-rates__cat-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #334155;
+  stroke-width: 2;
+}
+
+.agent-commission-rates__chevron {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: transform 0.18s ease;
+}
+
+.agent-commission-rates__group.is-open .agent-commission-rates__chevron {
+  transform: rotate(180deg);
+}
+
+.agent-commission-rates__panel {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+  border-top: 1px solid #eef2f7;
+  background: #fff;
+}
+
+.agent-commission-rates__panel[hidden] {
+  display: none;
+}
+
+.agent-commission-rates__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 108px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.agent-commission-rates__row--insurer {
+  margin-top: 8px;
+}
+
+.agent-commission-rates__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.agent-commission-rates__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.agent-commission-rates__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.agent-commission-rates__logo--fallback {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+.agent-commission-rates__label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.35;
+}
+
+.agent-commission-rates__input-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.agent-commission-rates__input {
+  width: 72px;
+  height: 36px;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-dark);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.agent-commission-rates__input:focus {
+  outline: none;
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
+}
+
+.agent-commission-rates__suffix {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+@media (max-width: 560px) {
+  .agent-commission-rates__row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .agent-commission-rates__input-wrap {
+    justify-content: flex-start;
+  }
 }
 
 .agent-form__grid {
@@ -1175,4 +1469,162 @@ body.modal-open {
   color: #991b1b;
   background: #fef2f2;
   border: 1px solid #fecaca;
+}
+
+.credit-pay-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.credit-pay-cell strong {
+  font-size: 0.84rem;
+}
+
+.credit-pay-cell span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-text {
+  border: 0;
+  background: none;
+  color: #1f379d;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-text:hover {
+  text-decoration: underline;
+}
+
+.btn-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-success:hover {
+  background: #15803d;
+}
+
+.credit-review__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.credit-review__card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fafbfc;
+}
+
+.credit-review__card h3 {
+  margin: 0 0 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.credit-review__dl {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.credit-review__dl > div {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.credit-review__dl dt {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.credit-review__dl dd {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.credit-review__amount {
+  color: #1f379d !important;
+  font-size: 1.05rem !important;
+}
+
+.credit-review__slip {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.credit-review__slip img {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.credit-review__slip--pdf {
+  padding: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.credit-slip-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.credit-slip-modal img {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  background: #fff;
+}
+
+.credit-slip-modal--pdf {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .credit-review__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-review__dl > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
 }

@@ -1,4 +1,4 @@
-/* Product key-in page: brochure left + form right (layout A) */
+﻿/* Product key-in page: brochure left + form right (layout A) */
 
 .form-page .main-content:has(.product-key) {
   padding: 0.75rem 1rem 1rem;
@@ -16,6 +16,24 @@
   box-sizing: border-box;
 }
 
+/* Collapsed brochure: form gets full width */
+.product-key.is-brochure-collapsed {
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.product-key.is-brochure-collapsed .product-key__brochure {
+  order: -1;
+  position: static;
+  max-height: none;
+}
+
+.product-key.is-brochure-collapsed .product-key__brochure.is-collapsed .brochure-panel__tabs,
+.product-key.is-brochure-collapsed .product-key__brochure.is-collapsed .brochure-panel__stage,
+.product-key.is-brochure-collapsed .product-key__brochure.is-collapsed .brochure-panel__controls {
+  display: none;
+}
+
 .product-key__form > .form-card {
   background: #fff;
   border-radius: 12px;
@@ -30,7 +48,7 @@
   border-radius: 0;
 }
 
-/* Indara PRB form beside brochure — tighter columns, no label wrap */
+/* Indara PRB form beside brochure â€” tighter columns, no label wrap */
 .product-key__form {
   container-type: inline-size;
   container-name: pkForm;
@@ -162,13 +180,28 @@
 
 .product-key-card__logo {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 72px;
+  height: 48px;
   object-fit: contain;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  padding: 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+.product-key--axa-quote .product-key-card__logo {
+  width: 80px;
+  height: 40px;
+}
+
+.product-key--axa-quote .product-key-card__head {
+  padding: 0.45rem 1rem;
+  min-height: 0;
+}
+
+.product-key--axa-quote .product-key-card__title {
+  font-size: 0.86rem;
+  line-height: 1.25;
 }
 
 .product-key-card__body {
@@ -253,6 +286,51 @@
   position: sticky;
   top: 1rem;
   max-height: calc(100vh - 6rem);
+}
+
+.brochure-panel__headMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.brochure-panel__collapsedHint {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.brochure-panel__collapseBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f766e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.brochure-panel__collapseBtn:hover {
+  border-color: #0f766e;
+  background: #f0fdfa;
+}
+
+.product-key__brochure.is-collapsed {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.product-key__brochure.is-collapsed .brochure-panel__head {
+  border-bottom: none;
 }
 
 .brochure-panel__tabs {
@@ -420,5 +498,631 @@
   .product-key-card__foot .btn-next {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* ── AXA motor quote form ── */
+.form-req {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.product-key--axa-quote .product-key__card--quote-only .product-key-card__foot,
+.product-key--axa-quote .product-key__hint {
+  display: none;
+}
+
+.product-key--axa-quote .product-key-card__body {
+  padding: 1.6rem 1.15rem 1.35rem;
+}
+
+.product-key--axa-quote .product-key__premium {
+  display: none;
+  margin-top: 0.85rem;
+}
+
+.product-key--axa-quote .product-key__premium.is-visible {
+  display: flex;
+}
+
+.axa-quote {
+  --axa-border: #d0d7e2;
+  --axa-border-strong: #94a3b8;
+  --axa-text: #0f172a;
+  --axa-muted: #64748b;
+  --axa-accent: #0f766e;
+  --axa-accent-hover: #0d9488;
+  --axa-focus: #0284c7;
+  display: grid;
+  gap: 1rem;
+  max-width: 100%;
+}
+
+.axa-quote__row {
+  display: grid;
+  gap: 0.6rem 0.65rem;
+  align-items: start;
+}
+
+.axa-quote__row--policy {
+  grid-template-columns: minmax(180px, 1.2fr) minmax(200px, 1fr) minmax(120px, 0.7fr);
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #e8edf3;
+}
+
+.axa-quote__row--car {
+  grid-template-columns:
+    minmax(100px, 0.85fr)
+    minmax(110px, 0.95fr)
+    minmax(78px, 0.55fr)
+    minmax(150px, 1.25fr)
+    minmax(200px, 1.7fr);
+}
+
+.axa-quote__stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.axa-quote__row--coverA {
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+}
+
+.axa-quote__row--coverB {
+  grid-template-columns:
+    minmax(150px, 1.1fr)
+    minmax(150px, 1.1fr)
+    minmax(120px, 0.9fr)
+    minmax(130px, 0.9fr);
+}
+
+.axa-quote[data-policy-mode="voluntary"] [data-prb-only] {
+  display: none !important;
+}
+
+.axa-quote[data-policy-mode="compulsory"] [data-voluntary-only] {
+  display: none !important;
+}
+
+.axa-quote[data-policy-mode="compulsory"] .axa-quote__stack {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1.15fr)
+    minmax(150px, 1.1fr)
+    minmax(170px, 1.25fr)
+    minmax(150px, 1.1fr)
+    minmax(130px, 0.9fr);
+  gap: 0.6rem 0.65rem;
+  align-items: start;
+}
+
+.axa-quote[data-policy-mode="compulsory"] .axa-quote__row--coverA,
+.axa-quote[data-policy-mode="compulsory"] .axa-quote__row--coverB {
+  display: contents;
+}
+
+.axa-quote__field {
+  --axa-control-h: 36px;
+  --axa-label-h: 1.05rem;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: var(--axa-label-h) var(--axa-control-h);
+  gap: 0.22rem;
+  align-items: stretch;
+}
+
+.axa-quote__field > label,
+.axa-quote__label {
+  margin: 0;
+  height: var(--axa-label-h);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--axa-muted);
+  line-height: var(--axa-label-h);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.axa-quote__label--spacer {
+  visibility: hidden;
+  user-select: none;
+}
+
+.axa-quote__field .form-input,
+.axa-quote__field select.form-input {
+  width: 100%;
+  height: var(--axa-control-h);
+  min-height: var(--axa-control-h);
+  max-height: var(--axa-control-h);
+  box-sizing: border-box;
+  border: 1px solid var(--axa-border);
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  color: var(--axa-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.axa-quote__field select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-overflow: ellipsis;
+  padding-right: 1.7rem;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2364748b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+  background-size: 0.65rem;
+}
+
+.axa-quote__field .form-input:hover {
+  border-color: var(--axa-border-strong);
+}
+
+.axa-quote__field .form-input:focus {
+  outline: none;
+  border-color: var(--axa-focus);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.18);
+}
+
+.axa-quote__field .form-input--readonly,
+.axa-quote__field .form-input[readonly] {
+  background: #f4f7fb;
+  color: #475569;
+  cursor: default;
+  border-color: #e2e8f0;
+}
+
+.axa-quote__seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  height: var(--axa-control-h);
+  min-height: var(--axa-control-h);
+}
+
+.axa-quote__segOpt {
+  position: relative;
+  margin: 0;
+  height: 100%;
+  cursor: pointer;
+}
+
+.axa-quote__segOpt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.axa-quote__segOpt span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  padding: 0 0.35rem;
+  border: 1px solid var(--axa-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--axa-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.15;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.axa-quote__segOpt input:checked + span {
+  border-color: #0f766e;
+  background: #ecfdf5;
+  color: #0f766e;
+  box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.25);
+}
+
+.axa-quote__segOpt:hover span {
+  border-color: var(--axa-border-strong);
+}
+
+.axa-quote__driverBtn {
+  box-sizing: border-box;
+  height: var(--axa-control-h);
+  min-height: var(--axa-control-h);
+  width: 100%;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  background: #fbbf24;
+  color: #78350f;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: filter 0.15s ease, background 0.15s ease;
+}
+
+.axa-quote__driverBtn:hover {
+  filter: brightness(0.97);
+}
+
+.axa-quote__driverBtn.is-named {
+  background: #fef3c7;
+  border-style: dashed;
+}
+
+.axa-quote__field--check {
+  align-self: start;
+}
+
+.axa-quote__checkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--axa-control-h);
+  min-height: var(--axa-control-h);
+  padding: 0 0.65rem;
+  border: 0;
+  border-radius: 6px;
+  background: var(--axa-accent);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 118, 110, 0.2);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.axa-quote__checkBtn:hover {
+  background: var(--axa-accent-hover);
+  box-shadow: 0 2px 4px rgba(15, 118, 110, 0.22);
+}
+
+.axa-result {
+  margin-top: 1.25rem;
+  max-width: none;
+}
+
+.axa-prb-result {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.axa-prb-result__empty {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.axa-prb-result__card {
+  margin-top: 0.75rem;
+  padding: 1.1rem 1.25rem 1.2rem;
+  border: 1px solid #c5e4e7;
+  border-radius: 8px;
+  background: #fff;
+  text-align: left;
+}
+
+.axa-prb-result__head {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.axa-prb-result__price {
+  margin-top: 0.35rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.axa-prb-result__meta {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.axa-prb-result__card .axa-result__actions {
+  justify-content: flex-end;
+}
+
+.axa-result__wrap {
+  overflow-x: auto;
+  border: 1px solid #c5e4e7;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.axa-cmp {
+  --axa-cmp-teal: #2f9ea8;
+  --axa-cmp-teal-deep: #278f98;
+  --axa-cmp-gold: #f5d76e;
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.8rem;
+  color: #334155;
+}
+
+.axa-cmp th,
+.axa-cmp td {
+  border: 1px solid #d7e8ea;
+  padding: 0.55rem 0.65rem;
+  vertical-align: middle;
+}
+
+.axa-cmp thead th {
+  background: var(--axa-cmp-teal);
+  border-color: var(--axa-cmp-teal-deep);
+  color: #fff;
+  text-align: center;
+  padding: 0.7rem 0.5rem;
+}
+
+.axa-cmp__corner {
+  width: 34%;
+  background: var(--axa-cmp-teal) !important;
+}
+
+.axa-cmp__planHead {
+  width: 22%;
+  cursor: pointer;
+  transition: background-color 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.axa-cmp__col {
+  cursor: pointer;
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.axa-cmp.is-col-hover-2plus [data-col="2plus"],
+.axa-cmp.is-col-hover-3plus [data-col="3plus"],
+.axa-cmp.is-col-hover-3 [data-col="3"] {
+  background: #e3f4f6 !important;
+}
+
+.axa-cmp.is-col-hover-2plus thead [data-col="2plus"],
+.axa-cmp.is-col-hover-3plus thead [data-col="3plus"],
+.axa-cmp.is-col-hover-3 thead [data-col="3"] {
+  filter: brightness(1.06);
+  box-shadow: inset 0 -3px 0 rgba(245, 215, 110, 0.55);
+}
+
+.axa-cmp.is-col-hover-2plus tr.axa-cmp__footer [data-col="2plus"],
+.axa-cmp.is-col-hover-3plus tr.axa-cmp__footer [data-col="3plus"],
+.axa-cmp.is-col-hover-3 tr.axa-cmp__footer [data-col="3"] {
+  background: #268993 !important;
+}
+
+.axa-cmp.is-col-selected-2plus [data-col="2plus"],
+.axa-cmp.is-col-selected-3plus [data-col="3plus"],
+.axa-cmp.is-col-selected-3 [data-col="3"] {
+  background: #d4eef1 !important;
+}
+
+.axa-cmp.is-col-selected-2plus thead [data-col="2plus"].axa-cmp__planHead,
+.axa-cmp.is-col-selected-3plus thead [data-col="3plus"].axa-cmp__planHead,
+.axa-cmp.is-col-selected-3 thead [data-col="3"].axa-cmp__planHead {
+  box-shadow: inset 0 -4px 0 var(--axa-cmp-gold);
+  background: #278f98 !important;
+}
+
+.axa-cmp.is-col-selected-2plus tr.axa-cmp__footer [data-col="2plus"],
+.axa-cmp.is-col-selected-3plus tr.axa-cmp__footer [data-col="3plus"],
+.axa-cmp.is-col-selected-3 tr.axa-cmp__footer [data-col="3"] {
+  background: #1f858e !important;
+  box-shadow: inset 0 0 0 2px rgba(245, 215, 110, 0.4);
+}
+
+.axa-cmp__planHead.is-selected {
+  box-shadow: inset 0 -4px 0 var(--axa-cmp-gold);
+  background: #278f98 !important;
+}
+
+.axa-cmp__planName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.axa-cmp__planPrice {
+  margin-top: 0.2rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--axa-cmp-gold);
+  line-height: 1.25;
+}
+
+.axa-cmp__section td {
+  background: var(--axa-cmp-teal);
+  border-color: var(--axa-cmp-teal-deep);
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+}
+
+.axa-cmp tbody tr:not(.axa-cmp__section):not(.axa-cmp__footer):nth-child(even) {
+  background: #f5f8f9;
+}
+
+.axa-cmp tbody tr:not(.axa-cmp__section):not(.axa-cmp__footer):nth-child(odd) {
+  background: #fff;
+}
+
+.axa-cmp tbody th[scope="row"] {
+  text-align: left;
+  font-weight: 500;
+  color: #334155;
+  background: inherit;
+}
+
+.axa-cmp tbody td {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.axa-cmp__dash {
+  color: #94a3b8;
+}
+
+.axa-cmp__select {
+  width: 100%;
+  max-width: 140px;
+  height: 32px;
+  margin: 0 auto;
+  display: block;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  background: #fff;
+  padding: 0 1.6rem 0 0.45rem;
+  font-size: 0.78rem;
+  color: #0f172a;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2364748b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.4rem center;
+  background-size: 0.65rem;
+  cursor: pointer;
+}
+
+.axa-cmp__footer th,
+.axa-cmp__footer td {
+  background: var(--axa-cmp-teal) !important;
+  border-color: var(--axa-cmp-teal-deep);
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.axa-cmp tbody tr.axa-cmp__footer th[scope="row"] {
+  color: #fff !important;
+  text-align: left;
+  font-weight: 600;
+}
+
+.axa-cmp__prb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  user-select: none;
+}
+
+.axa-cmp__prb input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #f5d76e;
+  cursor: pointer;
+}
+
+.axa-result__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding-top: 0.15rem;
+}
+
+.axa-result__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+  height: 42px;
+  padding: 0 1.15rem;
+  border: 0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.axa-result__btn--quote {
+  background: #fff;
+  color: #0f766e;
+  border: 1px solid #0f766e;
+}
+
+.axa-result__btn--quote:hover {
+  background: #f0fdfa;
+}
+
+.axa-result__btn--policy {
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(15, 118, 110, 0.2);
+}
+
+.axa-result__btn--policy:hover {
+  background: #0d9488;
+}
+
+@media (max-width: 640px) {
+  .axa-result__actions {
+    flex-direction: column-reverse;
+  }
+
+  .axa-result__btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .axa-quote__row--policy {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .axa-quote__row--policy .axa-quote__field--promo {
+    grid-column: 1 / -1;
+  }
+
+  .axa-quote__row--car,
+  .axa-quote__row--coverA,
+  .axa-quote__row--coverB {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .axa-quote[data-policy-mode="compulsory"] .axa-quote__stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .axa-quote__field--check {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .axa-quote__row--policy,
+  .axa-quote__row--car,
+  .axa-quote__row--coverA,
+  .axa-quote__row--coverB,
+  .axa-quote[data-policy-mode="compulsory"] .axa-quote__stack {
+    grid-template-columns: 1fr;
+  }
+
+  .axa-quote__field > label,
+  .axa-quote__label {
+    white-space: normal;
+  }
+
+  .axa-cmp {
+    font-size: 0.74rem;
   }
 }

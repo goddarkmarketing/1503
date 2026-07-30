@@ -16,22 +16,19 @@ App.AgentFeatures = {
       id: 'products',
       label: 'ออกกรมธรรม์',
       items: [
-        { key: 'compulsory-ergo', label: 'พ.ร.บ. — เออร์โก (999)', page: 'compulsory/ergo.html' },
-        { key: 'compulsory-bki', label: 'พ.ร.บ. — BKI กรุงเทพ' },
+        { key: 'compulsory-ergo', label: 'พ.ร.บ. — เออร์โก', page: 'compulsory/ergo.html' },
         { key: 'compulsory-axa', label: 'พ.ร.บ. — AXA' },
-        { key: 'compulsory-indara', label: 'พ.ร.บ. — อินทรประกันภัย', page: 'compulsory/indara.html' },
-        { key: 'voluntary-ergo', label: '2+/3+ — เออร์โก' },
-        { key: 'voluntary-bki', label: '2+/3+ — BKI กรุงเทพ' },
+        { key: 'compulsory-bki', label: 'พ.ร.บ. — BKI กรุงเทพ' },
+        { key: 'compulsory-chubb', label: 'พ.ร.บ. — CHUBB' },
+        { key: 'compulsory-indara', label: 'พ.ร.บ. — อินทรประกันภัย' },
         { key: 'voluntary-axa', label: '2+/3+ — AXA', page: 'voluntary/axa.html' },
-        { key: 'voluntary-indara', label: '2+/3+ — อินทรประกันภัย', page: 'voluntary/indara.html' },
-        { key: 'pa-ergo', label: 'อุบัติเหตุ — เออร์โก' },
-        { key: 'pa-bki', label: 'อุบัติเหตุ — BKI กรุงเทพ', page: 'pa/bki.html' },
-        { key: 'pa-axa', label: 'อุบัติเหตุ — AXA', page: 'pa/axa.html' },
-        { key: 'pa-indara', label: 'อุบัติเหตุ — อินทรประกันภัย', page: 'pa/indara.html' },
-        { key: 'travel-ergo', label: 'เดินทาง — เออร์โก' },
-        { key: 'travel-bki', label: 'เดินทาง — BKI กรุงเทพ' },
+        { key: 'voluntary-bki', label: '2+/3+ — BKI กรุงเทพ' },
+        { key: 'voluntary-chubb', label: '2+/3+ — CHUBB' },
+        { key: 'voluntary-indara', label: '2+/3+ — อินทรประกันภัย' },
+        { key: 'pa-axa', label: 'อุบัติเหตุ — AXA' },
+        { key: 'pa-bki', label: 'อุบัติเหตุ — BKI กรุงเทพ' },
         { key: 'travel-axa', label: 'เดินทาง — AXA' },
-        { key: 'travel-indara', label: 'เดินทาง — อินทรประกันภัย', page: 'travel/indara.html' },
+        { key: 'travel-bki', label: 'เดินทาง — BKI กรุงเทพ' },
         { key: 'renew', label: 'ต่ออายุกรมธรรม์', page: 'agent/renew.html' }
       ]
     },
@@ -51,7 +48,8 @@ App.AgentFeatures = {
       label: 'การเงิน',
       items: [
         { key: 'commission', label: 'ค่าคอมมิชชัน', page: 'agent/commission.html' },
-        { key: 'credit', label: 'ขอเติมวงเงิน', page: 'agent/credit.html' }
+        { key: 'credit', label: 'ขอเติมวงเงิน', page: 'agent/credit.html' },
+        { key: 'credit-history', label: 'ประวัติการเติมเงิน', page: 'agent/credit-history.html' }
       ]
     },
     {

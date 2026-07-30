@@ -4,7 +4,7 @@
 window.App = window.App || {};
 
 App.Shell = {
-  init(options = {}) {
+  async init(options = {}) {
     const user = App.AuthService.getCurrentUser();
     if (!user) return;
 
@@ -13,11 +13,12 @@ App.Shell = {
 
     this._bindUser(user);
     this._bindUserMenu(user, options);
-    this._bindNotifications();
+    await this._bindNotifications();
     this._bindLogout(this._basePath);
 
     if (user.role === 'agent') {
       this._loadAgentBalance(user.id);
+      this._bindCommissionPill();
     } else if (options.hideBalance) {
       document.querySelector('.balance-pill')?.style.setProperty('display', 'none');
     }
@@ -177,6 +178,37 @@ App.Shell = {
       if (user?.balance != null) {
         amountEl.textContent = App.BalanceService.formatAmount(user.balance);
       }
+    }
+  },
+
+  async _bindCommissionPill() {
+    const header = document.querySelector('.top-header');
+    if (!header || header.querySelector('.commission-pill')) return;
+
+    const pill = document.createElement('a');
+    pill.className = 'commission-pill';
+    pill.href = `${this._basePath}agent/commission.html`;
+    pill.setAttribute('aria-label', 'ดูรายละเอียดค่าคอมมิชชันเดือนนี้');
+    pill.innerHTML = `
+      <span class="commission-pill__icon"><i data-lucide="coins"></i></span>
+      <span class="commission-pill__text">
+        <span class="commission-pill__label">ค่าคอมเดือนนี้</span>
+        <span class="commission-pill__value"><span data-commission-amount>0.00</span> บ.</span>
+      </span>
+    `;
+
+    const balancePill = header.querySelector('.balance-pill');
+    if (balancePill) balancePill.insertAdjacentElement('afterend', pill);
+    else header.prepend(pill);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    try {
+      const now = new Date();
+      const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const summary = await App.CommissionService.getSummary({ period, periodType: 'month' });
+      pill.querySelector('[data-commission-amount]').textContent = this.formatCurrency(summary.total);
+    } catch {
+      pill.querySelector('[data-commission-amount]').textContent = '-';
     }
   },
 

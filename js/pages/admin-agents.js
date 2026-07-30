@@ -20,6 +20,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+function generateNextAgentCode() {
+  const usedCodes = new Set((agentsCache || []).map((a) => a?.code).filter(Boolean));
+  const codeRe = /^([A-Za-z]+)(\d+)-(\d+)$/;
+
+  let maxGroup = 0;
+  let maxSeq = 0;
+  const prefixCounts = {};
+
+  for (const code of usedCodes) {
+    const m = String(code).match(codeRe);
+    if (!m) continue;
+    const prefix = m[1];
+    const group = Number(m[2]);
+    const seq = Number(m[3]);
+    prefixCounts[prefix] = (prefixCounts[prefix] || 0) + 1;
+    if (Number.isFinite(group)) maxGroup = Math.max(maxGroup, group);
+    if (Number.isFinite(seq)) maxSeq = Math.max(maxSeq, seq);
+  }
+
+  // Prefer the most common prefix in existing data (e.g. 'Ag' over 'Ck').
+  const prefix = Object.entries(prefixCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Ag';
+  const nextGroup = (maxGroup || 0) + 1;
+  const baseSeq = (maxSeq || 0) + 1;
+  const pad3 = (n) => String(n).padStart(3, '0');
+
+  for (let i = 0; i < 100; i++) {
+    const candidateSeq = baseSeq + i;
+    const candidate = `${prefix}${nextGroup}-${pad3(candidateSeq)}`;
+    if (!usedCodes.has(candidate)) return candidate;
+  }
+
+  // Fallback (should be rare): keep the same format but use a time-based seq.
+  const fallbackSeq = baseSeq + (Date.now() % 1000);
+  return `${prefix}${nextGroup}-${pad3(fallbackSeq)}`;
+}
+
 async function renderAgents() {
   const tbody = document.getElementById('agentsTableBody');
   App.TableUI.showLoading(tbody, 7);
@@ -69,7 +105,7 @@ function renderAgentsTable() {
     btn.addEventListener('click', () => openEditModal(btn.dataset.id));
   });
   tbody.querySelectorAll('.btn-toggle').forEach((btn) => {
-    btn.addEventListener('click', () => toggleStatus(btn.dataset.id, btn.dataset.status));
+    btn.addEventListener('click', () => toggleStatus(btn.dataset.id, btn.dataset.status, btn));
   });
 
   App.TableUI.renderPagination(document.getElementById('agentsPagination'), {
@@ -141,20 +177,24 @@ function openAdjustModal(agentId) {
   overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
   overlay.querySelector('#confirmAdjust')?.addEventListener('click', async () => {
     const form = overlay.querySelector('#adjustForm');
+    const btn = overlay.querySelector('#confirmAdjust');
     let amount = parseFloat(form.amount.value);
     if (Number.isNaN(amount) || amount <= 0) return alert('กรุณาใส่จำนวนเงินที่ถูกต้อง');
     if (form.adjustType.value === 'debit') amount = -amount;
 
     try {
-      const res = await App.AgentService.adjustBalance(agentId, amount, form.note.value.trim());
-      const row = document.querySelector(`tr[data-agent-id="${agentId}"]`);
-      row?.querySelector('.agent-balance')?.replaceChildren(document.createTextNode(App.Shell.formatCurrency(res.balance)));
-      const idx = agentsCache.findIndex((a) => a.id === agentId);
-      if (idx >= 0) agentsCache[idx].balance = res.balance;
-      await renderMiniLedger();
-      App.Modal.close();
+      await App.ButtonUI.withLoading(btn, async () => {
+        const res = await App.AgentService.adjustBalance(agentId, amount, form.note.value.trim());
+        const row = document.querySelector(`tr[data-agent-id="${agentId}"]`);
+        row?.querySelector('.agent-balance')?.replaceChildren(document.createTextNode(App.Shell.formatCurrency(res.balance)));
+        const idx = agentsCache.findIndex((a) => a.id === agentId);
+        if (idx >= 0) agentsCache[idx].balance = res.balance;
+        await renderMiniLedger();
+        App.Modal.close();
+        App.AdminUtils.showToast(`ปรับวงเงิน ${agent.code} เรียบร้อยแล้ว`);
+      }, { label: 'กำลังบันทึก...' });
     } catch (err) {
-      alert(err.message);
+      App.AdminUtils.showToast(err.message || 'ปรับวงเงินไม่สำเร็จ', 'error');
     }
   });
 }
@@ -206,44 +246,39 @@ function openPermissionsModal(agentId) {
     if (!saveBtn) return;
     e.preventDefault();
 
-    if (saveBtn.disabled) return;
-
-    saveBtn.disabled = true;
-    const originalLabel = saveBtn.textContent;
-    saveBtn.textContent = 'กำลังบันทึก...';
+    if (saveBtn.classList.contains('is-loading') || saveBtn.disabled) return;
 
     try {
-      const featurePermissions = App.AgentFeatures.readPermissionsFromForm(form);
-      const noneEnabled = App.AgentFeatures.countEnabled(featurePermissions) === 0;
+      await App.ButtonUI.withLoading(saveBtn, async () => {
+        const featurePermissions = App.AgentFeatures.readPermissionsFromForm(form);
+        const noneEnabled = App.AgentFeatures.countEnabled(featurePermissions) === 0;
 
-      const updated = await App.AgentService.updateAgent(agentId, { featurePermissions });
-      const idx = agentsCache.findIndex((a) => a.id === agentId);
-      if (idx >= 0) agentsCache[idx] = { ...agentsCache[idx], ...updated };
+        const updated = await App.AgentService.updateAgent(agentId, { featurePermissions });
+        const idx = agentsCache.findIndex((a) => a.id === agentId);
+        if (idx >= 0) agentsCache[idx] = { ...agentsCache[idx], ...updated };
 
-      let statusEl = form.querySelector('.agent-perm__status');
-      if (!statusEl) {
-        statusEl = document.createElement('div');
-        statusEl.className = 'agent-perm__status agent-perm__status--success';
-        form.prepend(statusEl);
-      }
-      statusEl.textContent = noneEnabled
-        ? 'บันทึกแล้ว — นายหน้าจะเข้าระบบไม่ได้จนกว่าจะเปิดสิทธิ์อย่างน้อย 1 รายการ'
-        : 'บันทึกสิทธิ์เรียบร้อยแล้ว';
-      saveBtn.textContent = 'บันทึกแล้ว';
+        let statusEl = form.querySelector('.agent-perm__status');
+        if (!statusEl) {
+          statusEl = document.createElement('div');
+          statusEl.className = 'agent-perm__status agent-perm__status--success';
+          form.prepend(statusEl);
+        }
+        statusEl.textContent = noneEnabled
+          ? 'บันทึกแล้ว — นายหน้าจะเข้าระบบไม่ได้จนกว่าจะเปิดสิทธิ์อย่างน้อย 1 รายการ'
+          : 'บันทึกสิทธิ์เรียบร้อยแล้ว';
 
-      await new Promise((resolve) => window.setTimeout(resolve, 700));
-      App.Modal.close();
-      renderAgentsTable();
-      App.AdminUtils.showToast(
-        noneEnabled
-          ? `บันทึกสิทธิ์ของ ${agent.code} แล้ว (ปิดทุกฟังก์ชัน — นายหน้าเข้าระบบไม่ได้)`
-          : `บันทึกสิทธิ์ของ ${agent.code} เรียบร้อยแล้ว`
-      );
+        await new Promise((resolve) => window.setTimeout(resolve, 500));
+        App.Modal.close();
+        renderAgentsTable();
+        App.AdminUtils.showToast(
+          noneEnabled
+            ? `บันทึกสิทธิ์ของ ${agent.code} แล้ว (ปิดทุกฟังก์ชัน — นายหน้าเข้าระบบไม่ได้)`
+            : `บันทึกสิทธิ์ของ ${agent.code} เรียบร้อยแล้ว`
+        );
+      }, { label: 'กำลังบันทึก...', minMs: 350 });
     } catch (err) {
       console.error(err);
       App.AdminUtils.showToast(err?.message || 'บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง', 'error');
-      saveBtn.disabled = false;
-      saveBtn.textContent = originalLabel;
     }
   });
 }
@@ -254,7 +289,7 @@ function openEditModal(agentId) {
 
   const overlay = App.Modal.open({
     title: `แก้ไขนายหน้า — ${agent.code}`,
-    size: 'form',
+    size: 'wide',
     body: `
       <form id="editAgentForm" class="agent-form" novalidate>
         <p class="agent-form__intro">อัปเดตข้อมูลติดต่อและวงเงินสูงสุดของบัญชี <strong>${agent.code}</strong></p>
@@ -296,6 +331,8 @@ function openEditModal(agentId) {
             </div>
           </div>
         </section>
+
+        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates) : ''}
       </form>
     `,
     footer: `
@@ -305,6 +342,7 @@ function openEditModal(agentId) {
   });
 
   overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
+  App.AgentCommissionRates?.bindForm(overlay);
   overlay.querySelector('#confirmEdit')?.addEventListener('click', async () => {
     const form = overlay.querySelector('#editAgentForm');
     const btn = overlay.querySelector('#confirmEdit');
@@ -312,21 +350,20 @@ function openEditModal(agentId) {
       form.reportValidity();
       return;
     }
-    btn.disabled = true;
-    btn.textContent = 'กำลังบันทึก...';
     try {
-      await App.AgentService.updateAgent(agentId, {
-        name: form.name.value.trim(),
-        email: form.email.value.trim(),
-        phone: form.phone.value.trim(),
-        creditLimit: parseFloat(form.creditLimit.value) || 0
-      });
-      await renderAgents();
-      App.Modal.close();
-      App.AdminUtils.showToast(`อัปเดต ${agent.code} เรียบร้อยแล้ว`);
+      await App.ButtonUI.withLoading(btn, async () => {
+        await App.AgentService.updateAgent(agentId, {
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          phone: form.phone.value.trim(),
+          creditLimit: parseFloat(form.creditLimit.value) || 0,
+          commissionRates: App.AgentCommissionRates?.readFromForm(form)
+        });
+        await renderAgents();
+        App.Modal.close();
+        App.AdminUtils.showToast(`อัปเดต ${agent.code} เรียบร้อยแล้ว`);
+      }, { label: 'กำลังบันทึก...' });
     } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'บันทึกการแก้ไข';
       App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');
     }
   });
@@ -335,7 +372,7 @@ function openEditModal(agentId) {
 function openAddAgentModal() {
   const overlay = App.Modal.open({
     title: 'เพิ่มนายหน้าใหม่',
-    size: 'form',
+    size: 'wide',
     body: `
       <form id="addAgentForm" class="agent-form" novalidate>
         <p class="agent-form__intro">สร้างบัญชีสำหรับเข้าใช้งานพอร์ทัลนายหน้า รหัสนายหน้าจะใช้เป็นชื่อผู้ใช้เข้าสู่ระบบ</p>
@@ -349,7 +386,7 @@ function openAddAgentModal() {
             <div class="form-field">
               <label for="addCode">รหัสนายหน้า <span class="form-req" aria-hidden="true">*</span></label>
               <input id="addCode" name="code" required autocomplete="off" placeholder="เช่น Ag4-301" spellcheck="false">
-              <span class="form-field__hint">ใช้เป็น Username เข้าสู่ระบบ</span>
+              <span class="form-field__hint">ระบบจะสร้างรหัสให้โดยอัตโนมัติ ใช้เป็น Username เข้าสู่ระบบ</span>
             </div>
             <div class="form-field">
               <label for="addPassword">รหัสผ่านเริ่มต้น <span class="form-req" aria-hidden="true">*</span></label>
@@ -397,6 +434,8 @@ function openAddAgentModal() {
             </div>
           </div>
         </section>
+
+        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection() : ''}
       </form>
     `,
     footer: `
@@ -406,7 +445,15 @@ function openAddAgentModal() {
   });
 
   overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
-  overlay.querySelector('#addCode')?.focus();
+  const codeInput = overlay.querySelector('#addCode');
+  if (codeInput) {
+    // Ensure a unique code every time the modal opens.
+    codeInput.value = generateNextAgentCode();
+    codeInput.readOnly = true;
+    codeInput.setAttribute('aria-readonly', 'true');
+    codeInput.focus();
+  }
+  App.AgentCommissionRates?.bindForm(overlay);
 
   overlay.querySelector('#confirmAdd')?.addEventListener('click', async () => {
     const form = overlay.querySelector('#addAgentForm');
@@ -416,26 +463,44 @@ function openAddAgentModal() {
       return;
     }
 
-    btn.disabled = true;
-    btn.textContent = 'กำลังสร้าง...';
     try {
-      const created = await App.AgentService.createAgent({
-        code: form.code.value.trim(),
-        name: form.name.value.trim(),
-        email: form.email.value.trim(),
-        phone: form.phone.value.trim(),
-        initialBalance: parseFloat(form.initialBalance.value) || 0,
-        creditLimit: parseFloat(form.creditLimit.value) || 50000,
-        password: form.password.value || 'demo'
-      });
-      await renderAgents();
-      await renderMiniLedger();
-      App.Modal.close();
-      App.AdminUtils.showToast(`สร้างบัญชี ${created?.code || form.code.value.trim()} เรียบร้อยแล้ว`);
+      await App.ButtonUI.withLoading(btn, async () => {
+        const codeEl = overlay.querySelector('#addCode');
+        const buildPayload = () => ({
+          code: String(codeEl?.value || form.code.value || '').trim(),
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          phone: form.phone.value.trim(),
+          initialBalance: parseFloat(form.initialBalance.value) || 0,
+          creditLimit: parseFloat(form.creditLimit.value) || 50000,
+          password: form.password.value || 'demo',
+          commissionRates: App.AgentCommissionRates?.readFromForm(form)
+        });
+
+        let created;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            created = await App.AgentService.createAgent(buildPayload());
+            break;
+          } catch (err) {
+            const msg = err?.message || '';
+            if (msg.includes('รหัสนายหน้านี้มีอยู่แล้ว') && codeEl && attempt === 0) {
+              // Try again with a different code (very unlikely, but safe for parallel admin usage).
+              codeEl.value = generateNextAgentCode();
+              continue;
+            }
+            throw err;
+          }
+        }
+
+        await renderAgents();
+        await renderMiniLedger();
+        App.Modal.close();
+        App.AdminUtils.showToast(`สร้างบัญชี ${created?.code || form.code.value.trim()} เรียบร้อยแล้ว`);
+      }, { label: 'กำลังสร้าง...' });
     } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'สร้างบัญชี';
-      App.AdminUtils.showToast(err.message || 'สร้างบัญชีไม่สำเร็จ', 'error');
+      const msg = err?.message || '';
+      App.AdminUtils.showToast(msg || 'สร้างบัญชีไม่สำเร็จ', 'error');
     }
   });
 }
@@ -448,16 +513,19 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
-async function toggleStatus(agentId, currentStatus) {
+async function toggleStatus(agentId, currentStatus, btn) {
   const agent = agentsCache.find((a) => a.id === agentId);
   const next = currentStatus === 'active' ? 'inactive' : 'active';
   const label = next === 'active' ? 'เปิดใช้งาน' : 'ระงับ';
   if (!confirm(`${label}บัญชี ${agent?.code}?`)) return;
 
   try {
-    await App.AgentService.setAgentStatus(agentId, next);
-    await renderAgents();
+    await App.ButtonUI.withLoading(btn, async () => {
+      await App.AgentService.setAgentStatus(agentId, next);
+      await renderAgents();
+      App.AdminUtils.showToast(`${label} ${agent?.code || ''} เรียบร้อยแล้ว`);
+    }, { label: next === 'active' ? 'กำลังเปิดใช้...' : 'กำลังระงับ...' });
   } catch (err) {
-    alert(err.message);
+    App.AdminUtils.showToast(err.message || 'เปลี่ยนสถานะไม่สำเร็จ', 'error');
   }
 }

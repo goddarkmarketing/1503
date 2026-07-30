@@ -4,8 +4,9 @@
 
   const labels = {
     ergo: 'เออร์โกประกันภัย',
-    bki: 'BKI กรุงเทพประกันภัย',
     axa: 'AXA',
+    bki: 'BKI กรุงเทพประกันภัย',
+    chubb: 'CHUBB',
     indara: 'อินทรประกันภัย'
   };
 

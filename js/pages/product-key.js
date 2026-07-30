@@ -128,47 +128,11 @@
     }
 
     if (kind === 'voluntary-axa') {
-      return `
-        <div class="product-key__grid">
-          <div class="form-field-h">
-            <label class="form-label" for="coverType">ประเภท</label>
-            <select id="coverType" name="coverType" class="form-input" required>
-              <option value="3plus">ประเภท 3+</option>
-              <option value="2plus">ประเภท 2+</option>
-            </select>
-          </div>
-          <div class="form-field-h">
-            <label class="form-label" for="sumInsured">ทุนประกัน</label>
-            <select id="sumInsured" name="sumInsured" class="form-input" required>
-              <option value="100000" selected>100,000</option>
-              <option value="200000">200,000</option>
-              <option value="300000">300,000</option>
-            </select>
-          </div>
-          <div class="form-field-h">
-            <label class="form-label" for="area">พื้นที่ใช้รถ</label>
-            <select id="area" name="area" class="form-input" required>
-              <option value="province">ต่างจังหวัด</option>
-              <option value="bkk">กทม. และปริมณฑล</option>
-            </select>
-          </div>
-          <div class="form-field-h">
-            <label class="form-label" for="carBrand">ยี่ห้อรถ (เอเชีย)</label>
-            <input type="text" id="carBrand" name="carBrand" class="form-input" placeholder="เช่น Toyota" required>
-          </div>
-          <div class="form-field-h">
-            <label class="form-label" for="licensePlate">ทะเบียนรถ</label>
-            <input type="text" id="licensePlate" name="licensePlate" class="form-input" required>
-          </div>
-          <div class="form-field-h form-field-h--full">
-            <label class="form-label" for="insuredName">ชื่อ-นามสกุล ผู้เอาประกัน</label>
-            <input type="text" id="insuredName" name="insuredName" class="form-input" required>
-          </div>
-          <div class="form-field-h">
-            <label class="form-label" for="phone">เบอร์โทร</label>
-            <input type="tel" id="phone" name="phone" class="form-input" required>
-          </div>
-        </div>`;
+      const user = window.App?.AuthService?.getCurrentUser?.() || window.App?.Session?.getUser?.();
+      if (App.VoluntaryAxaQuote?.buildFields) {
+        return App.VoluntaryAxaQuote.buildFields(user);
+      }
+      return '<p class="product-key__hint">ไม่สามารถโหลดฟอร์ม AXA ได้ กรุณารีเฟรชหน้า</p>';
     }
 
     if (kind === 'voluntary-indara') {
@@ -320,7 +284,19 @@
     }
 
     if (fieldsHost) fieldsHost.innerHTML = buildFields(product.formKind);
-    if (hintEl) hintEl.textContent = product.notes || '';
+    if (hintEl) {
+      if (product.formKind === 'voluntary-axa') {
+        hintEl.hidden = true;
+        hintEl.textContent = '';
+      } else {
+        hintEl.textContent = product.notes || '';
+      }
+    }
+
+    if (product.formKind === 'voluntary-axa') {
+      form?.classList.add('product-key__card--quote-only');
+      document.querySelector('.product-key')?.classList.add('product-key--axa-quote');
+    }
 
     const pagesByTab = {};
     Object.keys(product.brochures || {}).forEach((tab) => {
@@ -335,6 +311,9 @@
       tabs: product.brochureTabs,
       pagesByTab,
       initialTab: product.brochureTabs?.[0]?.id || Object.keys(pagesByTab)[0],
+      collapsible: product.formKind === 'voluntary-axa',
+      collapsed: product.formKind === 'voluntary-axa',
+      layoutRoot: document.querySelector('.product-key'),
       onTabChange(tabId) {
         const cover = form?.querySelector('#coverType');
         if (cover && (tabId === '2plus' || tabId === '3plus')) {
@@ -353,10 +332,24 @@
         }
         sync();
       });
+
+      if (product.formKind === 'voluntary-axa' && App.VoluntaryAxaQuote?.bind) {
+        App.VoluntaryAxaQuote.bind(form, {
+          onPremiumSync: sync,
+          onBrochureTab: (tabId) => brochureApi?.setTab?.(tabId),
+          toast
+        });
+      }
+
       sync();
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (product.formKind === 'voluntary-axa') {
+          // Quote-only screen for now — use ตรวจสอบราคา instead of issuing policy.
+          form.querySelector('#btnCheckPrice')?.click();
+          return;
+        }
         if (!form.reportValidity()) return;
         const values = readValues(form);
         const premium = updatePremium(form, premiumEl);

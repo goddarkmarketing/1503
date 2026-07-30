@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Kladee Broker">
+  <circle cx="24" cy="24" r="22" fill="#1f379d"/>
+  <path d="M16 24c0-6 4-10 8-10s8 4 8 10-4 10-8 10" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M24 16v16" fill="none" stroke="#59bc46" stroke-width="3" stroke-linecap="round"/>
+</svg>

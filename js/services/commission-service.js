@@ -10,13 +10,14 @@ App.CommissionService = {
     return App.API.request(`/agents/${agentId}/commissions${params ? `?${params}` : ''}`);
   },
 
-  async getSummary(period) {
+  async getSummary(filters = {}) {
     const agentId = App.Session.getAgentId();
+    if (typeof filters === 'string') filters = { period: filters, periodType: 'month' };
     if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.getCommissionSummary(agentId, period);
+      return App.MockAPI.getCommissionSummary(agentId, filters);
     }
-    const q = period ? `?period=${period}` : '';
-    return App.API.request(`/agents/${agentId}/commissions/summary${q}`);
+    const params = new URLSearchParams(filters).toString();
+    return App.API.request(`/agents/${agentId}/commissions/summary${params ? `?${params}` : ''}`);
   },
 
   async getAllCommissions(filters = {}) {

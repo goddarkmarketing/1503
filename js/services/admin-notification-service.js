@@ -62,6 +62,64 @@ App.AdminNotificationService = {
     return App.API.request('/admin/nav-badge-counts');
   },
 
+  async getBadgeMap() {
+    const counts = await this._fetchCounts();
+    const ack = this._readAck();
+    const map = {};
+    this.ITEMS.forEach((item) => {
+      const total = counts[item.key] || 0;
+      map[item.key] = {
+        total,
+        unread: this._displayCount(item.key, total, ack)
+      };
+    });
+    return map;
+  },
+
+  async acknowledge(key) {
+    if (!key) return;
+    const counts = await this._fetchCounts();
+    const ack = this._readAck();
+    ack[key] = counts[key] ?? 0;
+    this._writeAck(ack);
+  },
+
+  async acknowledgeCurrentPage(pagePath) {
+    const normalized = String(pagePath || '')
+      .replace(/\\/g, '/')
+      .replace(/^\/+/, '');
+    const item = this.ITEMS.find((entry) => entry.href === normalized);
+    if (!item) return false;
+    await this.acknowledge(item.key);
+    return true;
+  },
+
+  async applySidebarBadges(navRoot) {
+    if (!navRoot) return;
+    const badges = await this.getBadgeMap();
+
+    navRoot.querySelectorAll('[data-nav]').forEach((link) => {
+      const key = link.dataset.nav;
+      if (!key || !(key in badges)) return;
+
+      let badge = link.querySelector('.nav-count-badge');
+      const count = badges[key].unread;
+
+      if (!count) {
+        badge?.remove();
+        return;
+      }
+
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'nav-count-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        link.appendChild(badge);
+      }
+      badge.textContent = count > 99 ? '99+' : String(count);
+    });
+  },
+
   async getList(userId) {
     const counts = await this._fetchCounts();
     const ack = this._readAck();
@@ -96,10 +154,7 @@ App.AdminNotificationService = {
   async markRead(userId, notifId) {
     const item = this.ITEMS.find((i) => i.id === notifId);
     if (item) {
-      const counts = await this._fetchCounts();
-      const ack = this._readAck();
-      ack[item.key] = counts[item.key] ?? 0;
-      this._writeAck(ack);
+      await this.acknowledge(item.key);
       return { id: notifId, read: true };
     }
     if (App.Config.USE_MOCK_API) {
@@ -114,5 +169,5 @@ App.AdminNotificationService = {
   }
 };
 
-// Back-compat alias (removed sidebar badges)
+// Back-compat alias
 App.AdminNavBadgeService = App.AdminNotificationService;

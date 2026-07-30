@@ -46,9 +46,17 @@
     tbody.querySelectorAll('.btn-pay').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const id = btn.closest('tr').dataset.id;
-        await App.CommissionService.updateStatus(id, 'paid');
-        await load();
-        App.Shell.refreshNotifications?.();
+        if (!confirm('ยืนยันบันทึกว่าจ่ายคอมมิชชันแล้ว?')) return;
+        try {
+          await App.ButtonUI.withLoading(btn, async () => {
+            await App.CommissionService.updateStatus(id, 'paid');
+            await load();
+            App.Shell.refreshNotifications?.();
+            App.AdminUtils.showToast('บันทึกจ่ายคอมมิชชันเรียบร้อยแล้ว');
+          }, { label: 'กำลังบันทึก...' });
+        } catch (err) {
+          App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');
+        }
       });
     });
   }
