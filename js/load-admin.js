@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
-  const cache = '20260717o';
+  const cache = '20260806a';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'config/app-config.js',
@@ -9,6 +9,7 @@
     'core/permissions.js',
     'core/agent-features.js',
     'core/agent-commission-rates.js',
+    'core/thai-banks.js',
     'mock/api.js',
     'services/api-client.js',
     'core/session.js',
@@ -18,6 +19,8 @@
     'services/report-service.js',
     'services/commission-service.js',
     'services/credit-service.js',
+    'services/wht50-service.js',
+    'utils/wht50-document.js',
     'services/admin-report-service.js',
     'services/receipt-service.js',
     'services/product-service.js',

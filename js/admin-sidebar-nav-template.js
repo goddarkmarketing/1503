@@ -40,6 +40,7 @@ window.ADMIN_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   <ul class="nav-group__list">
     <li class="nav-item"><a href="{{BASE}}admin/credit-requests.html" class="nav-link" data-nav="credit-requests"><i data-lucide="inbox"></i><span class="nav-link-text">อนุมัติเติมวงเงิน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/credit-ledger.html" class="nav-link" data-nav="credit-ledger"><i data-lucide="wallet"></i><span class="nav-link-text">ประวัติวงเงิน</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}admin/credit-bank-accounts.html" class="nav-link" data-nav="credit-bank-accounts"><i data-lucide="banknote"></i><span class="nav-link-text">บัญชีรับโอน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/commission.html" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
   </ul>
 </div>
@@ -67,7 +68,9 @@ window.ADMIN_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   </ul>
 </div>`;
 
-window.ADMIN_SIDEBAR_NAV_COUNT = 16;
+// Force re-render sidebar nav on pages that currently embed the old nav.
+// This keeps the menu in sync with ADMIN_SIDEBAR_NAV_HTML.
+window.ADMIN_SIDEBAR_NAV_COUNT = 17;
 
 window.renderAdminSidebarNav = function renderAdminSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-admin-sidebar]');

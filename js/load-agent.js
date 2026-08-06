@@ -1,13 +1,14 @@
 /** Synchronous core stack loader for agent pages — keep before app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-agent\.js.*$/, '');
-  const cache = '20260717k';
+  const cache = '20260806a';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'config/app-config.js',
     'mock/data.js',
     'core/permissions.js',
     'core/agent-features.js',
+    'core/agent-commission-rates.js',
     'mock/api.js',
     'services/api-client.js',
     'core/session.js',
@@ -17,6 +18,8 @@
     'services/report-service.js',
     'services/commission-service.js',
     'services/credit-service.js',
+    'services/wht50-service.js',
+    'utils/wht50-document.js',
     'services/agent-service.js',
     'services/receipt-service.js',
     'services/notification-service.js',

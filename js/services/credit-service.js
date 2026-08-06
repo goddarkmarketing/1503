@@ -1,11 +1,22 @@
 window.App = window.App || {};
 
 App.CreditService = {
-  async getBankAccounts() {
+  async getBankAccounts(options = {}) {
     if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.getCreditBankAccounts();
+      return App.MockAPI.getCreditBankAccounts(options);
     }
-    return App.API.request('/credit/bank-accounts');
+    const params = new URLSearchParams();
+    if (options.enabledOnly) params.set('enabledOnly', '1');
+    const q = params.toString();
+    return App.API.request(`/credit/bank-accounts${q ? `?${q}` : ''}`);
+  },
+
+  async updateBankAccounts(banks) {
+    if (App.Config.USE_MOCK_API) {
+      return App.MockAPI.updateCreditBankAccounts(banks);
+    }
+    // Backend endpoint not yet wired in this demo.
+    throw new Error('API ไม่รองรับการอัปเดตบัญชีธนาคารรับโอนในตอนนี้');
   },
 
   async getRequests(filters = {}) {

@@ -1,0 +1,123 @@
+/* Preview modal + 50.html iframe */
+
+.wht50-sample-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+
+.wht50-sample-frame--preview {
+  /* ความสูงจริงตั้งจาก JS ตามเนื้อหาเอกสาร — กันเลื่อนไม่ถึงท้าย */
+  height: 1200px;
+  min-height: 297mm;
+}
+
+.wht50-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.wht50-preview-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(920px, 100%);
+  max-height: min(94vh, 1040px);
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(15, 31, 77, 0.22);
+}
+
+.wht50-preview-modal--sample {
+  width: min(900px, 100%);
+}
+
+.wht50-preview-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.wht50-preview-modal__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.wht50-preview-modal__meta {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.wht50-preview-modal__close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.wht50-preview-modal__body {
+  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px;
+  background: #e8edf5;
+}
+
+.wht50-preview-modal__body--sample {
+  padding: 0;
+  background: #e8edf5;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wht50-preview-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.wht50-preview-modal__footer .btn-primary,
+.wht50-preview-modal__footer .btn-secondary {
+  min-height: 42px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.wht50-preview-modal__footer .btn-secondary {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.wht50-preview-modal__footer .btn-primary {
+  background: #1d4ed8;
+  border: 1px solid #1d4ed8;
+  color: #fff;
+}
+
+@media print {
+  .wht50-preview-overlay { display: none !important; }
+}

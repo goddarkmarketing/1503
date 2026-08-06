@@ -8,6 +8,15 @@
   const periodInput = document.getElementById('commissionPeriod');
   const periodTypeSelect = document.getElementById('commissionPeriodType');
   const statusSelect = document.getElementById('commissionStatus');
+  const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
+
+  if (immediate) {
+    // In wallet-clear mode: no pending workflow.
+    statusSelect?.querySelector('option[value="pending"]')?.remove();
+    const pendingStatValue = document.getElementById('statCommissionPending');
+    pendingStatValue?.closest('.finance-stat')?.classList.add('is-hidden-by-commission');
+    pendingStatValue?.closest('.finance-stat')?.setAttribute('hidden', 'true');
+  }
 
   function formatMoney(n) {
     return App.Shell.formatCurrency(n);
@@ -63,7 +72,7 @@
   function renderTable() {
     const pg = App.TableUI.paginate(cache, page);
     if (!pg.items.length) {
-      App.TableUI.showEmpty(tbody, 10, 'ไม่พบรายการค่าคอมมิชชัน');
+      App.TableUI.showEmpty(tbody, 11, 'ไม่พบรายการค่าคอมมิชชัน');
       document.getElementById('commissionPagination').innerHTML = '';
       return;
     }
@@ -79,8 +88,25 @@
         <td class="col-money">${formatMoney(c.amount)}</td>
         <td><span class="status-pill ${c.status}">${statusLabel(c.status)}</span></td>
         <td class="col-center">${c.paidAt ? App.AdminUtils.formatThaiDate(c.paidAt) : '-'}</td>
+        <td class="col-center">
+          ${c.wht50Id
+            ? `<button type="button" class="btn-success btn-sm" data-wht50="${c.wht50Id}">พิมพ์</button>`
+            : (c.issueForm50Tawi ? '<span class="admin-hint">รอออก</span>' : '-')}
+        </td>
       </tr>
     `).join('');
+
+    tbody.querySelectorAll('[data-wht50]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        try {
+          const doc = await App.Wht50Service.getById(btn.dataset.wht50);
+          App.Wht50Service.print(doc);
+        } catch (err) {
+          alert(err.message || 'เปิดหนังสือ 50 ทวิไม่สำเร็จ');
+        }
+      });
+    });
+
     App.TableUI.renderPagination(document.getElementById('commissionPagination'), {
       ...pg,
       onChange: (p) => { page = p; renderTable(); }
@@ -88,7 +114,7 @@
   }
 
   async function search() {
-    App.TableUI.showLoading(tbody, 10);
+    App.TableUI.showLoading(tbody, 11);
     const period = periodInput?.value || '';
     const periodType = periodTypeSelect?.value || 'month';
     const status = statusSelect?.value || '';

@@ -81,6 +81,36 @@ App.MockData = {
           'pa-bki': 10,
           'travel-axa': 10,
           'travel-bki': 10
+        },
+        taxWithhold: {
+          'compulsory-indara': 3,
+          'compulsory-axa': 3,
+          'compulsory-bki': 3,
+          'compulsory-chubb': 3,
+          'compulsory-ergo': 3,
+          'voluntary-indara': 3,
+          'voluntary-axa': 3,
+          'voluntary-bki': 3,
+          'voluntary-chubb': 3,
+          'pa-axa': 3,
+          'pa-bki': 3,
+          'travel-axa': 3,
+          'travel-bki': 3
+        },
+        taxWithholdEnabled: {
+          'compulsory-indara': true,
+          'compulsory-axa': true,
+          'compulsory-bki': true,
+          'compulsory-chubb': true,
+          'compulsory-ergo': false,
+          'voluntary-indara': true,
+          'voluntary-axa': true,
+          'voluntary-bki': true,
+          'voluntary-chubb': true,
+          'pa-axa': true,
+          'pa-bki': true,
+          'travel-axa': true,
+          'travel-bki': true
         }
       }
     },
@@ -552,6 +582,29 @@ App.MockData = {
         period: '2026-07',
         earnedAt: '2026-07-17',
         paidAt: null
+      },
+      {
+        id: 'COM-WHT50-DEMO',
+        policyNo: 'POL-2026-ERGO-050',
+        policyType: 'prb',
+        policyTypeLabel: 'พ.ร.บ.',
+        insurer: 'เออร์โกประกันภัย',
+        insurerCode: 'ergo',
+        productKey: 'compulsory-ergo',
+        plate: 'นว 5039',
+        premium: 5800,
+        netPremium: 5398.56,
+        rate: 14,
+        amount: 755.80,
+        commissionGross: 755.80,
+        taxWithhold: 0,
+        taxEnabled: false,
+        status: 'paid',
+        period: '2026-08',
+        earnedAt: '2026-08-05',
+        paidAt: '2026-08-05',
+        issueForm50Tawi: true,
+        wht50Id: 'WHT50-DEMO-001'
       }
     ],
     'agent-002': [
@@ -583,7 +636,10 @@ App.MockData = {
       accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
       branch: 'นครสวรรค์',
       color: '#1DA858',
-      logo: 'assets/banks/KBANK.png'
+      logo: 'images/banks/thai-banks-logo/KBANK.png',
+      enabled: true,
+      activeFrom: '00:00',
+      activeTo: '23:59'
     },
     {
       id: 'bank-scb',
@@ -594,7 +650,10 @@ App.MockData = {
       accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
       branch: 'นครสวรรค์',
       color: '#543186',
-      logo: 'assets/banks/SCB.png'
+      logo: 'images/banks/thai-banks-logo/SCB.png',
+      enabled: true,
+      activeFrom: '00:00',
+      activeTo: '23:59'
     },
     {
       id: 'bank-bbl',
@@ -605,7 +664,10 @@ App.MockData = {
       accountName: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
       branch: 'นครสวรรค์',
       color: '#29449D',
-      logo: 'assets/banks/BBL.png'
+      logo: 'images/banks/thai-banks-logo/BBL.png',
+      enabled: true,
+      activeFrom: '00:00',
+      activeTo: '23:59'
     }
   ],
 
@@ -852,5 +914,37 @@ App.MockData = {
   },
 
   /** Persisted per-owner overrides: { default: {...}, 'agent-001': {...} } */
-  receiptPaperByOwner: {}
+  receiptPaperByOwner: {},
+
+  wht50Documents: [
+    {
+      id: 'WHT50-DEMO-001',
+      docNo: '256908-0001',
+      bookNo: '2569',
+      seqNo: '1',
+      commissionId: 'COM-WHT50-DEMO',
+      policyNo: 'POL-2026-ERGO-050',
+      agentId: 'agent-001',
+      agentCode: 'Ck1-039',
+      payer: {
+        name: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+        address: '1311/35 หมู่ 10 ต.นครสวรรค์ตก อ.เมือง จ.นครสวรรค์ 60000',
+        taxId: '0125566000000'
+      },
+      payee: {
+        name: 'สมชาย ใจดี',
+        address: 'นครสวรรค์',
+        taxId: '1103700000039',
+        idCard: '1103700000039'
+      },
+      paidAmount: 755.80,
+      taxAmount: 0,
+      incomeType: '2',
+      formType: '4',
+      payMethod: '1',
+      issuedAt: '2026-08-05',
+      paidAt: '2026-08-05',
+      refNote: 'กรมธรรม์ POL-2026-ERGO-050 / คอมมิชชัน COM-WHT50-DEMO / ทะเบียน นว 5039'
+    }
+  ]
 };

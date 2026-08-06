@@ -195,8 +195,41 @@
   }
 
   async function loadBanks() {
-    const banks = await App.CreditService.getBankAccounts();
-    renderBanks(banks);
+    // นายหน้าเห็นเฉพาะบัญชีที่เปิดใช้
+    const banks = await App.CreditService.getBankAccounts({ enabledOnly: true });
+    const now = new Date();
+
+    const toMinutes = (hhmm) => {
+      const s = String(hhmm || '').trim();
+      if (!s.includes(':')) return 0;
+      const [h, m] = s.split(':').map((n) => Number(n));
+      if (!Number.isFinite(h) || !Number.isFinite(m)) return 0;
+      return h * 60 + m;
+    };
+
+    const inRange = (fromMin, toMin, curMin) => {
+      // same-day range
+      if (fromMin <= toMin) return curMin >= fromMin && curMin <= toMin;
+      // overnight range (e.g. 22:00 -> 06:00)
+      return curMin >= fromMin || curMin <= toMin;
+    };
+
+    const activeBanks = (banks || []).filter((b) => {
+      const fromMin = toMinutes(b.activeFrom || '00:00');
+      const toMin = toMinutes(b.activeTo || '23:59');
+      const curMin = now.getHours() * 60 + now.getMinutes();
+      return inRange(fromMin, toMin, curMin);
+    });
+
+    // If nobody is active in the schedule, fall back to all enabled banks.
+    const listToRender = activeBanks.length ? activeBanks : (banks || []);
+
+    if (bankAccountInput && bankAccountInput.value) {
+      const stillExists = listToRender.some((b) => b.id === bankAccountInput.value);
+      if (!stillExists) bankAccountInput.value = '';
+    }
+
+    renderBanks(listToRender);
   }
 
   async function loadRequests() {
@@ -408,4 +441,10 @@
   loadBanks();
   loadRequests();
   loadLedger();
+
+  // ถ้าแอดมินปรับบัญชีธนาคารในแท็บอื่น (mock) ให้หน้า agent อัปเดตอัตโนมัติ
+  window.addEventListener('storage', (event) => {
+    if (event?.key !== App.Config?.CREDIT_BANK_ACCOUNTS_KEY) return;
+    loadBanks();
+  });
 })();

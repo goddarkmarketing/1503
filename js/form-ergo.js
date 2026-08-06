@@ -583,6 +583,14 @@ function validateForm(form) {
 async function submitPolicy(form) {
   const btn = document.getElementById('btnNext');
   const data = Object.fromEntries(new FormData(form));
+  data.type = data.type || 'prb';
+  data.typeLabel = data.typeLabel || 'พ.ร.บ.';
+  data.insurer = data.insurer || 'เออร์โกประกันภัย';
+  data.insurerCode = data.insurerCode || 'ergo';
+  data.premiumTotal = data.premiumTotal || document.getElementById('premiumTotal')?.value || '0';
+  data.netPremium = data.netPremium
+    || document.getElementById('premiumPrem')?.value
+    || data.premiumTotal;
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'กำลังบันทึก...';
@@ -591,6 +599,12 @@ async function submitPolicy(form) {
     if (window.App?.PolicyService) {
       const policy = await App.PolicyService.createPolicy(data);
       sessionStorage.setItem('lastIssuedPolicy', JSON.stringify(policy));
+      if (policy?.issueForm50Tawi && policy?.wht50Id && App.Wht50Service) {
+        try {
+          const wht = await App.Wht50Service.getById(policy.wht50Id);
+          sessionStorage.setItem('lastWht50Doc', JSON.stringify(wht));
+        } catch (_) { /* non-blocking */ }
+      }
       window.location.href = '../agent/success.html';
     } else {
       alert('ยืนยันการส่งกรมธรรม์เรียบร้อย');

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>จัดการนายหน้า — Admin</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css?v=20260804j">
+  <title>ตั้งค่าบัญชีธนาคารรับโอน — Admin</title>
+  <link rel="stylesheet" href="../css/style.css?v=20260717i">
+  <link rel="stylesheet" href="../css/admin.css?v=20260804g">
   <link rel="stylesheet" href="../css/portal.css">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
@@ -13,13 +13,14 @@
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-              <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
-                <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
-              </a>
-              <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
-            </div>
+        <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
+          <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
+        </a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+      </div>
+
       <!-- ADMIN_SIDEBAR_V1 -->
-<nav class="sidebar-nav" data-admin-sidebar>
+      <nav class="sidebar-nav" data-admin-sidebar>
         <div class="nav-group" data-nav-zone="main">
           <p class="nav-group__title">หลัก</p>
           <ul class="nav-group__list">
@@ -90,51 +91,100 @@
       </nav>
       <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
     </aside>
+
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-wrapper">
-      <header class="top-header"><button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
-        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name">Admin</span></div></header>
+      <header class="top-header">
+        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+      </header>
+
       <main class="main-content">
-        <div class="content-card">
+        <div class="content-card content-card--bank-accounts">
           <div class="admin-toolbar">
-            <div>
-              <h1 class="admin-page-title">จัดการบัญชีนายหน้า</h1>
-              <p class="admin-hint">เพิ่มนายหน้า ปรับวงเงิน กำหนดสิทธิ์ฟังก์ชัน ระงับ/เปิดใช้บัญชี</p>
-              <p class="admin-hint admin-hint--demo">บัญชีทดลอง: <strong>Ck1-039</strong> (สิทธิ์ครบ) · <strong>Ag2-112</strong> (จำกัดสิทธิ์) · <strong>Ag3-205</strong> (ทดลองใบเสร็จ) — รหัสผ่าน <code>demo</code></p>
+            <div class="admin-toolbar__head">
+              <h1 class="admin-page-title">ตั้งค่าบัญชีธนาคารรับโอน</h1>
+              <p class="admin-hint">เปิด-ปิดใช้งานมีผลทันทีกับหน้านายหน้า · ติ๊กออก = นายหน้าจะไม่เห็นบัญชีนั้น</p>
             </div>
-            <button type="button" class="btn-primary" id="btnAddAgent"><i data-lucide="user-plus" style="width:16px;height:16px"></i> เพิ่มนายหน้า</button>
+            <div class="admin-toolbar-actions">
+              <button type="button" class="btn-primary" id="btnSaveBanks">บันทึกการตั้งค่า</button>
+            </div>
           </div>
-          <div class="data-table-wrap">
-            <table class="data-table data-table--agents">
-              <thead><tr><th>รหัส</th><th>ชื่อ</th><th>โทรศัพท์</th><th>วงเงินคงเหลือ</th><th>วงเงินสูงสุด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
-              <tbody id="agentsTableBody"></tbody>
+
+          <div class="data-table-wrap credit-bank-table-wrap" style="margin-top:10px">
+            <table class="data-table credit-bank-table">
+              <thead>
+                <tr>
+                  <th>เปิดใช้</th>
+                  <th>ธนาคาร</th>
+                  <th>เลขบัญชี</th>
+                  <th>ชื่อบัญชี</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="creditBankAccountsTbody"></tbody>
             </table>
           </div>
-          <div id="agentsPagination"></div>
 
-          <div class="admin-section">
-            <h2 class="admin-section-title">ประวัติปรับวงเงินล่าสุด</h2>
-            <div class="admin-filter-bar">
-              <div class="form-field">
-                <label for="ledgerAgentFilter">นายหน้า</label>
-                <select id="ledgerAgentFilter"><option value="">ทุกนายหน้า</option></select>
+          <div class="agent-form" style="margin-top:18px">
+            <section class="agent-form__section">
+              <h3 class="agent-form__sectionTitle" style="margin-bottom:12px">เพิ่มบัญชีธนาคารรับโอน</h3>
+              <div class="agent-form__grid credit-bank-add-grid">
+                <div class="form-field credit-bank-add-grid__bank">
+                  <label>ธนาคาร / โลโก้ <span class="form-req">*</span></label>
+                  <div class="credit-bank-select" id="addBankSelect">
+                    <button type="button" class="credit-bank-select__trigger" id="addBankSelectTrigger" aria-haspopup="listbox" aria-expanded="false">
+                      <span class="credit-bank-select__preview" id="addBankSelectPreview">
+                        <span class="credit-bank-select__placeholder">เลือกธนาคาร</span>
+                      </span>
+                      <i data-lucide="chevron-down" class="credit-bank-select__chevron"></i>
+                    </button>
+                    <div class="credit-bank-select__menu" id="addBankSelectMenu" role="listbox" hidden></div>
+                  </div>
+                  <input type="hidden" id="addBankCode" value="">
+                  <input type="hidden" id="addBankShort" value="">
+                  <input type="hidden" id="addBankColor" value="#1f379d">
+                  <input type="hidden" id="addBankLogo" value="">
+                  <input type="hidden" id="addBankName" value="">
+                </div>
+                <div class="form-field credit-bank-add-grid__account">
+                  <label>เลขบัญชี <span class="form-req">*</span></label>
+                  <input type="text" id="addAccountNo" placeholder="123-4-56789-0" required>
+                </div>
+                <div class="form-field">
+                  <label>ชื่อบัญชี <span class="form-req">*</span></label>
+                  <input type="text" id="addAccountName" placeholder="ชื่อบริษัท/ผู้รับ" required>
+                </div>
+                <div class="form-field">
+                  <label>สาขา</label>
+                  <input type="text" id="addBranch" placeholder="(ถ้ามี)">
+                </div>
+                <div class="form-field">
+                  <label>สถานะบัญชี</label>
+                  <select id="addEnabledStatus" required>
+                    <option value="1" selected>ใช้งาน</option>
+                    <option value="0">ปิดใช้งาน</option>
+                  </select>
+                </div>
               </div>
-              <a href="credit-ledger.html" class="btn-secondary btn-sm">ดูทั้งหมด</a>
-            </div>
-            <div class="data-table-wrap">
-              <table class="data-table">
-                <thead><tr><th>วันที่</th><th>นายหน้า</th><th>ปรับ</th><th>ยอดหลังปรับ</th><th>หมายเหตุ</th><th>ผู้ทำรายการ</th></tr></thead>
-                <tbody id="ledgerTableBody"></tbody>
-              </table>
-            </div>
+
+              <div style="margin-top:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+                <button type="button" class="btn-secondary" id="btnAddBank">เพิ่มบัญชีลงตาราง</button>
+                <span class="admin-hint" style="margin:0">กดเพิ่มแล้วระบบบันทึกทันที</span>
+              </div>
+            </section>
           </div>
         </div>
       </main>
     </div>
   </div>
+
   <script src="../js/admin-sidebar-nav-template.js?v=20260702a"></script>
-  <script src="../js/load-admin.js?v=20260804j"></script>
-  <script src="../js/admin-app.js"></script>
-  <script src="../js/pages/admin-agents.js?v=20260803a"></script>
+  <script src="../js/load-admin.js?v=20260806a"></script>
+  <script src="../js/app.js?v=20260709a"></script>
+  <script src="../js/admin-app.js?v=20260717i"></script>
+  <script src="../js/pages/admin-credit-bank-accounts.js?v=20260806a"></script>
 </body>
 </html>
+

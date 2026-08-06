@@ -104,6 +104,181 @@ App.MockAPI = {
     }
   },
 
+  _hydrateCreditBankAccounts() {
+    try {
+      const raw = localStorage.getItem(App.Config.CREDIT_BANK_ACCOUNTS_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (!Array.isArray(data)) return;
+      App.MockData.creditBankAccounts = data.map((b) => {
+        const enabled = !(b.enabled === false || b.enabled === 0 || b.enabled === '0' || b.enabled === 'false');
+        return {
+          ...b,
+          enabled,
+          activeFrom: b.activeFrom || '00:00',
+          activeTo: b.activeTo || '23:59'
+        };
+      });
+    } catch (e) {
+      console.warn('hydrateCreditBankAccounts failed', e);
+    }
+  },
+
+  _persistCreditBankAccounts() {
+    try {
+      localStorage.setItem(App.Config.CREDIT_BANK_ACCOUNTS_KEY, JSON.stringify(App.MockData.creditBankAccounts || []));
+    } catch (e) {
+      console.warn('persistCreditBankAccounts failed', e);
+    }
+  },
+
+  _hydrateWht50Documents() {
+    try {
+      const raw = localStorage.getItem(App.Config.WHT50_DATA_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (!Array.isArray(data)) return;
+      // Keep seeded demo docs when localStorage is still empty
+      if (data.length === 0 && (App.MockData.wht50Documents || []).length) return;
+      const byId = new Map((App.MockData.wht50Documents || []).map((d) => [d.id, d]));
+      data.forEach((d) => byId.set(d.id, d));
+      App.MockData.wht50Documents = [...byId.values()];
+    } catch (e) {
+      console.warn('hydrateWht50Documents failed', e);
+    }
+  },
+
+  _persistWht50Documents() {
+    try {
+      localStorage.setItem(App.Config.WHT50_DATA_KEY, JSON.stringify(App.MockData.wht50Documents || []));
+    } catch (e) {
+      console.warn('persistWht50Documents failed', e);
+    }
+  },
+
+  _nextWht50DocNo() {
+    this._hydrateWht50Documents();
+    const list = App.MockData.wht50Documents || [];
+    const now = new Date();
+    const ym = `${now.getFullYear() + 543}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const seq = list.filter((d) => String(d.docNo || '').startsWith(ym)).length + 1;
+    return `${ym}-${String(seq).padStart(4, '0')}`;
+  },
+
+  _mapPolicyToProductKey(policy) {
+    const type = String(policy.type || policy.typeLabel || '').toLowerCase();
+    let category = 'compulsory';
+    if (type.includes('voluntary') || type.includes('2+') || type.includes('3+')) category = 'voluntary';
+    else if (type.includes('pa') || type.includes('อุบัติเหตุ')) category = 'pa';
+    else if (type.includes('travel') || type.includes('เดินทาง')) category = 'travel';
+    else if (type.includes('prb') || type.includes('พ.ร.บ') || type.includes('compulsory')) category = 'compulsory';
+
+    const insurerCode = String(policy.insurerCode || '').toLowerCase()
+      || (String(policy.insurer || '').includes('เออร์โก') ? 'ergo'
+        : String(policy.insurer || '').includes('อินทร') ? 'indara'
+          : String(policy.insurer || '').toLowerCase().includes('axa') ? 'axa'
+            : String(policy.insurer || '').includes('กรุงเทพ') ? 'bki'
+              : String(policy.insurer || '').toLowerCase().includes('chubb') ? 'chubb'
+                : 'indara');
+    return `${category}-${insurerCode}`;
+  },
+
+  _clearCommissionForPolicy(agent, policy, payload = {}) {
+    if (!agent || !App.AgentCommissionRates) return null;
+    this._hydrateAgentCommissionRates();
+    const rates = App.AgentCommissionRates.normalize(agent.commissionRates);
+    const productKey = this._mapPolicyToProductKey(policy);
+    const grossPremium = Number(payload.premiumTotal ?? policy.premium) || 0;
+    const netPremium = Number(payload.netPremium ?? payload.premiumNet ?? grossPremium) || 0;
+    const settlement = App.AgentCommissionRates.calcSettlement({
+      netPremium,
+      grossPremium,
+      rates,
+      productKey
+    });
+
+    if (!App.MockData.commissions[agent.id]) App.MockData.commissions[agent.id] = [];
+    const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
+    const earnedAt = policy.issuedAt || new Date().toISOString().slice(0, 10);
+    const commission = {
+      id: `COM-${Date.now()}`,
+      policyNo: policy.id,
+      policyType: policy.type,
+      policyTypeLabel: policy.typeLabel,
+      insurer: policy.insurer,
+      insurerCode: policy.insurerCode,
+      productKey,
+      plate: policy.plate,
+      premium: grossPremium,
+      netPremium,
+      rate: settlement.rate,
+      amount: settlement.netCommission,
+      commissionGross: settlement.commission,
+      taxWithhold: settlement.taxWithhold,
+      taxEnabled: settlement.taxEnabled,
+      status: immediate ? 'paid' : 'pending',
+      period: earnedAt.slice(0, 7),
+      earnedAt,
+      paidAt: immediate ? earnedAt : null,
+      issueForm50Tawi: settlement.issueForm50Tawi,
+      wht50Id: null
+    };
+    App.MockData.commissions[agent.id].unshift(commission);
+
+    if (settlement.issueForm50Tawi) {
+      const wht = this._createWht50Document({
+        agent,
+        commission,
+        policy,
+        settlement
+      });
+      commission.wht50Id = wht.id;
+    }
+
+    return { commission, settlement };
+  },
+
+  _createWht50Document({ agent, commission, policy, settlement }) {
+    this._hydrateWht50Documents();
+    if (!App.MockData.wht50Documents) App.MockData.wht50Documents = [];
+    const company = App.Config?.COMPANY || {};
+    const doc = {
+      id: `WHT50-${Date.now()}`,
+      docNo: this._nextWht50DocNo(),
+      bookNo: String(new Date().getFullYear() + 543),
+      seqNo: String((App.MockData.wht50Documents.length % 99) + 1),
+      commissionId: commission.id,
+      policyNo: policy?.id || commission.policyNo,
+      agentId: agent.id,
+      agentCode: agent.code,
+      payer: {
+        name: company.name || 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+        address: company.address || '',
+        taxId: company.taxId || ''
+      },
+      payee: {
+        name: agent.name,
+        address: agent.address || '-',
+        taxId: agent.taxId || agent.idCard || '',
+        idCard: agent.idCard || ''
+      },
+      // Business rule: tax withhold OFF → issue Form 50 ทวิ.
+      // paidAmount = commission (gross before tax, which equals netCommission when tax off)
+      paidAmount: settlement.commission,
+      taxAmount: settlement.taxWithhold || 0,
+      incomeType: '2',
+      formType: '4',
+      payMethod: '1',
+      issuedAt: commission.paidAt || commission.earnedAt || new Date().toISOString().slice(0, 10),
+      paidAt: commission.paidAt || commission.earnedAt,
+      refNote: `กรมธรรม์ ${policy?.id || '-'} / คอมมิชชัน ${commission.id} / ทะเบียน ${policy?.plate || '-'}`
+    };
+    App.MockData.wht50Documents.unshift(doc);
+    this._persistWht50Documents();
+    this._logAudit('wht50_issue', 'ออกหนังสือ 50 ทวิ', `${doc.docNo} สำหรับ ${agent.code}`);
+    return { ...doc };
+  },
+
   _persistAgentPermissions(agentId, perms) {
     try {
       const key = App.Config.AGENT_PERMISSIONS_KEY;
@@ -455,6 +630,7 @@ App.MockAPI = {
     Object.keys(App.MockData.commissions).forEach((aid) => {
       pendingCommissions += (App.MockData.commissions[aid] || []).filter((c) => c.status === 'pending').length;
     });
+    if (App.Config?.COMMISSION_PAY_THROUGH_WALLET) pendingCommissions = 0;
     return {
       pending: pendingPolicies,
       renew: expiringPolicies,
@@ -561,6 +737,7 @@ App.MockAPI = {
 
   async createPolicy(payload) {
     await this._delay();
+    this._hydrateAgentCommissionRates();
     const agentId = App.Session?.getAgentId?.() || payload.agentId;
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     const num = String(App.MockData.policies.length + 1).padStart(3, '0');
@@ -592,8 +769,19 @@ App.MockAPI = {
       vehicleModel: payload.carModel || ''
     };
     App.MockData.policies.unshift(policy);
+
+    let commissionResult = null;
+    if (agent && App.Config?.COMMISSION_PAY_THROUGH_WALLET) {
+      commissionResult = this._clearCommissionForPolicy(agent, policy, payload);
+    }
+
     this._logAudit('policy_issue', 'ออกกรมธรรม์', `ออก ${id} ทะเบียน ${policy.plate}`);
-    return { ...policy };
+    return {
+      ...policy,
+      commission: commissionResult?.commission || null,
+      wht50Id: commissionResult?.commission?.wht50Id || null,
+      issueForm50Tawi: !!commissionResult?.settlement?.issueForm50Tawi
+    };
   },
 
   async getNotifications(userId) {
@@ -732,7 +920,17 @@ App.MockAPI = {
         return c.period === period;
       });
     }
-    if (status) list = list.filter((c) => c.status === status);
+    const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
+    if (status && !immediate) list = list.filter((c) => c.status === status);
+
+    // If commission is cleared via wallet immediately, treat all as paid (no pending workflow).
+    if (immediate) {
+      list = list.map((c) => ({
+        ...c,
+        status: 'paid',
+        paidAt: c.paidAt || c.earnedAt || new Date().toISOString().slice(0, 10)
+      }));
+    }
     return list.sort((a, b) => (b.earnedAt || '').localeCompare(a.earnedAt || ''));
   },
 
@@ -752,9 +950,38 @@ App.MockAPI = {
     };
   },
 
-  async getCreditBankAccounts() {
+  async getCreditBankAccounts({ enabledOnly = false } = {}) {
     await this._delay(80);
-    return (App.MockData.creditBankAccounts || []).map((a) => ({ ...a }));
+    this._hydrateCreditBankAccounts();
+    let list = (App.MockData.creditBankAccounts || []).map((a) => ({ ...a }));
+    if (enabledOnly) {
+      list = list.filter((b) => b.enabled !== false);
+    }
+    return list;
+  },
+
+  async updateCreditBankAccounts(banks) {
+    await this._delay();
+    if (!Array.isArray(banks)) throw new Error('ข้อมูลบัญชีธนาคารไม่ถูกต้อง');
+    // Minimal sanitize to avoid breaking agent-credit rendering.
+    const next = banks.map((b) => {
+      const enabled = !(
+        b.enabled === false
+        || b.enabled === 0
+        || b.enabled === '0'
+        || b.enabled === 'false'
+      );
+      return {
+        ...b,
+        enabled,
+        activeFrom: b.activeFrom || '00:00',
+        activeTo: b.activeTo || '23:59'
+      };
+    });
+    App.MockData.creditBankAccounts = next;
+    this._persistCreditBankAccounts();
+    this._logAudit?.('credit_bank_accounts_update', 'อัปเดตบัญชีธนาคาร', `${next.length} รายการ`);
+    return { banks: next.map((a) => ({ ...a })) };
   },
 
   async getCreditRequests(agentId, { period, periodType = 'month', status } = {}) {
@@ -785,12 +1012,21 @@ App.MockAPI = {
     if (!payload.transferDate) throw new Error('กรุณาระบุวันที่โอนเงิน');
     if (!payload.transferTime) throw new Error('กรุณาระบุเวลาที่โอน');
 
-    const banks = App.MockData.creditBankAccounts || [];
+    this._hydrateCreditBankAccounts();
+    const allBanks = App.MockData.creditBankAccounts || [];
+    const banks = allBanks.filter((b) => b.enabled !== false);
+    if (payload.bankAccountId) {
+      const selected = allBanks.find((b) => b.id === payload.bankAccountId);
+      if (!selected) throw new Error('ไม่พบบัญชีธนาคารที่เลือก');
+      if (selected.enabled === false) {
+        throw new Error('บัญชีธนาคารที่เลือกถูกปิดใช้งานแล้ว กรุณาเลือกบัญชีอื่น');
+      }
+    }
     const bank =
       banks.find((b) => b.id === payload.bankAccountId) ||
       banks[0] ||
       null;
-    if (!bank) throw new Error('ไม่พบบัญชีธนาคารสำหรับรับโอน');
+    if (!bank) throw new Error('ไม่พบบัญชีธนาคารสำหรับรับโอน (หรือบัญชีถูกปิดใช้งาน)');
 
     const entry = {
       id: `CR-${String(App.MockData.creditRequests.length + 1).padStart(3, '0')}`,
@@ -915,7 +1151,16 @@ App.MockAPI = {
     });
     if (agentId) list = list.filter((c) => c.agentId === agentId);
     if (period) list = list.filter((c) => c.period === period);
-    if (status) list = list.filter((c) => c.status === status);
+    const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
+    if (status && !immediate) list = list.filter((c) => c.status === status);
+
+    if (immediate) {
+      list = list.map((c) => ({
+        ...c,
+        status: 'paid',
+        paidAt: c.paidAt || c.earnedAt || new Date().toISOString().slice(0, 10)
+      }));
+    }
     return list.sort((a, b) => (b.period || '').localeCompare(a.period || ''));
   },
 
@@ -927,12 +1172,51 @@ App.MockAPI = {
         App.MockData.commissions[aid][idx].status = status;
         if (status === 'paid') {
           App.MockData.commissions[aid][idx].paidAt = new Date().toISOString().slice(0, 10);
+          const commission = App.MockData.commissions[aid][idx];
+          // When clearing commission with tax withhold OFF → auto issue Form 50 ทวิ
+          if (commission.issueForm50Tawi && !commission.wht50Id) {
+            const agent = App.MockData.agents.find((a) => a.id === aid);
+            if (agent && App.AgentCommissionRates) {
+              this._hydrateAgentCommissionRates();
+              const rates = App.AgentCommissionRates.normalize(agent.commissionRates);
+              const settlement = App.AgentCommissionRates.calcSettlement({
+                netPremium: commission.netPremium ?? commission.premium,
+                grossPremium: commission.premium,
+                rates,
+                productKey: commission.productKey
+              });
+              const wht = this._createWht50Document({
+                agent,
+                commission,
+                policy: { id: commission.policyNo, plate: commission.plate },
+                settlement
+              });
+              commission.wht50Id = wht.id;
+            }
+          }
         }
         this._logAudit('commission_update', 'อัปเดตค่าคอม', `${commissionId} → ${status}`);
         return { ...App.MockData.commissions[aid][idx] };
       }
     }
     throw new Error('ไม่พบรายการค่าคอม');
+  },
+
+  async getWht50Documents({ agentId, commissionId } = {}) {
+    await this._delay(80);
+    this._hydrateWht50Documents();
+    let list = [...(App.MockData.wht50Documents || [])];
+    if (agentId) list = list.filter((d) => d.agentId === agentId);
+    if (commissionId) list = list.filter((d) => d.commissionId === commissionId);
+    return list.sort((a, b) => String(b.issuedAt || '').localeCompare(String(a.issuedAt || '')));
+  },
+
+  async getWht50Document(id) {
+    await this._delay(80);
+    this._hydrateWht50Documents();
+    const doc = (App.MockData.wht50Documents || []).find((d) => d.id === id);
+    if (!doc) throw new Error('ไม่พบหนังสือ 50 ทวิ');
+    return { ...doc };
   },
 
   async getAllRenewals({ days = 60 } = {}) {

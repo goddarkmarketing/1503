@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตัวอย่างหนังสือ 50 ทวิ — Admin</title>
+  <link rel="stylesheet" href="../css/style.css?v=20260717i">
+  <link rel="stylesheet" href="../css/admin.css?v=20260805a">
+  <link rel="stylesheet" href="../css/wht50-print.css?v=20260805m">
+</head>
+<body data-portal="admin" data-base-path="../">
+  <div class="app">
+    <div class="main-wrapper" style="margin-left:0">
+      <main class="main-content">
+        <div class="content-card" style="overflow:visible">
+          <div class="admin-toolbar">
+            <div class="admin-toolbar__head">
+              <h1 class="admin-page-title">ตัวอย่างหนังสือรับรอง 50 ทวิ</h1>
+              <p class="admin-hint">ใช้ไฟล์ 50.html เป็นต้นฉบับ — 1 แผ่น</p>
+            </div>
+            <div class="admin-toolbar-actions">
+              <a class="btn-secondary" href="../assets/wht50/50.html" target="_blank" rel="noopener">เปิด 50.html</a>
+              <button type="button" class="btn-primary" id="btnPrintSample">ดูตัวอย่าง / พิมพ์</button>
+            </div>
+          </div>
+          <iframe
+            id="wht50Frame"
+            class="wht50-sample-frame"
+            title="50 ทวิ"
+            src="../assets/wht50/50.html?embed=1"
+            style="height:920px;border:1px solid #e2e8f0;border-radius:12px;background:#fff"
+          ></iframe>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../js/utils/wht50-document.js?v=20260805m"></script>
+  <script>
+    const sample = App.Wht50Document.SAMPLE_FROM_PDF;
+    const frame = document.getElementById('wht50Frame');
+    frame.addEventListener('load', () => {
+      try { App.Wht50Document.fillForm(frame.contentDocument, sample); } catch (e) { console.warn(e); }
+    });
+    document.getElementById('btnPrintSample').addEventListener('click', () => {
+      App.Wht50Document.openPreview(sample);
+    });
+  </script>
+</body>
+</html>

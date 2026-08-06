@@ -4,6 +4,12 @@
 
   const periodSelect = document.getElementById('commissionPeriod');
   const statusSelect = document.getElementById('commissionStatus');
+  const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
+
+  if (immediate && statusSelect) {
+    // In wallet-clear mode: there is no "pending -> pay" workflow.
+    statusSelect.querySelector('option[value="pending"]')?.remove();
+  }
 
   function fillPeriods() {
     if (!periodSelect) return;
