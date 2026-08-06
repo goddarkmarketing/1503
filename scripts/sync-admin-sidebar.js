@@ -18,6 +18,7 @@ const PAGES = [
   'admin/renew.html',
   'admin/credit-requests.html',
   'admin/credit-ledger.html',
+  'admin/credit-bank-accounts.html',
   'admin/commission.html',
   'admin/reports/daily-policies.html',
   'admin/reports/daily-summary.html',
@@ -88,7 +89,7 @@ function syncFile(relPath) {
 
   html = html.replace(/<nav class="sidebar-nav"[\s\S]*?<\/nav>/, newNav);
 
-  const templateScript = `<script src="${base}js/admin-sidebar-nav-template.js?v=20260702a"></script>`;
+  const templateScript = `<script src="${base}js/admin-sidebar-nav-template.js?v=20260806b"></script>`;
   if (!html.includes('admin-sidebar-nav-template.js')) {
     html = html.replace(
       /(<script src="[^"]*load-admin\.js"><\/script>)/,
