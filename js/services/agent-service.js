@@ -67,18 +67,6 @@ App.AgentService = {
     });
   },
 
-  async changePassword(currentPassword, newPassword) {
-    const userId = App.Session.getUser()?.id;
-    if (!userId) throw new Error('Not authenticated');
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.changePassword(userId, currentPassword, newPassword);
-    }
-    return App.API.request('/profile/password', {
-      method: 'POST',
-      body: JSON.stringify({ currentPassword, newPassword })
-    });
-  },
-
   async getAgentComparison() {
     if (App.Config.USE_MOCK_API) {
       return App.MockAPI.getAgentComparison();

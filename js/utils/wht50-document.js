@@ -137,6 +137,17 @@
     setText(doc, 'totalTaxWords', taxAmount ? bahtText(taxAmount) : 'ศูนย์บาทถ้วน');
     setText(doc, 'issueDate', issue.long);
 
+    const signImg = doc.getElementById('payerSignature');
+    if (signImg) {
+      const base = document.body?.dataset?.basePath || '../';
+      const custom = payer.signatureUrl || data.signatureUrl || '';
+      signImg.src = custom
+        ? (custom.startsWith('http') || custom.startsWith('data:') ? custom : `${base}${custom.replace(/^\//, '')}`)
+        : 'payer-signature.png';
+      signImg.alt = 'ลายเซ็นผู้จ่ายเงิน';
+      signImg.style.display = '';
+    }
+
     for (let i = 1; i <= 7; i++) {
       const chk = doc.getElementById(`chk_${i}`);
       if (chk) chk.textContent = formType === String(i) ? '✓' : '';
@@ -263,7 +274,12 @@
     overlay.addEventListener('click', (e) => { if (e.target === overlay) onClose(); });
     overlay.querySelector('.wht50-preview-modal__close')?.addEventListener('click', onClose);
     overlay.querySelector('[data-wht50-close]')?.addEventListener('click', onClose);
-    overlay.querySelector('[data-wht50-print]')?.addEventListener('click', () => printSample(payload));
+    overlay.querySelector('[data-wht50-print]')?.addEventListener('click', () => {
+      printSample(payload);
+      if (payload?.id && App.Wht50Service?.markPrinted) {
+        App.Wht50Service.markPrinted(payload.id).catch(() => {});
+      }
+    });
 
     const iframe = overlay.querySelector('iframe');
     prepareFrame(iframe, payload);

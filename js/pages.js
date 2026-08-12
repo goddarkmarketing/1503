@@ -189,7 +189,7 @@
 			{ title: 'แบบชั่วระยะเวลา', href: 'plans/life-term.html', tag: 'ผลิตภัณฑ์', keywords: 'term ชั่วระยะ' },
 			{ title: 'ประกันอุบัติเหตุ (PA)', href: 'plans/pa.html', tag: 'ผลิตภัณฑ์', keywords: 'pa อุบัติเหตุ' },
 			{ title: 'ประกันบ้าน/ทรัพย์สิน', href: 'plans/home.html', tag: 'ผลิตภัณฑ์', keywords: 'บ้าน ทรัพย์สิน' },
-			{ title: 'สมัครเป็นนายหน้า', href: 'join.html', tag: 'บริการ', keywords: 'สมัคร นายหน้า ตัวแทน' },
+			{ title: 'ติดต่อสมัครนายหน้า', href: 'contact.html', tag: 'บริการ', keywords: 'สมัคร นายหน้า ตัวแทน ติดต่อ' },
 			{ title: 'เข้าสู่ระบบนายหน้า', href: 'login.html', tag: 'บริการ', keywords: 'login เข้าสู่ระบบ' },
 			{ title: 'ติดต่อเจ้าหน้าที่', href: 'contact.html', tag: 'บริการ', keywords: 'ติดต่อ สอบถาม' },
 			{ title: 'แจ้งเคลม', href: 'claims.html', tag: 'บริการ', keywords: 'เคลม claim เบอร์เคลมบริษัทประกัน' },

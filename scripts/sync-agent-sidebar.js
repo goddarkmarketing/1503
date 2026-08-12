@@ -26,6 +26,7 @@ const PAGES = [
   'agent/reports/monthly.html',
   'agent/reports/team.html',
   'agent/commission.html',
+  'agent/wht50.html',
   'agent/credit.html',
   'agent/credit-history.html',
   'compulsory/ergo.html',

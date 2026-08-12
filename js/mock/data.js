@@ -65,6 +65,7 @@ App.MockData = {
       creditLimit: 50000,
       status: 'active',
       createdAt: '2024-03-15',
+      parentId: null,
       commissionRates: {
         categories: { compulsory: 15, voluntary: 12, pa: 10, travel: 10 },
         products: {
@@ -124,6 +125,7 @@ App.MockData = {
       creditLimit: 30000,
       status: 'active',
       createdAt: '2024-08-02',
+      parentId: 'agent-001',
       featurePermissions: {
         'receipt-issue': false,
         'receipt-inquiry': false,
@@ -149,6 +151,7 @@ App.MockData = {
       creditLimit: 15000,
       status: 'active',
       createdAt: '2025-01-10',
+      parentId: 'agent-001',
       featurePermissions: {
         'receipt-issue': true,
         'receipt-inquiry': true,
@@ -278,38 +281,8 @@ App.MockData = {
   ],
 
   teamMembers: {
-    'agent-001': [
-      {
-        id: 'sub-001',
-        code: 'Ck1-039',
-        userId: 'Ck1-039',
-        name: 'คุณเฟิร์น',
-        phone: '-',
-        balance: 50000,
-        status: 'active',
-        idCard: '-',
-        birthDate: '30/11/-0001',
-        email: '-',
-        address: '-',
-        policies: 12,
-        premium: 8400
-      },
-      {
-        id: 'sub-002',
-        code: 'Ck2-040',
-        userId: 'Ck2-040',
-        name: 'สมชาย ใจดี',
-        phone: '081-234-5678',
-        balance: 50000,
-        status: 'active',
-        idCard: '1103700123456',
-        birthDate: '15/03/1985',
-        email: 'somchai@example.com',
-        address: 'กรุงเทพมหานคร',
-        policies: 8,
-        premium: 5200
-      }
-    ]
+    // Kept in sync from agents[].parentId by MockAPI._rebuildTeamMembersFromParents()
+    'agent-001': []
   },
 
   notifications: {
@@ -944,6 +917,7 @@ App.MockData = {
       payMethod: '1',
       issuedAt: '2026-08-05',
       paidAt: '2026-08-05',
+      printedAt: null,
       refNote: 'กรมธรรม์ POL-2026-ERGO-050 / คอมมิชชัน COM-WHT50-DEMO / ทะเบียน นว 5039'
     }
   ]

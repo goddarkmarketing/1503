@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ตั้งค่าใบเสร็จ — Admin</title>
+  <title>ตั้งค่า 50 ทวิ — Admin</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css?v=20260713a">
+  <link rel="stylesheet" href="../css/admin.css?v=20260811g">
   <link rel="stylesheet" href="../css/portal.css">
-  <link rel="stylesheet" href="../css/receipt.css?v=20260713d">
-  <link rel="stylesheet" href="../css/receipt-print.css?v=20260713d">
+  <link rel="stylesheet" href="../css/wht50-print.css?v=20260811c">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body data-portal="admin" data-base-path="../">
@@ -94,64 +93,57 @@
       </nav>
       <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
     </aside>
+
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-wrapper">
       <header class="top-header">
-        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
         <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
-        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name">Admin</span></div>
       </header>
       <main class="main-content">
         <div class="content-card">
           <div class="admin-toolbar">
             <div>
-              <h1 class="admin-page-title">ตั้งค่าใบเสร็จ</h1>
-              <p class="admin-hint">กำหนดโลโก้ ที่อยู่ และข้อความบนกระดาษใบเสร็จ (ค่ากลางระบบ) — นายหน้าสามารถตั้งค่าของตัวเองแยกได้</p>
+              <h1 class="admin-page-title">ตั้งค่า 50 ทวิ</h1>
+              <p class="admin-hint">กำหนดลายเซ็นและรายละเอียดผู้จ่ายเงิน สำหรับเอกสารที่ระบบออกอัตโนมัติ</p>
             </div>
-            <a href="receipt/issue.html" class="btn-secondary btn-sm"><i data-lucide="printer"></i> ไปหน้าออกใบเสร็จ</a>
+            <a href="commission.html" class="btn-secondary btn-sm"><i data-lucide="coins"></i> ไปหน้าค่าคอมมิชชัน</a>
           </div>
 
-          <div class="receipt-settings">
-            <form id="receiptPaperForm" class="receipt-settings__form agent-form" novalidate>
-              <section class="agent-form__section">
-                <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">ข้อมูลร้าน / หัวกระดาษ</h3>
-                </div>
-                <div class="agent-form__grid">
-                  <div class="form-field full">
-                    <label for="paperName">ชื่อร้าน / กิจการ <span class="form-req">*</span></label>
-                    <input id="paperName" name="name" required placeholder="เช่น ตรอ.กล้าดี">
-                  </div>
-                  <div class="form-field full">
-                    <label for="paperAddress">ที่อยู่</label>
-                    <textarea id="paperAddress" name="address" rows="2" placeholder="ที่อยู่บนใบเสร็จ"></textarea>
-                  </div>
-                  <div class="form-field">
-                    <label for="paperTaxId">เลขประจำตัวผู้เสียภาษี</label>
-                    <input id="paperTaxId" name="taxId" placeholder="เลขผู้เสียภาษี">
-                  </div>
-                  <div class="form-field">
-                    <label for="paperPhone">โทรศัพท์</label>
-                    <input id="paperPhone" name="phone" inputmode="tel" placeholder="เบอร์ติดต่อ">
-                  </div>
-                </div>
-              </section>
+          <div class="wht50-settings">
+            <form id="wht50SettingsForm" class="wht50-settings__form agent-form" novalidate>
+              <p class="agent-form__intro">
+                ค่าที่บันทึกจะใช้เป็นค่าเริ่มต้นตอนระบบ <strong>ออกหนังสือ 50 ทวิ อัตโนมัติ</strong>
+                และสามารถอัปเดตเอกสารที่ยังไม่พิมพ์ได้ทันทีจากตัวเลือกด้านล่าง
+              </p>
 
               <section class="agent-form__section">
                 <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">โลโก้</h3>
+                  <h3 class="agent-form__sectionTitle">
+                    <i data-lucide="pen-line" class="wht50-settings__titleIcon"></i>
+                    ลายเซ็นผู้จ่ายเงิน
+                  </h3>
+                  <span class="agent-form__sectionBadge" id="signatureStatusBadge">ค่าเริ่มต้น</span>
                 </div>
-                <div class="agent-form__grid">
-                  <div class="form-field full">
-                    <label for="paperLogoFile">อัปโหลดโลโก้</label>
-                    <input id="paperLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
-                    <span class="form-field__hint">รองรับ PNG / JPG / WebP / SVG — เก็บในเบราว์เซอร์จนกว่าจะเชื่อม API</span>
-                    <input type="hidden" id="paperLogoUrl" name="logoUrl">
-                  </div>
-                  <div class="form-field">
-                    <label>ตัวอย่างโลโก้</label>
-                    <div class="receipt-settings__logoPreview">
-                      <img id="paperLogoPreview" alt="ตัวอย่างโลโก้" width="88" height="88">
+                <p class="agent-form__sectionHint">อัปโหลดลายเซ็นเพื่อแสดงตรงช่องผู้จ่ายเงินบนแบบฟอร์ม 50 ทวิ</p>
+
+                <div class="wht50-settings__signRow">
+                  <label class="wht50-settings__dropzone" for="payerSignatureFile">
+                    <input id="payerSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                    <input type="hidden" id="payerSignatureUrlData" name="signatureUrlData">
+                    <span class="wht50-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
+                    <span class="wht50-settings__dropzoneTitle">อัปโหลดไฟล์ลายเซ็น</span>
+                    <span class="wht50-settings__dropzoneMeta">PNG / JPG / WebP · สูงสุด 2MB</span>
+                    <span class="wht50-settings__dropzoneBtn">เลือกไฟล์</span>
+                  </label>
+
+                  <div class="wht50-settings__signPreviewCard">
+                    <div class="wht50-settings__signPreviewHead">
+                      <span>ตัวอย่างลายเซ็น</span>
+                      <button type="button" class="btn-secondary btn-sm" id="btnClearSignature">ล้าง</button>
+                    </div>
+                    <div class="wht50-settings__signaturePreview">
+                      <img id="payerSignaturePreview" alt="ตัวอย่างลายเซ็น">
                     </div>
                   </div>
                 </div>
@@ -159,34 +151,77 @@
 
               <section class="agent-form__section">
                 <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">ข้อความบนใบเสร็จ</h3>
+                  <h3 class="agent-form__sectionTitle">
+                    <i data-lucide="building-2" class="wht50-settings__titleIcon"></i>
+                    รายละเอียดผู้จ่ายเงิน
+                  </h3>
                 </div>
+                <p class="agent-form__sectionHint">ข้อมูลนี้จะถูกพิมพ์ในส่วนผู้มีหน้าที่หักภาษี ณ ที่จ่าย</p>
+
                 <div class="agent-form__grid">
                   <div class="form-field full">
-                    <label for="paperDocTitle">หัวเอกสาร</label>
-                    <input id="paperDocTitle" name="docTitle" placeholder="ต้นฉบับใบเสร็จรับเงิน">
+                    <label for="payerName">ชื่อผู้จ่ายเงิน <span class="form-req">*</span></label>
+                    <input id="payerName" name="payerName" type="text" required placeholder="เช่น บริษัท กล้าดีโบรคเกอร์ จำกัด" autocomplete="organization">
                   </div>
-                  <div class="form-field">
-                    <label for="paperFooterThanks">ข้อความขอบคุณ</label>
-                    <input id="paperFooterThanks" name="footerThanks" placeholder="ขอบคุณทุกท่านที่มาอุดหนุน">
+                  <div class="form-field full">
+                    <label for="payerAddress">ที่อยู่ <span class="form-req">*</span></label>
+                    <textarea id="payerAddress" name="payerAddress" rows="3" required placeholder="ที่อยู่ตามทะเบียนภาษี"></textarea>
                   </div>
-                  <div class="form-field">
-                    <label for="paperSignLabel">ป้ายลงชื่อ</label>
-                    <input id="paperSignLabel" name="signLabel" placeholder="ผู้รับเงิน">
+                  <div class="form-field full">
+                    <label for="payerTaxId">เลขประจำตัวผู้เสียภาษี <span class="form-req">*</span></label>
+                    <input id="payerTaxId" name="payerTaxId" type="text" required inputmode="numeric" maxlength="13" placeholder="ตัวเลข 13 หลัก" autocomplete="off">
+                    <span class="form-field__hint">กรอกเฉพาะตัวเลข 13 หลัก ไม่ต้องใส่ขีด</span>
                   </div>
                 </div>
               </section>
 
-              <div class="receipt-settings__actions">
-                <button type="button" class="btn-secondary" id="btnPaperReset">คืนค่าเริ่มต้น</button>
-                <button type="button" class="btn-secondary" id="btnPaperPreview">ดูตัวอย่าง</button>
-                <button type="submit" class="btn-primary" id="btnPaperSave">บันทึกการตั้งค่า</button>
+              <section class="agent-form__section">
+                <div class="agent-form__sectionHead">
+                  <h3 class="agent-form__sectionTitle">
+                    <i data-lucide="refresh-cw" class="wht50-settings__titleIcon"></i>
+                    การนำไปใช้
+                  </h3>
+                </div>
+
+                <label class="wht50-settings__option" for="applyToUnprinted">
+                  <input id="applyToUnprinted" name="applyToUnprinted" type="checkbox" checked>
+                  <span class="wht50-settings__optionBody">
+                    <span class="wht50-settings__optionTitle">อัปเดตเอกสาร 50 ทวิที่ยังไม่พิมพ์</span>
+                    <span class="wht50-settings__optionDesc">ใช้ค่าล่าสุดนี้กับเอกสารที่ยังไม่เคยพิมพ์ทั้งหมด · เอกสารที่พิมพ์แล้วจะไม่ถูกเปลี่ยน</span>
+                  </span>
+                </label>
+              </section>
+
+              <div class="wht50-settings__actions">
+                <button type="button" class="btn-secondary" id="btnWht50Reset">
+                  <i data-lucide="rotate-ccw"></i> คืนค่าเริ่มต้น
+                </button>
+                <div class="wht50-settings__actionsRight">
+                  <button type="button" class="btn-secondary" id="btnWht50Preview">
+                    <i data-lucide="eye"></i> ดูตัวอย่าง
+                  </button>
+                  <button type="submit" class="btn-primary" id="btnWht50Save">
+                    <i data-lucide="save"></i> บันทึกการตั้งค่า
+                  </button>
+                </div>
               </div>
             </form>
 
-            <aside class="receipt-settings__previewPanel">
-              <h3 class="receipt-settings__previewTitle">ตัวอย่างใบเสร็จ</h3>
-              <div class="receipt-settings__previewScroll" id="receiptPaperLivePreview"></div>
+            <aside class="wht50-settings__aside">
+              <div class="wht50-settings__asideCard">
+                <div class="wht50-settings__asideIcon"><i data-lucide="file-signature"></i></div>
+                <h3 class="wht50-settings__asideTitle">ใช้ตอนไหน?</h3>
+                <ul class="wht50-settings__asideList">
+                  <li>ออก 50 ทวิอัตโนมัติเมื่อเคลียร์ค่าคอม</li>
+                  <li>พิมพ์/ดูตัวอย่างจากหน้าค่าคอมมิชชัน</li>
+                  <li>คลังเอกสารของนายหน้า</li>
+                </ul>
+              </div>
+              <div class="wht50-settings__asideCard wht50-settings__asideCard--muted">
+                <h3 class="wht50-settings__asideTitle">คำแนะนำ</h3>
+                <p class="wht50-settings__asideText">ใช้ลายเซ็นพื้นโปร่งใส (PNG) ความกว้างประมาณ 400–800px จะคมชัดตอนพิมพ์</p>
+                <p class="wht50-settings__asideText">ติ๊ก “อัปเดตเอกสารที่ยังไม่พิมพ์” เฉพาะเมื่อต้องการให้เอกสารค้างในระบบใช้ค่าล่าสุดทันที</p>
+              </div>
             </aside>
           </div>
         </div>
@@ -194,11 +229,9 @@
     </div>
   </div>
 
-  <script src="../js/admin-sidebar-nav-template.js?v=20260713a"></script>
-  <script src="../js/load-admin.js"></script>
+  <script src="../js/admin-sidebar-nav-template.js?v=20260811c"></script>
+  <script src="../js/load-admin.js?v=20260811g"></script>
   <script src="../js/admin-app.js"></script>
-  <script src="../js/utils/baht-text.js?v=20260713c"></script>
-  <script src="../js/utils/receipt-document.js?v=20260713d"></script>
-  <script src="../js/pages/receipt-paper-settings.js?v=20260713c"></script>
+  <script src="../js/pages/admin-wht50-settings.js?v=20260811b"></script>
 </body>
 </html>

@@ -48,6 +48,7 @@ App.AgentFeatures = {
       label: 'การเงิน',
       items: [
         { key: 'commission', label: 'ค่าคอมมิชชัน', page: 'agent/commission.html' },
+        { key: 'wht50', label: 'หนังสือ 50 ทวิ', page: 'agent/wht50.html' },
         { key: 'credit', label: 'ขอเติมวงเงิน', page: 'agent/credit.html' },
         { key: 'credit-history', label: 'ประวัติการเติมเงิน', page: 'agent/credit-history.html' }
       ]

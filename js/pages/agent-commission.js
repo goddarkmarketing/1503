@@ -90,7 +90,10 @@
         <td class="col-center">${c.paidAt ? App.AdminUtils.formatThaiDate(c.paidAt) : '-'}</td>
         <td class="col-center">
           ${c.wht50Id
-            ? `<button type="button" class="btn-success btn-sm" data-wht50="${c.wht50Id}">พิมพ์</button>`
+            ? `<div class="admin-wht50-cell" style="justify-content:center">
+                 <span class="status-pill ${c.wht50PrintedAt ? 'wht50-printed' : 'wht50-unprinted'}">${c.wht50PrintedAt ? 'พิมพ์แล้ว' : 'ยังไม่พิมพ์'}</span>
+                 <button type="button" class="btn-success btn-sm" data-wht50="${c.wht50Id}">ดู/พิมพ์</button>
+               </div>`
             : (c.issueForm50Tawi ? '<span class="admin-hint">รอออก</span>' : '-')}
         </td>
       </tr>
@@ -136,5 +139,6 @@
   });
   periodInput?.addEventListener('change', search);
   statusSelect?.addEventListener('change', search);
+  window.addEventListener('wht50:printed', () => { search(); });
   search();
 })();

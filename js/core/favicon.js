@@ -4,16 +4,17 @@
 
   const base = document.body?.dataset?.basePath || '';
   const head = document.head;
+  const v = '20260811k';
 
-  const svg = document.createElement('link');
-  svg.rel = 'icon';
-  svg.type = 'image/svg+xml';
-  svg.href = `${base}images/favicon.svg`;
-  head.appendChild(svg);
+  const png = document.createElement('link');
+  png.rel = 'icon';
+  png.type = 'image/png';
+  png.href = `${base}images/favicon.png?v=${v}`;
+  head.appendChild(png);
 
   const ico = document.createElement('link');
   ico.rel = 'icon';
-  ico.href = `${base}favicon.ico`;
+  ico.href = `${base}favicon.ico?v=${v}`;
   ico.sizes = 'any';
   head.appendChild(ico);
 })();

@@ -21,6 +21,13 @@ App.Wht50Service = {
     return list[0] || null;
   },
 
+  /** All Form 50 ทวิ for the logged-in agent (permanent archive). */
+  async listMine(filters = {}) {
+    const agentId = App.Session.getAgentId();
+    if (!agentId) return [];
+    return this.list({ ...filters, agentId });
+  },
+
   /** Open on-screen preview; user can print from the modal. */
   preview(doc) {
     if (!App.Wht50Document) throw new Error('Wht50Document module not loaded');
@@ -32,8 +39,35 @@ App.Wht50Service = {
     this.preview(doc);
   },
 
+  async markPrinted(id) {
+    if (!id) return null;
+    let doc;
+    if (App.Config.USE_MOCK_API) {
+      doc = await App.MockAPI.markWht50Printed(id);
+    } else {
+      doc = await App.API.request(`/wht50-documents/${id}/print`, { method: 'POST' });
+    }
+    window.dispatchEvent(new CustomEvent('wht50:printed', { detail: { id, doc } }));
+    return doc;
+  },
+
+  async getSettings() {
+    if (App.Config.USE_MOCK_API) {
+      return App.MockAPI.getWht50Settings();
+    }
+    return App.API.request('/wht50-settings');
+  },
+
+  async saveSettings(payload = {}) {
+    if (App.Config.USE_MOCK_API) {
+      return App.MockAPI.updateWht50Settings(payload);
+    }
+    return App.API.request('/wht50-settings', { method: 'POST', body: payload });
+  },
+
   printDirect(doc) {
     if (!App.Wht50Document) throw new Error('Wht50Document module not loaded');
     App.Wht50Document.printCopies(doc);
+    if (doc?.id) this.markPrinted(doc.id).catch(() => {});
   }
 };

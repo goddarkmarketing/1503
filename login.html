@@ -4,61 +4,112 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>เข้าสู่ระบบ — กล้าดีโบรคเกอร์</title>
-  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="images/favicon.png?v=20260811k" type="image/png">
+  <link rel="icon" href="favicon.ico?v=20260811k" sizes="any">
+  <link rel="apple-touch-icon" href="images/favicon.png?v=20260811k">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/login.css?v=20260630b">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="css/login.css?v=20260812e">
 </head>
 <body class="login-page">
-  <div class="login-shell">
-    <div class="login-card">
-      <header class="login-brand">
-        <img src="images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="login-brand__logo" width="200" height="48" decoding="async">
-        <p class="login-brand__sub">ระบบนายหน้าและผู้ดูแล</p>
-      </header>
+  <div class="login-stage">
+    <main class="login-formCol">
+      <div class="login-formCol__inner">
+        <header class="login-brand">
+          <img src="images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="login-brand__logo" width="180" height="44" decoding="async">
+          <p class="login-brand__eyebrow">ศูนย์นายหน้า</p>
+          <h1 class="login-brand__title">เข้าสู่ระบบ</h1>
+          <p class="login-brand__sub">กรอกรหัสนายหน้าหรือบัญชีแอดมินที่ได้รับจากผู้ดูแล</p>
+        </header>
 
-      <div class="login-error" id="loginError" role="alert"></div>
+        <div class="login-error" id="loginError" role="alert"></div>
+        <div class="login-lockout" id="loginLockout" hidden role="status"></div>
 
-      <form id="loginForm" class="login-form" novalidate>
-        <div class="login-field">
-          <label for="username">ชื่อผู้ใช้</label>
-          <input type="text" id="username" name="username" autocomplete="username" placeholder="กรอกชื่อผู้ใช้" required>
-        </div>
-        <div class="login-field">
-          <label for="password">รหัสผ่าน</label>
-          <input type="password" id="password" name="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required>
-        </div>
-        <button type="submit" class="login-submit">เข้าสู่ระบบ</button>
-      </form>
+        <form id="loginForm" class="login-form" novalidate>
+          <div class="login-field">
+            <label for="username">ชื่อผู้ใช้</label>
+            <input type="text" id="username" name="username" autocomplete="username" placeholder="เช่น Ck1-039" required>
+          </div>
+          <div class="login-field">
+            <label for="password">รหัสผ่าน</label>
+            <div class="login-field__control">
+              <input type="password" id="password" name="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required>
+              <button type="button" class="login-togglePass" id="togglePassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">แสดง</button>
+            </div>
+          </div>
 
-      <footer class="login-foot">
-        <a href="index.html" class="login-back">← กลับหน้าแรกเว็บไซต์</a>
-        <p class="login-signup">ยังไม่มีบัญชี? <a href="join.html">สมัครนายหน้า</a></p>
-      </footer>
+          <div class="login-options">
+            <label class="login-remember" for="rememberMe">
+              <input type="checkbox" id="rememberMe" name="rememberMe">
+              <span>จดจำชื่อผู้ใช้</span>
+            </label>
+            <button type="button" class="login-forgot" id="forgotPasswordBtn">ลืมรหัสผ่าน?</button>
+          </div>
 
-      <aside class="login-mock" aria-label="ข้อมูลทดสอบระบบ">
-        <div class="login-mock__head">
-          <span class="login-mock__badge">Demo</span>
-          <span class="login-mock__title">Mock Login</span>
-        </div>
-        <p class="login-mock__hint">แตะเพื่อกรอกข้อมูลทดสอบอัตโนมัติ</p>
-        <ul class="login-mock__list">
+          <button type="submit" class="login-submit" id="loginSubmit">เข้าใช้งาน</button>
+        </form>
+
+        <p class="login-signup">ยังไม่มีบัญชี? ติดต่อแอดมินเพื่อเปิดบัญชีและตั้งรหัสผ่าน</p>
+
+        <details class="login-mock">
+          <summary class="login-mock__summary">
+            <span class="login-mock__badge">Demo</span>
+            <span>บัญชีทดสอบ</span>
+          </summary>
+          <p class="login-mock__hint">แตะเพื่อกรอกข้อมูลทดสอบอัตโนมัติ</p>
+          <ul class="login-mock__list">
+            <li>
+              <button type="button" class="login-mock__item" data-username="Ck1-039" data-password="demo">
+                <span class="login-mock__role">นายหน้า</span>
+                <span class="login-mock__creds"><kbd>Ck1-039</kbd> / <kbd>demo</kbd></span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="login-mock__item" data-username="admin" data-password="demo">
+                <span class="login-mock__role">Admin</span>
+                <span class="login-mock__creds"><kbd>admin</kbd> / <kbd>demo</kbd></span>
+              </button>
+            </li>
+          </ul>
+        </details>
+
+        <ul class="login-contact">
           <li>
-            <button type="button" class="login-mock__item" data-username="Ck1-039" data-password="demo">
-              <span class="login-mock__role">นายหน้า</span>
-              <span class="login-mock__creds"><kbd>Ck1-039</kbd> / <kbd>demo</kbd></span>
-            </button>
+            <span>สอบถาม / แจ้งปัญหา</span>
+            <a href="tel:0826164555">082-616-4555</a>
           </li>
           <li>
-            <button type="button" class="login-mock__item" data-username="admin" data-password="demo">
-              <span class="login-mock__role">Admin</span>
-              <span class="login-mock__creds"><kbd>admin</kbd> / <kbd>demo</kbd></span>
-            </button>
+            <span>LINE</span>
+            <a href="https://line.me/R/ti/p/@kladeebroker" target="_blank" rel="noopener noreferrer">@kladeebroker</a>
           </li>
         </ul>
-      </aside>
-    </div>
+      </div>
+    </main>
+
+    <aside class="login-partners" aria-label="บริษัทพันธมิตร">
+      <div class="login-partners__inner">
+        <p class="login-partners__kicker">กล้าดีโบรคเกอร์</p>
+        <h2 class="login-partners__title">บริษัทพันธมิตร</h2>
+        <p class="login-partners__lead">คัดสรรผลิตภัณฑ์จากบริษัทประกันชั้นนำ</p>
+        <ul class="login-partners__grid">
+          <li><img src="images/partners/ergo.jpg" alt="เออร์โกประกันภัย"></li>
+          <li><img src="images/partners/indara.jpg" alt="อินทรประกันภัย"></li>
+          <li><img src="images/partners/axa.jpg" alt="AXA"></li>
+          <li><img src="images/partners/bangkok-insurance.jpg" alt="กรุงเทพประกันภัย"></li>
+          <li><img src="images/partners/chubb.jpg" alt="CHUBB"></li>
+          <li><img src="images/partners/viriyah.jpg" alt="วิริยะประกันภัย"></li>
+          <li><img src="images/partners/dhipaya.jpg" alt="ทิพยประกันภัย"></li>
+          <li><img src="images/partners/tokyo-marine.jpg" alt="โตเกียวมารีน"></li>
+          <li><img src="images/partners/allianz.jpg" alt="อัลลิอันซ์"></li>
+          <li><img src="images/partners/aioi.jpg" alt="ไอโออิ"></li>
+          <li><img src="images/partners/msig.jpg" alt="MSIG"></li>
+          <li><img src="images/partners/muang-thai.jpg" alt="เมืองไทยประกันภัย"></li>
+          <li><img src="images/partners/thaivivat.jpg" alt="ไทยวิวัฒน์"></li>
+          <li><img src="images/partners/thanachart.jpg" alt="ธนชาตประกันภัย"></li>
+          <li><img src="images/partners/aig.jpg" alt="AIG"></li>
+          <li><img src="images/partners/kpi.jpg" alt="กรุงไทยพานิชประกันภัย"></li>
+        </ul>
+      </div>
+    </aside>
   </div>
 
   <script src="js/config/app-config.js"></script>
@@ -68,6 +119,6 @@
   <script src="js/core/session.js"></script>
   <script src="js/core/permissions.js"></script>
   <script src="js/services/auth-service.js"></script>
-  <script src="js/pages/login.js"></script>
+  <script src="js/pages/login.js?v=20260811i"></script>
 </body>
 </html>

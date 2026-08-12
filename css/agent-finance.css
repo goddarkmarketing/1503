@@ -142,6 +142,11 @@
   gap: 4px;
 }
 
+.finance-toolbar__field--grow {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
 .finance-toolbar__field select {
   min-width: 180px;
 }

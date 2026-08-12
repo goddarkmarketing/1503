@@ -63,6 +63,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   <p class="nav-group__title">การเงิน</p>
   <ul class="nav-group__list">
     <li class="nav-item"><a href="{{BASE}}agent/commission.html" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}agent/wht50.html" class="nav-link" data-nav="wht50"><i data-lucide="file-badge"></i><span class="nav-link-text">หนังสือ 50 ทวิ</span></a></li>
     <li class="nav-item"><a href="{{BASE}}agent/credit.html" class="nav-link" data-nav="credit"><i data-lucide="wallet"></i><span class="nav-link-text">ขอเติมวงเงิน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}agent/credit-history.html" class="nav-link" data-nav="credit-history"><i data-lucide="history"></i><span class="nav-link-text">ประวัติการเติมเงิน</span></a></li>
   </ul>
@@ -89,7 +90,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   </ul>
 </div>`;
 
-window.AGENT_SIDEBAR_NAV_COUNT = 12;
+window.AGENT_SIDEBAR_NAV_COUNT = 14;
 
 window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-agent-sidebar]');

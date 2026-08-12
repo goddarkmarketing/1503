@@ -6,6 +6,7 @@ window.App = window.App || {};
 App.MockAPI = {
   _permissionsHydrated: false,
   _commissionRatesHydrated: false,
+  _wht50SettingsHydrated: false,
 
   _hydrateAgentPermissions() {
     if (this._permissionsHydrated) return;
@@ -46,6 +47,95 @@ App.MockAPI = {
     } catch (e) {
       console.warn('hydrateAgentCommissionRates failed', e);
     }
+  },
+
+  _teamHydrated: false,
+
+  _hydrateAgentTeam() {
+    if (this._teamHydrated) return;
+    this._teamHydrated = true;
+    try {
+      const raw = localStorage.getItem(App.Config.AGENT_TEAM_KEY);
+      if (raw) {
+        const map = JSON.parse(raw);
+        if (map && typeof map === 'object') {
+          App.MockData.agents.forEach((agent) => {
+            if (Object.prototype.hasOwnProperty.call(map, agent.id)) {
+              agent.parentId = map[agent.id] || null;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('hydrateAgentTeam failed', e);
+    }
+    this._rebuildTeamMembersFromParents();
+  },
+
+  _persistAgentTeam() {
+    try {
+      const map = {};
+      App.MockData.agents.forEach((a) => {
+        map[a.id] = a.parentId || null;
+      });
+      localStorage.setItem(App.Config.AGENT_TEAM_KEY, JSON.stringify(map));
+    } catch (e) {
+      console.warn('persistAgentTeam failed', e);
+    }
+  },
+
+  _wouldCreateTeamCycle(agentId, parentId) {
+    let cur = parentId || null;
+    const seen = new Set();
+    while (cur) {
+      if (cur === agentId) return true;
+      if (seen.has(cur)) return true;
+      seen.add(cur);
+      const parent = App.MockData.agents.find((a) => a.id === cur);
+      cur = parent?.parentId || null;
+    }
+    return false;
+  },
+
+  _rebuildTeamMembersFromParents() {
+    const map = {};
+    App.MockData.agents.forEach((a) => {
+      if (!a.parentId) return;
+      if (!App.MockData.agents.some((p) => p.id === a.parentId)) {
+        a.parentId = null;
+        return;
+      }
+      if (!map[a.parentId]) map[a.parentId] = [];
+      map[a.parentId].push({
+        id: a.id,
+        code: a.code,
+        userId: a.code,
+        name: a.name,
+        phone: a.phone || '-',
+        balance: a.balance,
+        status: a.status,
+        email: a.email || '-',
+        policies: 0,
+        premium: 0
+      });
+    });
+    App.MockData.teamMembers = map;
+  },
+
+  _setAgentParent(agentId, parentId) {
+    const agent = App.MockData.agents.find((a) => a.id === agentId);
+    if (!agent) throw new Error('Agent not found');
+    const nextParent = parentId || null;
+    if (nextParent === agentId) throw new Error('ไม่สามารถตั้งตัวเองเป็นหัวหน้าทีมได้');
+    if (nextParent && !App.MockData.agents.some((a) => a.id === nextParent)) {
+      throw new Error('ไม่พบหัวหน้าทีมที่เลือก');
+    }
+    if (nextParent && this._wouldCreateTeamCycle(agentId, nextParent)) {
+      throw new Error('ไม่สามารถตั้งหัวหน้าทีมแบบวนลูปได้');
+    }
+    agent.parentId = nextParent;
+    this._rebuildTeamMembersFromParents();
+    this._persistAgentTeam();
   },
 
   _persistAgentCommissionRates(agentId, rates) {
@@ -148,7 +238,95 @@ App.MockAPI = {
     }
   },
 
+  _hydrateWht50Settings() {
+    if (this._wht50SettingsHydrated) return;
+    this._wht50SettingsHydrated = true;
+    try {
+      const company = App.Config?.COMPANY || {};
+      const raw = localStorage.getItem(App.Config.WHT50_SETTINGS_KEY);
+      if (!raw) {
+        App.MockData.wht50Settings = {
+          payer: {
+            name: company.name || '',
+            address: company.address || '',
+            taxId: company.taxId || ''
+          },
+          signatureUrlData: null
+        };
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      const payer = parsed?.payer || {};
+      App.MockData.wht50Settings = {
+        payer: {
+          name: payer.name ?? (company.name || ''),
+          address: payer.address ?? (company.address || ''),
+          taxId: payer.taxId ?? (company.taxId || '')
+        },
+        signatureUrlData: parsed?.signatureUrlData || null
+      };
+    } catch (e) {
+      console.warn('hydrateWht50Settings failed', e);
+      const company = App.Config?.COMPANY || {};
+      App.MockData.wht50Settings = {
+        payer: {
+          name: company.name || '',
+          address: company.address || '',
+          taxId: company.taxId || ''
+        },
+        signatureUrlData: null
+      };
+    }
+  },
+
+  async getWht50Settings() {
+    await this._delay();
+    this._hydrateWht50Settings();
+    return JSON.parse(JSON.stringify(App.MockData.wht50Settings || {}));
+  },
+
+  async updateWht50Settings(payload = {}) {
+    await this._delay();
+    this._hydrateWht50Settings();
+
+    const company = App.Config?.COMPANY || {};
+    const payer = payload.payer || {};
+    const next = {
+      payer: {
+        name: payer.name ?? company.name ?? '',
+        address: payer.address ?? company.address ?? '',
+        taxId: payer.taxId ?? company.taxId ?? ''
+      },
+      signatureUrlData: payload.signatureUrlData || null
+    };
+
+    App.MockData.wht50Settings = next;
+    try {
+      localStorage.setItem(App.Config.WHT50_SETTINGS_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.warn('persistWht50Settings failed', e);
+    }
+
+    const applyToUnprinted = !!payload.applyToUnprinted;
+    if (applyToUnprinted) {
+      this._hydrateWht50Documents();
+      (App.MockData.wht50Documents || []).forEach((d) => {
+        if (d.printedAt) return;
+        d.payer = {
+          ...(d.payer || {}),
+          ...next.payer,
+          signatureUrl: next.signatureUrlData || undefined
+        };
+      });
+      this._persistWht50Documents();
+    }
+
+    this._logAudit?.('wht50_settings', 'ตั้งค่า 50 ทวิ', `applyToUnprinted=${applyToUnprinted}`);
+    return JSON.parse(JSON.stringify(next));
+  },
+
   _persistWht50Documents() {
+    // Append-only archive: documents are never deleted from localStorage.
     try {
       localStorage.setItem(App.Config.WHT50_DATA_KEY, JSON.stringify(App.MockData.wht50Documents || []));
     } catch (e) {
@@ -242,6 +420,9 @@ App.MockAPI = {
     this._hydrateWht50Documents();
     if (!App.MockData.wht50Documents) App.MockData.wht50Documents = [];
     const company = App.Config?.COMPANY || {};
+    this._hydrateWht50Settings();
+    const whtSettings = App.MockData.wht50Settings || {};
+    const payerSettings = whtSettings.payer || {};
     const doc = {
       id: `WHT50-${Date.now()}`,
       docNo: this._nextWht50DocNo(),
@@ -252,9 +433,10 @@ App.MockAPI = {
       agentId: agent.id,
       agentCode: agent.code,
       payer: {
-        name: company.name || 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
-        address: company.address || '',
-        taxId: company.taxId || ''
+        name: payerSettings.name || company.name || 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+        address: payerSettings.address || company.address || '',
+        taxId: payerSettings.taxId || company.taxId || '',
+        signatureUrl: whtSettings.signatureUrlData || undefined
       },
       payee: {
         name: agent.name,
@@ -271,6 +453,7 @@ App.MockAPI = {
       payMethod: '1',
       issuedAt: commission.paidAt || commission.earnedAt || new Date().toISOString().slice(0, 10),
       paidAt: commission.paidAt || commission.earnedAt,
+      printedAt: null,
       refNote: `กรมธรรม์ ${policy?.id || '-'} / คอมมิชชัน ${commission.id} / ทะเบียน ${policy?.plate || '-'}`
     };
     App.MockData.wht50Documents.unshift(doc);
@@ -408,6 +591,7 @@ App.MockAPI = {
     await this._delay();
     this._hydrateAgentPermissions();
     this._hydrateAgentCommissionRates();
+    this._hydrateAgentTeam();
     return [...App.MockData.agents];
   },
 
@@ -415,6 +599,7 @@ App.MockAPI = {
     await this._delay();
     this._hydrateAgentPermissions();
     this._hydrateAgentCommissionRates();
+    this._hydrateAgentTeam();
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
     return { ...agent };
@@ -422,16 +607,25 @@ App.MockAPI = {
 
   async updateAgent(agentId, payload) {
     await this._delay();
+    this._hydrateAgentTeam();
     const idx = App.MockData.agents.findIndex((a) => a.id === agentId);
     if (idx === -1) throw new Error('Agent not found');
 
     const nextPayload = { ...payload };
+    const hasParentChange = Object.prototype.hasOwnProperty.call(nextPayload, 'parentId');
+    if (hasParentChange) {
+      this._setAgentParent(agentId, nextPayload.parentId || null);
+      delete nextPayload.parentId;
+    }
     if (nextPayload.featurePermissions && App.AgentFeatures) {
       nextPayload.featurePermissions = App.AgentFeatures.explicitPermissions(nextPayload.featurePermissions);
     }
     if (nextPayload.commissionRates && App.AgentCommissionRates) {
       nextPayload.commissionRates = App.AgentCommissionRates.normalize(nextPayload.commissionRates);
     }
+
+    const nextPassword = String(nextPayload.password || '').trim();
+    delete nextPayload.password;
 
     App.MockData.agents[idx] = { ...App.MockData.agents[idx], ...nextPayload };
     const user = App.MockData.users.find((u) => u.id === agentId);
@@ -441,6 +635,10 @@ App.MockAPI = {
       if (nextPayload.phone) user.phone = nextPayload.phone;
       if (nextPayload.balance != null) user.balance = nextPayload.balance;
       if (nextPayload.featurePermissions) user.featurePermissions = nextPayload.featurePermissions;
+      if (nextPassword) {
+        user.password = nextPassword;
+        this._logAudit('password_reset', 'ตั้งรหัสผ่านนายหน้า', `แอดมินตั้งรหัสผ่าน ${user.username}`);
+      }
     }
 
     if (nextPayload.featurePermissions) {
@@ -458,6 +656,15 @@ App.MockAPI = {
         'agent_commission_rates',
         'กำหนดอัตราคอมมิชชัน',
         `อัปเดต % คอมมิชชันของ ${App.MockData.agents[idx].code}`
+      );
+    }
+
+    if (hasParentChange) {
+      const parent = App.MockData.agents.find((a) => a.id === App.MockData.agents[idx].parentId);
+      this._logAudit(
+        'agent_team',
+        'ตั้งค่าทีม',
+        `${App.MockData.agents[idx].code} → หัวหน้า ${parent ? parent.code : 'ไม่มี (หัวทีม)'}`
       );
     }
 
@@ -520,7 +727,8 @@ App.MockAPI = {
         : undefined,
       commissionRates: App.AgentCommissionRates
         ? App.AgentCommissionRates.normalize(payload.commissionRates)
-        : undefined
+        : undefined,
+      parentId: null
     };
     App.MockData.agents.push(agent);
     App.MockData.users.push({
@@ -552,6 +760,12 @@ App.MockAPI = {
     }
     if (agent.commissionRates) {
       this._persistAgentCommissionRates(id, agent.commissionRates);
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'parentId')) {
+      this._setAgentParent(id, payload.parentId || null);
+    } else {
+      this._rebuildTeamMembersFromParents();
+      this._persistAgentTeam();
     }
     return { ...agent };
   },
@@ -721,20 +935,6 @@ App.MockAPI = {
     return safeUser;
   },
 
-  async changePassword(userId, currentPassword, newPassword) {
-    await this._delay();
-    const user = App.MockData.users.find((u) => u.id === userId);
-    if (!user) throw new Error('ไม่พบผู้ใช้');
-    if (user.password !== currentPassword) {
-      const err = new Error('รหัสผ่านปัจจุบันไม่ถูกต้อง');
-      err.code = 'WRONG_PASSWORD';
-      throw err;
-    }
-    user.password = newPassword;
-    this._logAudit('password_change', 'เปลี่ยนรหัสผ่าน', `เปลี่ยนรหัสผ่าน ${user.username}`);
-    return { success: true };
-  },
-
   async createPolicy(payload) {
     await this._delay();
     this._hydrateAgentCommissionRates();
@@ -799,6 +999,7 @@ App.MockAPI = {
 
   async getTeamMembers(agentId) {
     await this._delay();
+    this._hydrateAgentTeam();
     return [...(App.MockData.teamMembers[agentId] || [])];
   },
 
@@ -931,6 +1132,18 @@ App.MockAPI = {
         paidAt: c.paidAt || c.earnedAt || new Date().toISOString().slice(0, 10)
       }));
     }
+
+    this._hydrateWht50Documents();
+    const whtById = new Map((App.MockData.wht50Documents || []).map((d) => [d.id, d]));
+    list = list.map((c) => {
+      const wht = c.wht50Id ? whtById.get(c.wht50Id) : null;
+      return {
+        ...c,
+        wht50PrintedAt: wht?.printedAt || null,
+        wht50DocNo: wht?.docNo || null
+      };
+    });
+
     return list.sort((a, b) => (b.earnedAt || '').localeCompare(a.earnedAt || ''));
   },
 
@@ -1161,6 +1374,18 @@ App.MockAPI = {
         paidAt: c.paidAt || c.earnedAt || new Date().toISOString().slice(0, 10)
       }));
     }
+
+    this._hydrateWht50Documents();
+    const whtById = new Map((App.MockData.wht50Documents || []).map((d) => [d.id, d]));
+    list = list.map((c) => {
+      const wht = c.wht50Id ? whtById.get(c.wht50Id) : null;
+      return {
+        ...c,
+        wht50PrintedAt: wht?.printedAt || null,
+        wht50DocNo: wht?.docNo || null
+      };
+    });
+
     return list.sort((a, b) => (b.period || '').localeCompare(a.period || ''));
   },
 
@@ -1219,6 +1444,19 @@ App.MockAPI = {
     return { ...doc };
   },
 
+  async markWht50Printed(id) {
+    await this._delay(40);
+    this._hydrateWht50Documents();
+    const doc = (App.MockData.wht50Documents || []).find((d) => d.id === id);
+    if (!doc) throw new Error('ไม่พบหนังสือ 50 ทวิ');
+    if (!doc.printedAt) {
+      doc.printedAt = new Date().toISOString();
+      this._persistWht50Documents();
+      this._logAudit('wht50_print', 'พิมพ์หนังสือ 50 ทวิ', `${doc.docNo || doc.id}`);
+    }
+    return { ...doc };
+  },
+
   async getAllRenewals({ days = 60 } = {}) {
     await this._delay();
     const today = new Date();
@@ -1241,17 +1479,71 @@ App.MockAPI = {
 
   async getTeamHierarchy() {
     await this._delay();
-    return Object.keys(App.MockData.teamMembers).map((leaderId) => {
-      const leader = App.MockData.agents.find((a) => a.id === leaderId);
-      const members = App.MockData.teamMembers[leaderId] || [];
+    this._hydrateAgentTeam();
+    const policies = App.MockData.policies || [];
+    const agents = App.MockData.agents || [];
+
+    const salesByAgentId = {};
+    policies.forEach((p) => {
+      if (!p.agentId) return;
+      if (!salesByAgentId[p.agentId]) {
+        salesByAgentId[p.agentId] = { policies: 0, premium: 0 };
+      }
+      salesByAgentId[p.agentId].policies += 1;
+      salesByAgentId[p.agentId].premium += Number(p.premium) || 0;
+    });
+
+    const childrenByParent = {};
+    agents.forEach((a) => {
+      if (!a.parentId) return;
+      if (!childrenByParent[a.parentId]) childrenByParent[a.parentId] = [];
+      childrenByParent[a.parentId].push(a);
+    });
+
+    const leaderIds = [...new Set([
+      ...agents.filter((a) => !a.parentId).map((a) => a.id),
+      ...Object.keys(childrenByParent)
+    ])];
+
+    return leaderIds.map((leaderId) => {
+      const leader = agents.find((a) => a.id === leaderId);
+      const members = (childrenByParent[leaderId] || []).map((m) => {
+        const live = salesByAgentId[m.id];
+        return {
+          id: m.id,
+          code: m.code,
+          name: m.name,
+          phone: m.phone || '-',
+          status: m.status,
+          email: m.email || '-',
+          policies: live ? live.policies : 0,
+          premium: live ? Math.round(live.premium * 100) / 100 : 0
+        };
+      });
+
+      const leaderSales = salesByAgentId[leaderId] || { policies: 0, premium: 0 };
+      const memberPolicies = members.reduce((s, m) => s + (Number(m.policies) || 0), 0);
+      const memberPremium = members.reduce((s, m) => s + (Number(m.premium) || 0), 0);
+      const totalPolicies = memberPolicies + (leaderSales.policies || 0);
+      const totalPremium = Math.round((memberPremium + (leaderSales.premium || 0)) * 100) / 100;
+
       return {
         leaderId,
         leaderCode: leader?.code || '',
         leaderName: leader?.name || '',
+        leaderPhone: leader?.phone || '',
+        leaderStatus: leader?.status || 'active',
+        leaderPolicies: leaderSales.policies || 0,
+        leaderPremium: Math.round((leaderSales.premium || 0) * 100) / 100,
         memberCount: members.length,
+        totalMembers: members.length + 1,
+        memberPolicies,
+        memberPremium: Math.round(memberPremium * 100) / 100,
+        totalPolicies,
+        totalPremium,
         members
       };
-    });
+    }).sort((a, b) => b.totalPremium - a.totalPremium);
   },
 
   async getAdminMonthlySalesReport(yearMonth) {
@@ -1377,5 +1669,7 @@ App.MockAPI = {
 };
 
 App.MockAPI._hydrateAgentPermissions();
+App.MockAPI._hydrateAgentTeam();
 App.MockAPI._hydrateReceiptPaperSettings();
+App.MockAPI._hydrateWht50Settings();
 App.MockAPI._hydrateCreditData();

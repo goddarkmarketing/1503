@@ -95,6 +95,32 @@
             background-color: #eff6ff;
         }
 
+        /* Payer signature on dotted line */
+        .payer-sign-wrap {
+            position: relative;
+            width: 14rem;
+            min-height: 1.5rem;
+            display: inline-flex;
+            align-items: flex-end;
+            justify-content: center;
+            border-bottom: 1px dotted #000;
+            vertical-align: baseline;
+        }
+        .payer-sign-wrap img {
+            position: absolute;
+            left: 50%;
+            bottom: 2px;
+            transform: translateX(-50%);
+            max-width: 92%;
+            max-height: 52px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            user-select: none;
+        }
+
         /* Print Media Styles */
         @media print {
             @page {
@@ -478,10 +504,12 @@
                 </div>
 
                 <div class="my-2">
-                    <div class="flex justify-center items-baseline gap-1">
-                        <span>ลงชื่อ</span>
-                        <div class="border-b border-dotted border-black w-56 inline-block text-center" contenteditable="true"></div>
-                        <span>ผู้จ่ายเงิน</span>
+                    <div class="flex justify-center items-end gap-1" style="min-height:58px">
+                        <span class="pb-0.5">ลงชื่อ</span>
+                        <div class="payer-sign-wrap" id="payerSignWrap">
+                            <img id="payerSignature" src="payer-signature.png" alt="ลายเซ็นผู้จ่ายเงิน">
+                        </div>
+                        <span class="pb-0.5">ผู้จ่ายเงิน</span>
                     </div>
                     <div class="text-[10px] text-gray-600 mt-0.5">
                         (วัน เดือน ปี ที่ออกหนังสือรับรองฯ)

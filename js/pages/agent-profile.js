@@ -32,24 +32,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       msg.style.color = 'var(--accent-red)';
     }
   });
-
-  const pwForm = document.getElementById('passwordForm');
-  const pwMsg = document.getElementById('passwordMessage');
-  pwForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (pwForm.newPass.value !== pwForm.confirm.value) {
-      pwMsg.textContent = 'รหัสผ่านใหม่ไม่ตรงกัน';
-      pwMsg.style.color = 'var(--accent-red)';
-      return;
-    }
-    try {
-      await App.AgentService.changePassword(pwForm.current.value, pwForm.newPass.value);
-      pwMsg.textContent = 'เปลี่ยนรหัสผ่านเรียบร้อย';
-      pwMsg.style.color = 'var(--accent-green)';
-      pwForm.reset();
-    } catch (err) {
-      pwMsg.textContent = err.message;
-      pwMsg.style.color = 'var(--accent-red)';
-    }
-  });
 });

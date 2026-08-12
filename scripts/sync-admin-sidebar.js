@@ -31,6 +31,7 @@ const PAGES = [
   'admin/insurers.html',
   'admin/products.html',
   'admin/receipt-settings.html',
+  'admin/wht50-settings.html',
   'admin/audit-log.html',
   'admin/reports.html'
 ];

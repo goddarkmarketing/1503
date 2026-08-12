@@ -348,7 +348,7 @@ const pages = [
 \t\t\t\t<p>ปรึกษาฟรี ไม่มีค่าใช้จ่าย หรือสมัครเป็นนายหน้าเพื่อสร้างรายได้กับทีมมืออาชีพ</p>
 \t\t\t\t<div class="aboutCta__actions">
 \t\t\t\t\t<a class="aboutCta__btn aboutCta__btn--primary" href="contact.html">ติดต่อเรา</a>
-\t\t\t\t\t<a class="aboutCta__btn aboutCta__btn--ghost" href="join.html">สมัครนายหน้า</a>
+\t\t\t\t\t<a class="aboutCta__btn aboutCta__btn--ghost" href="contact.html">สมัครนายหน้า</a>
 \t\t\t\t</div>
 \t\t\t</section>
 \t\t\t<section class="aboutPager">
@@ -389,7 +389,7 @@ const hubPage = pageShell({
 \t\t\t\t<h2 class="aboutHub__title">ติดต่อและร่วมงาน</h2>
 \t\t\t\t<div class="aboutHubGrid aboutHubGrid--3">
 \t\t\t\t\t<a class="aboutHubCard aboutHubCard--outline" href="contact.html"><h3>ติดต่อเจ้าหน้าที่</h3><p>สอบถามผลิตภัณฑ์ ขอใบเสนอราคา หรือแจ้งปัญหา</p></a>
-\t\t\t\t\t<a class="aboutHubCard aboutHubCard--outline" href="join.html"><h3>สมัครเป็นนายหน้า</h3><p>เริ่มอาชีพนายหน้าประกันภัยกับทีมมืออาชีพ</p></a>
+\t\t\t\t\t<a class="aboutHubCard aboutHubCard--outline" href="contact.html"><h3>สมัครเป็นนายหน้า</h3><p>เริ่มอาชีพนายหน้าประกันภัยกับทีมมืออาชีพ</p></a>
 \t\t\t\t\t<a class="aboutHubCard aboutHubCard--outline" href="login.html"><h3>เข้าสู่ระบบนายหน้า</h3><p>ศูนย์นายหน้า ออกกรมธรรม์และติดตามค่าคอมมิชชัน</p></a>
 \t\t\t\t</div>
 \t\t\t</section>`,

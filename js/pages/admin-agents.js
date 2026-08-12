@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error(err);
     App.TableUI.showEmpty(
       tbody,
-      7,
+      8,
       `โหลดข้อมูลไม่สำเร็จ: ${err.message || 'เกิดข้อผิดพลาด'}`
     );
   }
@@ -58,10 +58,86 @@ function generateNextAgentCode() {
 
 async function renderAgents() {
   const tbody = document.getElementById('agentsTableBody');
-  App.TableUI.showLoading(tbody, 7);
+  App.TableUI.showLoading(tbody, 8);
   agentsCache = await App.AgentService.getAgents();
   renderAgentsTable();
   populateAgentFilter();
+}
+
+function findAgent(id) {
+  return (agentsCache || []).find((a) => a.id === id) || null;
+}
+
+function parentLabel(agent) {
+  if (!agent?.parentId) return 'หัวทีม';
+  const parent = findAgent(agent.parentId);
+  return parent ? `${parent.code}` : '-';
+}
+
+function memberCount(agentId) {
+  return (agentsCache || []).filter((a) => a.parentId === agentId).length;
+}
+
+function parentOptionsHtml(agentId, selectedParentId) {
+  const blocked = new Set([agentId]);
+  const collectDescendants = (id) => {
+    (agentsCache || []).forEach((a) => {
+      if (a.parentId === id && !blocked.has(a.id)) {
+        blocked.add(a.id);
+        collectDescendants(a.id);
+      }
+    });
+  };
+  if (agentId) collectDescendants(agentId);
+
+  const options = (agentsCache || [])
+    .filter((a) => !blocked.has(a.id) && a.status !== 'inactive')
+    .map((a) => {
+      const selected = a.id === selectedParentId ? ' selected' : '';
+      return `<option value="${a.id}"${selected}>${escapeHtml(a.code)} — ${escapeHtml(a.name)}</option>`;
+    })
+    .join('');
+
+  return `
+    <option value="">ไม่ขึ้นกับใคร — เป็นหัวทีม</option>
+    ${options}
+  `;
+}
+
+function teamSectionHtml(agent) {
+  const members = agent
+    ? (agentsCache || []).filter((a) => a.parentId === agent.id)
+    : [];
+  const parent = agent?.parentId ? findAgent(agent.parentId) : null;
+  const roleText = parent
+    ? `ตอนนี้เป็นลูกทีมของ ${parent.name} (${parent.code})`
+    : 'ตอนนี้เป็นหัวทีม';
+  const memberList = members.length
+    ? `<ul class="agent-team-chips">${members.map((m) => `<li>${escapeHtml(m.name)} <em>${escapeHtml(m.code)}</em></li>`).join('')}</ul>`
+    : '<p class="form-field__hint">ยังไม่มีลูกทีม ถ้าต้องการให้คนอื่นขึ้นกับบัญชีนี้ ให้ไปเปิดบัญชีนั้นแล้วเลือกหัวหน้าเป็นคนนี้</p>';
+
+  return `
+    <section class="agent-form__section">
+      <div class="agent-form__sectionHead">
+        <h3 class="agent-form__sectionTitle">1. ทีม</h3>
+        <span class="agent-form__sectionBadge">${escapeHtml(parent ? 'ลูกทีม' : 'หัวทีม')}</span>
+      </div>
+      <p class="agent-form__sectionHint">${escapeHtml(roleText)}</p>
+      <div class="agent-form__grid">
+        <div class="form-field full">
+          <label for="teamParentId">ขึ้นกับหัวหน้าคนไหน?</label>
+          <select id="teamParentId" name="parentId">
+            ${parentOptionsHtml(agent?.id, agent?.parentId || '')}
+          </select>
+          <span class="form-field__hint">ไม่เลือก = นายหน้าคนนี้เป็นหัวทีมเอง</span>
+        </div>
+        <div class="form-field full">
+          <label>ลูกทีมที่ขึ้นกับคนนี้ (${members.length})</label>
+          ${memberList}
+        </div>
+      </div>
+    </section>
+  `;
 }
 
 function renderAgentsTable() {
@@ -69,7 +145,7 @@ function renderAgentsTable() {
   const pg = App.TableUI.paginate(agentsCache, agentsPage);
 
   if (!pg.items.length) {
-    App.TableUI.showEmpty(tbody, 7);
+    App.TableUI.showEmpty(tbody, 8);
     document.getElementById('agentsPagination').innerHTML = '';
     return;
   }
@@ -78,12 +154,19 @@ function renderAgentsTable() {
     <tr data-agent-id="${a.id}">
       <td>${a.code}</td>
       <td title="${a.name}">${a.name}</td>
+      <td>
+        <div class="admin-agent-cell">
+          <span class="admin-agent-cell__code">${parentLabel(a)}</span>
+          <span class="admin-agent-cell__name">ลูกทีม ${memberCount(a.id)} คน</span>
+        </div>
+      </td>
       <td>${a.phone || '-'}</td>
       <td class="agent-balance">${App.Shell.formatCurrency(a.balance)}</td>
       <td class="agent-credit">${App.AdminUtils.creditLimitGauge(a.balance, a.creditLimit)}</td>
       <td><span class="status-pill ${a.status}">${a.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</span></td>
       <td>
         <div class="btn-group">
+          <button type="button" class="btn-secondary btn-sm btn-team" data-id="${a.id}">ทีม/คอม</button>
           <button type="button" class="btn-secondary btn-sm btn-perms" data-id="${a.id}">สิทธิ์</button>
           <button type="button" class="btn-secondary btn-sm btn-adjust" data-id="${a.id}">ปรับวงเงิน</button>
           <button type="button" class="btn-secondary btn-sm btn-edit" data-id="${a.id}">แก้ไข</button>
@@ -95,6 +178,9 @@ function renderAgentsTable() {
     </tr>
   `).join('');
 
+  tbody.querySelectorAll('.btn-team').forEach((btn) => {
+    btn.addEventListener('click', () => openTeamSettingsModal(btn.dataset.id));
+  });
   tbody.querySelectorAll('.btn-perms').forEach((btn) => {
     btn.addEventListener('click', () => openPermissionsModal(btn.dataset.id));
   });
@@ -332,6 +418,21 @@ function openEditModal(agentId) {
           </div>
         </section>
 
+        <section class="agent-form__section">
+          <div class="agent-form__sectionHead">
+            <h3 class="agent-form__sectionTitle">รหัสผ่าน</h3>
+          </div>
+          <div class="agent-form__grid">
+            <div class="form-field">
+              <label for="editPassword">ตั้งรหัสผ่านใหม่</label>
+              <input id="editPassword" name="password" type="text" autocomplete="new-password" spellcheck="false" placeholder="เว้นว่างหากไม่เปลี่ยน">
+              <span class="form-field__hint">แอดมินเป็นผู้ตั้งรหัสผ่านทั้งหมด นายหน้าเปลี่ยนเองไม่ได้</span>
+            </div>
+          </div>
+        </section>
+
+        ${teamSectionHtml(agent)}
+
         ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates) : ''}
       </form>
     `,
@@ -352,16 +453,61 @@ function openEditModal(agentId) {
     }
     try {
       await App.ButtonUI.withLoading(btn, async () => {
-        await App.AgentService.updateAgent(agentId, {
+        const payload = {
           name: form.name.value.trim(),
           email: form.email.value.trim(),
           phone: form.phone.value.trim(),
           creditLimit: parseFloat(form.creditLimit.value) || 0,
+          parentId: form.parentId?.value || null,
+          commissionRates: App.AgentCommissionRates?.readFromForm(form)
+        };
+        const nextPassword = String(form.password?.value || '').trim();
+        if (nextPassword) payload.password = nextPassword;
+        await App.AgentService.updateAgent(agentId, payload);
+        await renderAgents();
+        App.Modal.close();
+        App.AdminUtils.showToast(`อัปเดต ${agent.code} เรียบร้อยแล้ว`);
+      }, { label: 'กำลังบันทึก...' });
+    } catch (err) {
+      App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');
+    }
+  });
+}
+
+function openTeamSettingsModal(agentId) {
+  const agent = agentsCache.find((a) => a.id === agentId);
+  if (!agent) return;
+
+  const overlay = App.Modal.open({
+    title: `ตั้งค่าทีมและค่าคอม — ${agent.name}`,
+    size: 'wide',
+    body: `
+      <form id="teamSettingsForm" class="agent-form" novalidate>
+        <p class="agent-form__intro">ตั้งให้ <strong>${escapeHtml(agent.name)}</strong> (${escapeHtml(agent.code)}) ขึ้นกับใคร และได้คอมเท่าไหร่ในแต่ละบริษัท</p>
+        ${teamSectionHtml(agent)}
+        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates) : ''}
+      </form>
+    `,
+    footer: `
+      <button type="button" class="btn-secondary" data-dismiss>ยกเลิก</button>
+      <button type="button" class="btn-primary" id="confirmTeamSettings">บันทึก</button>
+    `
+  });
+
+  overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
+  App.AgentCommissionRates?.bindForm(overlay);
+  overlay.querySelector('#confirmTeamSettings')?.addEventListener('click', async () => {
+    const form = overlay.querySelector('#teamSettingsForm');
+    const btn = overlay.querySelector('#confirmTeamSettings');
+    try {
+      await App.ButtonUI.withLoading(btn, async () => {
+        await App.AgentService.updateAgent(agentId, {
+          parentId: form.parentId?.value || null,
           commissionRates: App.AgentCommissionRates?.readFromForm(form)
         });
         await renderAgents();
         App.Modal.close();
-        App.AdminUtils.showToast(`อัปเดต ${agent.code} เรียบร้อยแล้ว`);
+        App.AdminUtils.showToast(`บันทึกทีม/คอมของ ${agent.code} แล้ว`);
       }, { label: 'กำลังบันทึก...' });
     } catch (err) {
       App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');
@@ -391,7 +537,7 @@ function openAddAgentModal() {
             <div class="form-field">
               <label for="addPassword">รหัสผ่านเริ่มต้น <span class="form-req" aria-hidden="true">*</span></label>
               <input id="addPassword" name="password" required value="demo" autocomplete="new-password" spellcheck="false">
-              <span class="form-field__hint">แจ้งนายหน้าให้เปลี่ยนหลังเข้าใช้ครั้งแรก</span>
+              <span class="form-field__hint">แอดมินเป็นผู้ตั้งรหัสผ่าน — นายหน้าเปลี่ยนเองไม่ได้</span>
             </div>
             <div class="form-field full">
               <label for="addName">ชื่อ-นามสกุล <span class="form-req" aria-hidden="true">*</span></label>
@@ -435,6 +581,8 @@ function openAddAgentModal() {
           </div>
         </section>
 
+        ${teamSectionHtml(null)}
+
         ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection() : ''}
       </form>
     `,
@@ -474,6 +622,7 @@ function openAddAgentModal() {
           initialBalance: parseFloat(form.initialBalance.value) || 0,
           creditLimit: parseFloat(form.creditLimit.value) || 50000,
           password: form.password.value || 'demo',
+          parentId: form.parentId?.value || null,
           commissionRates: App.AgentCommissionRates?.readFromForm(form)
         });
 

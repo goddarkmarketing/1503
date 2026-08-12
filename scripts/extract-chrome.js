@@ -18,9 +18,9 @@ let footer = extract(/<footer id="footer">([\s\S]*?)<\/footer>/, index);
 
 const fixes = [
   [/href="\/"/g, 'href="index.html"'],
-  [/href="index.html#recruit"/g, 'href="join.html"'],
+  [/href="index.html#recruit"/g, 'href="contact.html"'],
   [/href="index.html#agent"/g, 'href="login.html"'],
-  [/href="#recruit"/g, 'href="join.html"'],
+  [/href="#recruit"/g, 'href="contact.html"'],
   [/href="#agent"/g, 'href="login.html"'],
   [/href="#products"/g, 'href="index.html#plans"'],
 ];

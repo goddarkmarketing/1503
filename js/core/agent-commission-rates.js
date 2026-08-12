@@ -272,49 +272,55 @@ App.AgentCommissionRates = {
               ${logoHtml}
               <span class="agent-commission-rates__label">${this._escape(ins.name)}</span>
             </label>
-            <div class="agent-commission-rates__controls">
+            <div class="agent-commission-rates__cell">
               ${this._rateInput({
                 id: `commission-product-${key}`,
                 name: `commissionProduct_${key}`,
                 value: normalized.products[key],
-                caption: 'คอม',
                 ariaLabel: `อัตราคอมมิชชัน ${ins.name} (${group.label})`
               })}
-              <div class="agent-commission-rates__tax-block${taxEnabled ? '' : ' is-off'}">
-                <label class="agent-commission-rates__tax-toggle" title="เปิด = หักภาษีจากค่าคอม / ปิด = ออก 50 ทวิ อัตโนมัติ">
-                  <input
-                    type="checkbox"
-                    name="taxWithholdEnabled_${key}"
-                    data-tax-enabled="${key}"
-                    ${taxEnabled ? 'checked' : ''}
-                    aria-label="เปิดหักภาษี ${ins.name} (${group.label})"
-                  >
-                  <span>หักภาษี</span>
-                </label>
-                <div class="agent-commission-rates__input-wrap">
-                  <input
-                    type="number"
-                    id="tax-withhold-${key}"
-                    name="taxWithhold_${key}"
-                    class="agent-commission-rates__input"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value="${normalized.taxWithhold[key]}"
-                    inputmode="decimal"
-                    aria-label="หักภาษี % จากค่าคอม ${this._escape(ins.name)} (${this._escape(group.label)})"
-                    ${taxEnabled ? '' : 'disabled'}
-                  >
-                  <span class="agent-commission-rates__suffix">%</span>
-                </div>
-                <span class="agent-commission-rates__tax-hint" data-tax-hint="${key}">
-                  ${taxEnabled ? 'ไม่ต้องออก 50 ทวิ' : 'ออก 50 ทวิ'}
-                </span>
+            </div>
+            <div class="agent-commission-rates__tax-block${taxEnabled ? '' : ' is-off'}">
+              <label class="agent-commission-rates__tax-toggle">
+                <input
+                  type="checkbox"
+                  name="taxWithholdEnabled_${key}"
+                  data-tax-enabled="${key}"
+                  ${taxEnabled ? 'checked' : ''}
+                  aria-label="เปิดหักภาษี ${ins.name} (${group.label})"
+                >
+                <span>หักภาษี</span>
+              </label>
+              <div class="agent-commission-rates__input-wrap">
+                <input
+                  type="number"
+                  id="tax-withhold-${key}"
+                  name="taxWithhold_${key}"
+                  class="agent-commission-rates__input"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value="${normalized.taxWithhold[key]}"
+                  inputmode="decimal"
+                  aria-label="หักภาษี % จากค่าคอม ${this._escape(ins.name)} (${this._escape(group.label)})"
+                  ${taxEnabled ? '' : 'disabled'}
+                >
+                <span class="agent-commission-rates__suffix">%</span>
               </div>
             </div>
+            <span class="agent-commission-rates__result" data-tax-hint="${key}">
+              ${taxEnabled ? `หัก ${normalized.taxWithhold[key]}% จากคอม` : 'ออกใบ 50 ทวิ'}
+            </span>
           </div>
         `;
       }).join('');
+
+      const firstRate = group.insurers[0]
+        ? normalized.products[this.productKey(group.code, group.insurers[0].code)]
+        : group.defaultRate;
+      const firstTax = group.insurers[0]
+        ? normalized.taxWithhold[this.productKey(group.code, group.insurers[0].code)]
+        : this.DEFAULT_TAX_WITHHOLD;
 
       return `
         <div class="agent-commission-rates__group${open}" data-commission-group="${group.code}">
@@ -322,10 +328,30 @@ App.AgentCommissionRates = {
             <span class="agent-commission-rates__category-left">
               <i data-lucide="${group.icon}" class="agent-commission-rates__cat-icon" aria-hidden="true"></i>
               <span class="agent-commission-rates__label">${this._escape(group.label)}</span>
+              <em>${group.insurers.length} บริษัท</em>
             </span>
             <i data-lucide="chevron-down" class="agent-commission-rates__chevron" aria-hidden="true"></i>
           </button>
           <div class="agent-commission-rates__panel" ${index === 0 ? '' : 'hidden'}>
+            <div class="agent-commission-rates__bulk">
+              <span>ตั้งทั้งหมวดนี้</span>
+              <label>คอม
+                <input type="number" min="0" max="100" step="0.01" value="${firstRate}" data-bulk-rate="${group.code}">
+              </label>
+              <label class="agent-commission-rates__bulkTax">
+                <input type="checkbox" checked data-bulk-tax-on="${group.code}"> หักภาษี
+              </label>
+              <label>ภาษี
+                <input type="number" min="0" max="100" step="0.01" value="${firstTax}" data-bulk-tax="${group.code}">
+              </label>
+              <button type="button" class="btn-secondary btn-sm" data-bulk-apply="${group.code}">ใส่ให้ทุกบริษัท</button>
+            </div>
+            <div class="agent-commission-rates__cols" aria-hidden="true">
+              <span>บริษัทประกัน</span>
+              <span>นายหน้าได้คอม</span>
+              <span>หักภาษีจากคอม</span>
+              <span>ผลลัพธ์</span>
+            </div>
             ${insurerRows}
           </div>
         </div>
@@ -344,7 +370,11 @@ App.AgentCommissionRates = {
       const enabled = checkbox.checked;
       if (taxInput) taxInput.disabled = !enabled;
       if (block) block.classList.toggle('is-off', !enabled);
-      if (hint) hint.textContent = enabled ? 'ไม่ต้องออก 50 ทวิ' : 'ออก 50 ทวิ';
+      if (hint) {
+        const taxVal = taxInput?.value || this.DEFAULT_TAX_WITHHOLD;
+        hint.textContent = enabled ? `หัก ${taxVal}% จากคอม` : 'ออกใบ 50 ทวิ';
+        hint.classList.toggle('is-wht50', !enabled);
+      }
     });
   },
 
@@ -368,6 +398,29 @@ App.AgentCommissionRates = {
     container.querySelectorAll('[data-tax-enabled]').forEach((checkbox) => {
       checkbox.addEventListener('change', () => this._syncTaxEnabledUI(container));
     });
+    container.querySelectorAll('[name^="taxWithhold_"]').forEach((input) => {
+      input.addEventListener('input', () => this._syncTaxEnabledUI(container));
+    });
+    container.querySelectorAll('[data-bulk-apply]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const code = btn.getAttribute('data-bulk-apply');
+        const group = container.querySelector(`[data-commission-group="${code}"]`);
+        if (!group) return;
+        const rate = group.querySelector(`[data-bulk-rate="${code}"]`)?.value;
+        const taxOn = group.querySelector(`[data-bulk-tax-on="${code}"]`)?.checked;
+        const tax = group.querySelector(`[data-bulk-tax="${code}"]`)?.value;
+        group.querySelectorAll('[data-product-key]').forEach((row) => {
+          const key = row.getAttribute('data-product-key');
+          const rateInput = row.querySelector(`[name="commissionProduct_${key}"]`);
+          const taxInput = row.querySelector(`[name="taxWithhold_${key}"]`);
+          const taxEnabled = row.querySelector(`[name="taxWithholdEnabled_${key}"]`);
+          if (rateInput && rate !== '' && rate != null) rateInput.value = rate;
+          if (taxEnabled) taxEnabled.checked = !!taxOn;
+          if (taxInput && tax !== '' && tax != null) taxInput.value = tax;
+        });
+        this._syncTaxEnabledUI(container);
+      });
+    });
     this._syncTaxEnabledUI(container);
   },
 
@@ -375,15 +428,13 @@ App.AgentCommissionRates = {
     return `
       <section class="agent-form__section">
         <div class="agent-form__sectionHead">
-          <h3 class="agent-form__sectionTitle">อัตราคอมมิชชันและหักภาษี (%)</h3>
-          <span class="agent-form__sectionBadge agent-form__sectionBadge--muted">แยกตามบริษัท</span>
+          <h3 class="agent-form__sectionTitle">2. ค่าคอมและภาษี</h3>
         </div>
-        <p class="agent-form__sectionHint">
-          ค่าคอม = <strong>เบี้ยสุทธิ</strong> × %คอม แล้วหักภาษี (% จากค่าคอม) —
-          ยอดเก็บตัวแทน = เบี้ยเต็ม − ค่าคอมสุทธิ<br>
-          <strong>ปิดหักภาษี</strong> → ออก 50 ทวิ อัตโนมัติ ·
-          <strong>เปิดหักภาษี</strong> → ไม่ต้องออก 50 ทวิ
-        </p>
+        <ol class="agent-commission-rates__howto">
+          <li>ใส่ <strong>% คอม</strong> ที่นายหน้าได้จากเบี้ยสุทธิ</li>
+          <li>ถ้าต้องการหักภาษี จากค่าคอม ให้ติ๊ก <strong>หักภาษี</strong> แล้วใส่ %</li>
+          <li>ถ้าไม่หักภาษี ระบบจะ <strong>ออกใบ 50 ทวิ</strong> ให้อัตโนมัติ</li>
+        </ol>
         ${this.renderRatesGrid(rates)}
       </section>
     `;
