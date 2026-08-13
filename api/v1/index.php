@@ -76,6 +76,53 @@ try {
     Response::json(['success' => true]);
   }
 
+  if ($method === 'GET' && $path === '/agents') {
+    Auth::requireAdmin($pdo);
+    Response::json(Agents::fetchAll($pdo));
+  }
+
+  if ($method === 'POST' && $path === '/agents') {
+    $admin = Auth::requireAdmin($pdo);
+    Response::json(Agents::create($pdo, api_json_body(), $admin), 201);
+  }
+
+  if (preg_match('#^/agents/([^/]+)/balance$#', $path, $m)) {
+    if ($method === 'POST') {
+      $admin = Auth::requireAdmin($pdo);
+      $body = api_json_body();
+      $amount = (float)($body['amount'] ?? 0);
+      $note = trim((string)($body['note'] ?? ''));
+      if ($amount == 0.0) {
+        Response::error('จำนวนเงินต้องไม่เป็นศูนย์', 422, 'VALIDATION');
+      }
+      Response::json(Agents::adjustBalance($pdo, urldecode($m[1]), $amount, $note, $admin));
+    }
+  }
+
+  if (preg_match('#^/agents/([^/]+)/status$#', $path, $m)) {
+    if ($method === 'PATCH') {
+      $admin = Auth::requireAdmin($pdo);
+      $body = api_json_body();
+      Response::json(Agents::setStatus($pdo, urldecode($m[1]), (string)($body['status'] ?? ''), $admin));
+    }
+  }
+
+  if (preg_match('#^/agents/([^/]+)$#', $path, $m)) {
+    $agentId = urldecode($m[1]);
+    if ($method === 'GET') {
+      Auth::requireAdmin($pdo);
+      $agent = Agents::fetchOne($pdo, $agentId);
+      if (!$agent) {
+        Response::error('ไม่พบนายหน้า', 404, 'NOT_FOUND');
+      }
+      Response::json($agent);
+    }
+    if ($method === 'PATCH') {
+      $admin = Auth::requireAdmin($pdo);
+      Response::json(Agents::update($pdo, $agentId, api_json_body(), $admin));
+    }
+  }
+
   Response::error('Not found', 404, 'NOT_FOUND');
 } catch (Throwable $e) {
   $config = Auth::config();

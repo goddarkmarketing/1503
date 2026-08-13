@@ -81,6 +81,15 @@ final class Auth
     return $user;
   }
 
+  public static function requireAdmin(PDO $pdo): array
+  {
+    $user = self::requireUser($pdo);
+    if (($user['role'] ?? '') !== 'admin') {
+      Response::error('Forbidden', 403, 'FORBIDDEN');
+    }
+    return $user;
+  }
+
   public static function publicUser(PDO $pdo, array $user): array
   {
     $payload = [

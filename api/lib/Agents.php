@@ -1,0 +1,356 @@
+<?php
+declare(strict_types=1);
+
+final class Agents
+{
+  public static function fetchAll(PDO $pdo): array
+  {
+    $sql = 'SELECT a.*, u.name, u.email, u.phone, u.username, u.status AS user_status
+            FROM agents a
+            INNER JOIN users u ON u.id = a.user_id
+            ORDER BY a.created_at ASC, a.code ASC';
+    return array_map([self::class, 'toPublic'], $pdo->query($sql)->fetchAll());
+  }
+
+  public static function fetchOne(PDO $pdo, string $agentId): ?array
+  {
+    $stmt = $pdo->prepare(
+      'SELECT a.*, u.name, u.email, u.phone, u.username, u.status AS user_status
+       FROM agents a
+       INNER JOIN users u ON u.id = a.user_id
+       WHERE a.id = :id
+       LIMIT 1'
+    );
+    $stmt->execute([':id' => $agentId]);
+    $row = $stmt->fetch();
+    return $row ? self::toPublic($row) : null;
+  }
+
+  public static function toPublic(array $row): array
+  {
+    return [
+      'id' => $row['id'],
+      'code' => $row['code'],
+      'name' => $row['name'],
+      'email' => $row['email'] ?? '',
+      'phone' => $row['phone'] ?? '',
+      'balance' => (float)$row['balance'],
+      'creditLimit' => (float)$row['credit_limit'],
+      'status' => $row['status'],
+      'createdAt' => substr((string)$row['created_at'], 0, 10),
+      'parentId' => $row['parent_id'],
+      'featurePermissions' => self::decodeJson($row['feature_permissions'] ?? null),
+      'commissionRates' => self::decodeJson($row['commission_rates'] ?? null),
+    ];
+  }
+
+  public static function create(PDO $pdo, array $body, ?array $actor): array
+  {
+    $code = trim((string)($body['code'] ?? ''));
+    $name = trim((string)($body['name'] ?? ''));
+    $password = (string)($body['password'] ?? '');
+    $email = trim((string)($body['email'] ?? ''));
+    $phone = trim((string)($body['phone'] ?? ''));
+    $initialBalance = (float)($body['initialBalance'] ?? 0);
+    $creditLimit = (float)($body['creditLimit'] ?? 50000);
+    $parentId = $body['parentId'] ?? null;
+    if ($parentId === '') {
+      $parentId = null;
+    }
+
+    if ($code === '' || $name === '') {
+      Response::error('กรุณากรอกรหัสและชื่อนายหน้า', 422, 'VALIDATION');
+    }
+    if ($password === '') {
+      Response::error('กรุณากำหนดรหัสผ่านเริ่มต้น', 422, 'VALIDATION');
+    }
+
+    $exists = $pdo->prepare('SELECT id FROM agents WHERE code = :code LIMIT 1');
+    $exists->execute([':code' => $code]);
+    if ($exists->fetch()) {
+      Response::error('รหัสนายหน้านี้มีอยู่แล้ว', 409, 'DUPLICATE');
+    }
+
+    $userExists = $pdo->prepare('SELECT id FROM users WHERE username = :username LIMIT 1');
+    $userExists->execute([':username' => $code]);
+    if ($userExists->fetch()) {
+      Response::error('ชื่อผู้ใช้นี้มีอยู่แล้ว', 409, 'DUPLICATE');
+    }
+
+    if ($parentId !== null) {
+      $parent = $pdo->prepare('SELECT id FROM agents WHERE id = :id LIMIT 1');
+      $parent->execute([':id' => $parentId]);
+      if (!$parent->fetch()) {
+        Response::error('ไม่พบหัวหน้าทีมที่เลือก', 422, 'VALIDATION');
+      }
+    }
+
+    $id = 'agent-' . bin2hex(random_bytes(6));
+    $initials = self::initialsFromName($name);
+    $featurePermissions = array_key_exists('featurePermissions', $body)
+      ? json_encode($body['featurePermissions'], JSON_UNESCAPED_UNICODE)
+      : null;
+    $commissionRates = array_key_exists('commissionRates', $body)
+      ? json_encode($body['commissionRates'], JSON_UNESCAPED_UNICODE)
+      : null;
+
+    $pdo->beginTransaction();
+    try {
+      $pdo->prepare(
+        'INSERT INTO users (id, username, password_hash, role, name, email, phone, initials, status)
+         VALUES (:id, :username, :password_hash, \'agent\', :name, :email, :phone, :initials, \'active\')'
+      )->execute([
+        ':id' => $id,
+        ':username' => $code,
+        ':password_hash' => password_hash($password, PASSWORD_DEFAULT),
+        ':name' => $name,
+        ':email' => $email !== '' ? $email : null,
+        ':phone' => $phone !== '' ? $phone : null,
+        ':initials' => $initials,
+      ]);
+
+      $pdo->prepare(
+        'INSERT INTO agents (id, user_id, code, balance, credit_limit, parent_id, feature_permissions, commission_rates, status)
+         VALUES (:id, :user_id, :code, :balance, :credit_limit, :parent_id, :feature_permissions, :commission_rates, \'active\')'
+      )->execute([
+        ':id' => $id,
+        ':user_id' => $id,
+        ':code' => $code,
+        ':balance' => $initialBalance,
+        ':credit_limit' => $creditLimit,
+        ':parent_id' => $parentId,
+        ':feature_permissions' => $featurePermissions,
+        ':commission_rates' => $commissionRates,
+      ]);
+
+      $pdo->commit();
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+
+    Auth::audit($pdo, 'agent_create', 'เพิ่มนายหน้า', $actor, "สร้างบัญชี {$code} — {$name}");
+
+    $agent = self::fetchOne($pdo, $id);
+    if (!$agent) {
+      throw new RuntimeException('Created agent not found');
+    }
+    return $agent;
+  }
+
+  public static function update(PDO $pdo, string $agentId, array $body, ?array $actor): array
+  {
+    $agentRow = self::rawAgent($pdo, $agentId);
+    if (!$agentRow) {
+      Response::error('ไม่พบนายหน้า', 404, 'NOT_FOUND');
+    }
+
+    $userFields = [];
+    $userParams = [':id' => $agentRow['user_id']];
+    $agentFields = [];
+    $agentParams = [':id' => $agentId];
+
+    if (array_key_exists('name', $body)) {
+      $userFields[] = 'name = :name';
+      $userParams[':name'] = trim((string)$body['name']);
+    }
+    if (array_key_exists('email', $body)) {
+      $email = trim((string)$body['email']);
+      $userFields[] = 'email = :email';
+      $userParams[':email'] = $email !== '' ? $email : null;
+    }
+    if (array_key_exists('phone', $body)) {
+      $phone = trim((string)$body['phone']);
+      $userFields[] = 'phone = :phone';
+      $userParams[':phone'] = $phone !== '' ? $phone : null;
+    }
+    if (!empty($body['password'])) {
+      $userFields[] = 'password_hash = :password_hash';
+      $userParams[':password_hash'] = password_hash((string)$body['password'], PASSWORD_DEFAULT);
+    }
+
+    if (array_key_exists('creditLimit', $body)) {
+      $agentFields[] = 'credit_limit = :credit_limit';
+      $agentParams[':credit_limit'] = (float)$body['creditLimit'];
+    }
+    if (array_key_exists('balance', $body)) {
+      $agentFields[] = 'balance = :balance';
+      $agentParams[':balance'] = (float)$body['balance'];
+    }
+    if (array_key_exists('featurePermissions', $body)) {
+      $agentFields[] = 'feature_permissions = :feature_permissions';
+      $agentParams[':feature_permissions'] = $body['featurePermissions'] === null
+        ? null
+        : json_encode($body['featurePermissions'], JSON_UNESCAPED_UNICODE);
+    }
+    if (array_key_exists('commissionRates', $body)) {
+      $agentFields[] = 'commission_rates = :commission_rates';
+      $agentParams[':commission_rates'] = $body['commissionRates'] === null
+        ? null
+        : json_encode($body['commissionRates'], JSON_UNESCAPED_UNICODE);
+    }
+    if (array_key_exists('parentId', $body)) {
+      $parentId = $body['parentId'] ?: null;
+      if ($parentId === $agentId) {
+        Response::error('ไม่สามารถตั้งหัวหน้าเป็นตัวเองได้', 422, 'VALIDATION');
+      }
+      if ($parentId !== null) {
+        $parent = $pdo->prepare('SELECT id FROM agents WHERE id = :id LIMIT 1');
+        $parent->execute([':id' => $parentId]);
+        if (!$parent->fetch()) {
+          Response::error('ไม่พบหัวหน้าทีมที่เลือก', 422, 'VALIDATION');
+        }
+      }
+      $agentFields[] = 'parent_id = :parent_id';
+      $agentParams[':parent_id'] = $parentId;
+    }
+
+    $pdo->beginTransaction();
+    try {
+      if ($userFields) {
+        $pdo->prepare('UPDATE users SET ' . implode(', ', $userFields) . ' WHERE id = :id')
+          ->execute($userParams);
+      }
+      if ($agentFields) {
+        $pdo->prepare('UPDATE agents SET ' . implode(', ', $agentFields) . ' WHERE id = :id')
+          ->execute($agentParams);
+      }
+      $pdo->commit();
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+
+    if (!empty($body['password'])) {
+      Auth::audit($pdo, 'password_reset', 'ตั้งรหัสผ่านนายหน้า', $actor, 'แอดมินตั้งรหัสผ่าน ' . $agentRow['code']);
+    }
+    if (array_key_exists('featurePermissions', $body)) {
+      Auth::audit($pdo, 'agent_permissions', 'กำหนดสิทธิ์นายหน้า', $actor, 'อัปเดตสิทธิ์ฟังก์ชัน ' . $agentRow['code']);
+    }
+    if (array_key_exists('commissionRates', $body)) {
+      Auth::audit($pdo, 'agent_commission_rates', 'กำหนดอัตราคอมมิชชัน', $actor, 'อัปเดต % คอมมิชชันของ ' . $agentRow['code']);
+    }
+    if (array_key_exists('parentId', $body)) {
+      $parentCode = 'ไม่มี (หัวทีม)';
+      if (!empty($body['parentId'])) {
+        $p = self::fetchOne($pdo, (string)$body['parentId']);
+        $parentCode = $p['code'] ?? $parentCode;
+      }
+      Auth::audit($pdo, 'agent_team', 'ตั้งค่าทีม', $actor, $agentRow['code'] . ' → หัวหน้า ' . $parentCode);
+    }
+
+    $agent = self::fetchOne($pdo, $agentId);
+    if (!$agent) {
+      Response::error('ไม่พบนายหน้า', 404, 'NOT_FOUND');
+    }
+    return $agent;
+  }
+
+  public static function setStatus(PDO $pdo, string $agentId, string $status, ?array $actor): array
+  {
+    if (!in_array($status, ['active', 'inactive'], true)) {
+      Response::error('สถานะไม่ถูกต้อง', 422, 'VALIDATION');
+    }
+    $agentRow = self::rawAgent($pdo, $agentId);
+    if (!$agentRow) {
+      Response::error('ไม่พบนายหน้า', 404, 'NOT_FOUND');
+    }
+
+    $pdo->beginTransaction();
+    try {
+      $pdo->prepare('UPDATE agents SET status = :status WHERE id = :id')
+        ->execute([':status' => $status, ':id' => $agentId]);
+      $pdo->prepare('UPDATE users SET status = :status WHERE id = :id')
+        ->execute([':status' => $status, ':id' => $agentRow['user_id']]);
+      $pdo->commit();
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+
+    Auth::audit(
+      $pdo,
+      'agent_status',
+      'เปลี่ยนสถานะนายหน้า',
+      $actor,
+      ($status === 'active' ? 'เปิดใช้' : 'ระงับ') . 'บัญชี ' . $agentRow['code']
+    );
+
+    $agent = self::fetchOne($pdo, $agentId);
+    if (!$agent) {
+      Response::error('ไม่พบนายหน้า', 404, 'NOT_FOUND');
+    }
+    return $agent;
+  }
+
+  public static function adjustBalance(PDO $pdo, string $agentId, float $amount, string $note, ?array $actor): array
+  {
+    $agentRow = self::rawAgent($pdo, $agentId);
+    if (!$agentRow) {
+      Response::error('ไม่พบนายหน้า', 404, 'NOT_FOUND');
+    }
+
+    $prev = (float)$agentRow['balance'];
+    $next = max(0, round($prev + $amount, 2));
+    $pdo->prepare('UPDATE agents SET balance = :balance WHERE id = :id')
+      ->execute([':balance' => $next, ':id' => $agentId]);
+
+    Auth::audit(
+      $pdo,
+      'balance_adjust',
+      'ปรับวงเงิน',
+      $actor,
+      ($amount >= 0 ? 'เติม' : 'หัก') . ' ' . $agentRow['code'] . ' ' .
+      ($amount >= 0 ? '+' : '') . number_format($amount, 2) .
+      ' บาท (ยอดก่อน ' . number_format($prev, 2) . ')' .
+      ($note !== '' ? " — {$note}" : '')
+    );
+
+    return [
+      'agentId' => $agentId,
+      'balance' => $next,
+      'adjustment' => $amount,
+      'note' => $note,
+      'currency' => 'THB',
+    ];
+  }
+
+  private static function rawAgent(PDO $pdo, string $agentId): ?array
+  {
+    $stmt = $pdo->prepare('SELECT * FROM agents WHERE id = :id LIMIT 1');
+    $stmt->execute([':id' => $agentId]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+  }
+
+  private static function decodeJson($value): ?array
+  {
+    if ($value === null || $value === '') {
+      return null;
+    }
+    if (is_array($value)) {
+      return $value;
+    }
+    $decoded = json_decode((string)$value, true);
+    return is_array($decoded) ? $decoded : null;
+  }
+
+  private static function initialsFromName(string $name): string
+  {
+    $parts = preg_split('/\s+/u', trim($name)) ?: [];
+    $chars = '';
+    foreach ($parts as $part) {
+      if ($part === '') {
+        continue;
+      }
+      $chars .= mb_substr($part, 0, 1, 'UTF-8');
+      if (mb_strlen($chars, 'UTF-8') >= 2) {
+        break;
+      }
+    }
+    if ($chars === '') {
+      return 'AG';
+    }
+    return mb_strtoupper($chars, 'UTF-8');
+  }
+}

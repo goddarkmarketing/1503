@@ -5,7 +5,9 @@ window.App = window.App || {};
 
 App.API = {
   async request(endpoint, options = {}) {
-    const allowFetch = !!App.Config.USE_REAL_AUTH || !App.Config.USE_MOCK_API;
+    const allowFetch = !App.Config.USE_MOCK_API
+      || !!App.Config.USE_REAL_AUTH
+      || !!App.Config.USE_REAL_AGENTS;
     if (!allowFetch) {
       throw new Error(`Mock mode: use service methods instead of ${endpoint}`);
     }

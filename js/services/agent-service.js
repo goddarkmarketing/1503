@@ -1,58 +1,62 @@
 window.App = window.App || {};
 
 App.AgentService = {
+  _useRealAgents() {
+    return !!App.Config.USE_REAL_AGENTS || !App.Config.USE_MOCK_API;
+  },
+
   async getAgents() {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.getAgents();
+    if (this._useRealAgents()) {
+      return App.API.request('/agents');
     }
-    return App.API.request('/agents');
+    return App.MockAPI.getAgents();
   },
 
   async getAgent(agentId) {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.getAgent(agentId);
+    if (this._useRealAgents()) {
+      return App.API.request(`/agents/${agentId}`);
     }
-    return App.API.request(`/agents/${agentId}`);
+    return App.MockAPI.getAgent(agentId);
   },
 
   async updateAgent(agentId, payload) {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.updateAgent(agentId, payload);
+    if (this._useRealAgents()) {
+      return App.API.request(`/agents/${agentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
     }
-    return App.API.request(`/agents/${agentId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload)
-    });
+    return App.MockAPI.updateAgent(agentId, payload);
   },
 
   async adjustBalance(agentId, amount, note) {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.adjustAgentBalance(agentId, amount, note);
+    if (this._useRealAgents()) {
+      return App.API.request(`/agents/${agentId}/balance`, {
+        method: 'POST',
+        body: JSON.stringify({ amount, note })
+      });
     }
-    return App.API.request(`/agents/${agentId}/balance`, {
-      method: 'POST',
-      body: JSON.stringify({ amount, note })
-    });
+    return App.MockAPI.adjustAgentBalance(agentId, amount, note);
   },
 
   async createAgent(payload) {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.createAgent(payload);
+    if (this._useRealAgents()) {
+      return App.API.request('/agents', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
     }
-    return App.API.request('/agents', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
+    return App.MockAPI.createAgent(payload);
   },
 
   async setAgentStatus(agentId, status) {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.setAgentStatus(agentId, status);
+    if (this._useRealAgents()) {
+      return App.API.request(`/agents/${agentId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
     }
-    return App.API.request(`/agents/${agentId}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status })
-    });
+    return App.MockAPI.setAgentStatus(agentId, status);
   },
 
   async updateProfile(payload) {

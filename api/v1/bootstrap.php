@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once $apiRoot . '/lib/Database.php';
 require_once $apiRoot . '/lib/Response.php';
 require_once $apiRoot . '/lib/Auth.php';
+require_once $apiRoot . '/lib/Agents.php';
 
 function api_json_body(): array
 {
