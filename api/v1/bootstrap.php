@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 header('X-Content-Type-Options: nosniff');
 
-$configPath = __DIR__ . '/config.php';
+$apiRoot = dirname(__DIR__); // /api (not /api/v1)
+$configPath = $apiRoot . '/config.php';
 $config = is_file($configPath) ? require $configPath : [];
 $origin = $config['app']['cors_origin'] ?? '*';
 header('Access-Control-Allow-Origin: ' . $origin);
@@ -15,9 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
   exit;
 }
 
-require_once __DIR__ . '/lib/Database.php';
-require_once __DIR__ . '/lib/Response.php';
-require_once __DIR__ . '/lib/Auth.php';
+require_once $apiRoot . '/lib/Database.php';
+require_once $apiRoot . '/lib/Response.php';
+require_once $apiRoot . '/lib/Auth.php';
 
 function api_json_body(): array
 {
