@@ -79,6 +79,9 @@ App.AgentService = {
   },
 
   async getAdminUsers() {
+    if (App.AdminUserService) {
+      return App.AdminUserService.list();
+    }
     if (App.Config.USE_MOCK_API) {
       return App.MockAPI.getAdminUsers();
     }

@@ -76,6 +76,39 @@ try {
     Response::json(['success' => true]);
   }
 
+  if ($method === 'POST' && $path === '/auth/change-password') {
+    $user = Auth::requireUser($pdo);
+    $body = api_json_body();
+    Response::json(AdminUsers::changeOwnPassword(
+      $pdo,
+      $user,
+      (string)($body['currentPassword'] ?? ''),
+      (string)($body['newPassword'] ?? '')
+    ));
+  }
+
+  if ($method === 'GET' && $path === '/admin/users') {
+    Auth::requireAdmin($pdo);
+    Response::json(AdminUsers::fetchAll($pdo));
+  }
+
+  if ($method === 'POST' && $path === '/admin/users') {
+    $admin = Auth::requireAdmin($pdo);
+    Response::json(AdminUsers::create($pdo, api_json_body(), $admin), 201);
+  }
+
+  if (preg_match('#^/admin/users/([^/]+)$#', $path, $m)) {
+    $userId = urldecode($m[1]);
+    if ($method === 'PATCH') {
+      $admin = Auth::requireAdmin($pdo);
+      Response::json(AdminUsers::update($pdo, $userId, api_json_body(), $admin));
+    }
+    if ($method === 'DELETE') {
+      $admin = Auth::requireAdmin($pdo);
+      Response::json(AdminUsers::delete($pdo, $userId, $admin));
+    }
+  }
+
   if ($method === 'GET' && $path === '/agents') {
     Auth::requireAdmin($pdo);
     Response::json(Agents::fetchAll($pdo));

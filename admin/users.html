@@ -97,11 +97,19 @@
         <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name">Admin</span></div></header>
       <main class="main-content">
         <div class="content-card">
-          <h1 class="admin-page-title">ผู้ดูแลระบบ (Admin)</h1>
-          <p class="admin-hint">Mock — super_admin จัดการได้ทั้งหมด, ops_admin ดูอย่างเดียว</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div>
+              <h1 class="admin-page-title" style="margin:0">ผู้ดูแลระบบ (Admin)</h1>
+              <p class="admin-hint" style="margin:8px 0 0">เพิ่ม / แก้ไข / ลบผู้ดูแล และตั้งรหัสผ่าน — ข้อมูลบันทึกใน MySQL</p>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <button type="button" class="btn-secondary" id="btnChangeMyPassword">เปลี่ยนรหัสผ่านของฉัน</button>
+              <button type="button" class="btn-primary" id="btnAddAdmin">เพิ่มผู้ดูแล</button>
+            </div>
+          </div>
           <div class="data-table-wrap">
             <table class="data-table">
-              <thead><tr><th>Username</th><th>ชื่อ</th><th>Role</th><th>สถานะ</th></tr></thead>
+              <thead><tr><th>Username</th><th>ชื่อ</th><th>Role</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
               <tbody id="usersTableBody"></tbody>
             </table>
           </div>

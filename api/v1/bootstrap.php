@@ -20,6 +20,7 @@ require_once $apiRoot . '/lib/Database.php';
 require_once $apiRoot . '/lib/Response.php';
 require_once $apiRoot . '/lib/Auth.php';
 require_once $apiRoot . '/lib/Agents.php';
+require_once $apiRoot . '/lib/AdminUsers.php';
 
 function api_json_body(): array
 {

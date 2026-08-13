@@ -1,7 +1,8 @@
 /**
  * Application configuration
- * - USE_REAL_AUTH: login/me/logout ใช้ PHP API + MySQL
+ * - USE_REAL_AUTH: login/me/logout/change-password ใช้ PHP API + MySQL
  * - USE_REAL_AGENTS: จัดการนายหน้าใช้ PHP API + MySQL
+ * - USE_REAL_ADMIN_USERS: จัดการผู้ดูแลระบบใช้ PHP API + MySQL
  * - USE_MOCK_API: ฟีเจอร์อื่นยังใช้ mock จนกว่า endpoint จะครบ
  */
 window.App = window.App || {};
@@ -10,6 +11,7 @@ App.Config = {
   USE_MOCK_API: true,
   USE_REAL_AUTH: true,
   USE_REAL_AGENTS: true,
+  USE_REAL_ADMIN_USERS: true,
   // Production on Atom/Plesk: '/api/v1'
   // Local XAMPP example: '/kladeebroker/api/v1'
   API_BASE_URL: '/api/v1',

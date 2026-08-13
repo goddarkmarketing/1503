@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
-  const cache = '20260812a';
+  const cache = '20260813a';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'config/app-config.js',
@@ -25,6 +25,7 @@
     'services/receipt-service.js',
     'services/product-service.js',
     'services/agent-service.js',
+    'services/admin-user-service.js',
     'services/insurer-service.js',
     'services/audit-service.js',
     'services/admin-notification-service.js',
