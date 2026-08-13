@@ -13,8 +13,14 @@ App.Config = {
   USE_REAL_AGENTS: true,
   USE_REAL_ADMIN_USERS: true,
   // Production on Atom/Plesk: '/api/v1'
-  // Local XAMPP example: '/kladeebroker/api/v1'
-  API_BASE_URL: '/api/v1',
+  // Local XAMPP under /kladeebroker/ is detected automatically
+  API_BASE_URL: (() => {
+    const path = window.location.pathname || '';
+    if (path === '/kladeebroker' || path.indexOf('/kladeebroker/') === 0) {
+      return '/kladeebroker/api/v1';
+    }
+    return '/api/v1';
+  })(),
   SESSION_KEY: 'kladeebroker_session',
   AGENT_PERMISSIONS_KEY: 'kladeebroker_agent_permissions',
   AGENT_COMMISSION_RATES_KEY: 'kladeebroker_agent_commission_rates',

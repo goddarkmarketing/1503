@@ -1,23 +1,23 @@
 # Kladee Broker — clean URLs (no .html in browser address bar)
+# Works at domain root (Plesk) and subdirectory (XAMPP /kladeebroker/)
 DirectoryIndex index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /
 
   # Keep API and static tooling untouched
   RewriteRule ^(api|node_modules)/ - [L]
 
-  # Do not externally redirect these .html assets (fetched by JS / templates)
+  # Do not rewrite these .html assets (fetched by JS / templates)
   RewriteRule ^(partials|assets|totalmenu)/ - [L]
 
-  # /path/index.html → /path/
-  RewriteCond %{THE_REQUEST} \s/+(.*/)?index\.html[\s?] [NC]
-  RewriteRule ^(.*)index\.html$ /$1 [R=301,L,NE]
+  # /path/index.html → /path/  (relative — keeps /kladeebroker prefix)
+  RewriteCond %{THE_REQUEST} \s/+(?:.+?/)?index\.html[\s?] [NC]
+  RewriteRule ^(.*?)index\.html$ $1 [R=301,L,NE]
 
   # /path/file.html → /path/file
-  RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
-  RewriteRule ^ /%1 [R=301,L,NE]
+  RewriteCond %{THE_REQUEST} \s/+(?:.+?/)?[^?\s]*?\.html[\s?] [NC]
+  RewriteRule ^(.+)\.html$ $1 [R=301,L,NE]
 
   # Extensionless → serve matching .html when it exists
   RewriteCond %{REQUEST_FILENAME} !-f
