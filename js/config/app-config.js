@@ -1,10 +1,13 @@
 /**
- * Application configuration — set USE_MOCK_API false when PHP API + MySQL are ready.
+ * Application configuration
+ * - USE_REAL_AUTH: login/me/logout ใช้ PHP API + MySQL
+ * - USE_MOCK_API: ฟีเจอร์อื่นยังใช้ mock จนกว่า endpoint จะครบ
  */
 window.App = window.App || {};
 
 App.Config = {
   USE_MOCK_API: true,
+  USE_REAL_AUTH: true,
   // Production on Atom/Plesk: '/api/v1'
   // Local XAMPP example: '/kladeebroker/api/v1'
   API_BASE_URL: '/api/v1',
