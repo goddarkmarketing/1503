@@ -1,0 +1,32 @@
+Kladee Broker — สร้างฐานข้อมูลจริงบนโฮสอะตอม (Plesk)
+
+1) Plesk → Databases → Add Database
+   - Database name: เช่น kladeebroker
+   - สร้าง DB user + password แล้วจำไว้
+
+2) เปิด phpMyAdmin ของฐานนั้น
+   - Import ไฟล์ database/schema.sql
+   - แล้ว Import ไฟล์ database/seed.sql
+   - บัญชีทดลอง: admin / demo และ Ck1-039 / demo
+
+3) บนเซิร์ฟเวอร์ (Files หรือ SSH)
+   - คัดลอก api/config.example.php เป็น api/config.php
+   - แก้ db name / user / pass ให้ตรงกับ Plesk
+   - อย่าอัป config.php ขึ้น Git
+
+4) ทดสอบ API
+   - เปิด: https://kladeebroker.co.th/api/v1/health
+   - ควรได้ {"ok":true,"database":"connected",...}
+
+5) ทดสอบ login (Postman / curl)
+   POST https://kladeebroker.co.th/api/v1/auth/login
+   Body JSON: {"username":"admin","password":"demo"}
+
+6) เปิดหน้าเว็บใช้ API จริง
+   - ใน js/config/app-config.js ตั้ง USE_MOCK_API เป็น false
+   - Deploy ใหม่ผ่าน Git
+
+หมายเหตุ:
+- ตอนนี้ API มี health + login + me + logout
+- ตารางอื่น (กรมธรรม์/คอม/50 ทวิ) จะเพิ่มในรอบถัดไป
+- พัฒนาบน XAMPP ได้เหมือนกัน: สร้าง DB ใน phpMyAdmin แล้วชี้ config.php ไป localhost

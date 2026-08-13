@@ -1,10 +1,12 @@
 /**
- * Application configuration — swap USE_MOCK_API to false when backend is ready.
+ * Application configuration — set USE_MOCK_API false when PHP API + MySQL are ready.
  */
 window.App = window.App || {};
 
 App.Config = {
   USE_MOCK_API: true,
+  // Production on Atom/Plesk: '/api/v1'
+  // Local XAMPP example: '/kladeebroker/api/v1'
   API_BASE_URL: '/api/v1',
   SESSION_KEY: 'kladeebroker_session',
   AGENT_PERMISSIONS_KEY: 'kladeebroker_agent_permissions',
