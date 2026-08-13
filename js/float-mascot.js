@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Floating mascot contact widget — bottom-right on all pages.
  */
 (function (window, document) {
@@ -66,7 +66,7 @@
       iconMail() +
       '<span>kladee.broker@gmail.com</span></a>' +
       '<a class="floatMascot__action" href="' +
-      asset('contact.html') +
+      asset('contact') +
       '">' +
       iconForm() +
       '<span>แบบฟอร์มติดต่อ</span></a>' +

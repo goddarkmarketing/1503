@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   var BANKS = {
     bbl: { name: 'กรุงเทพ', logo: 'bbl.png' },
     kbank: { name: 'กสิกร', logo: 'kbank.png' },
@@ -57,7 +57,7 @@
       : '<button type="button" class="insAcctCopy" data-copy="' + item.accountNo + '" aria-label="คัดลอกเลขบัญชี ' + item.accountNo + '">' + copyIcon + '<span>คัดลอก</span></button>';
     var actionBtn = item.onlineOnly
       ? '<a class="insAcctQrBtn" href="https://www.roojai.com/payment/" target="_blank" rel="noopener noreferrer">ชำระออนไลน์</a>'
-      : '<a class="insAcctQrBtn" href="contact.html">สแกน QR Code</a>';
+      : '<a class="insAcctQrBtn" href="contact">สแกน QR Code</a>';
 
     return (
       '<li class="insAcctRow' + (item.onlineOnly ? ' insAcctRow--online' : '') + '">' +

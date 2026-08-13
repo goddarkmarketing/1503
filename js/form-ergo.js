@@ -1,4 +1,4 @@
-/* ภาคบังคับ (พ.ร.บ.) — เออร์โกประกันภัย */
+﻿/* ภาคบังคับ (พ.ร.บ.) — เออร์โกประกันภัย */
 
 let licenseProvinceSS;
 let insuredProvinceSS;
@@ -605,7 +605,7 @@ async function submitPolicy(form) {
           sessionStorage.setItem('lastWht50Doc', JSON.stringify(wht));
         } catch (_) { /* non-blocking */ }
       }
-      window.location.href = '../agent/success.html';
+      window.location.href = '../agent/success';
     } else {
       alert('ยืนยันการส่งกรมธรรม์เรียบร้อย');
       if (btn) {

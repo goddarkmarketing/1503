@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Per-agent feature permissions for the agent portal sidebar.
  */
 window.App = window.App || {};
@@ -9,19 +9,19 @@ App.AgentFeatures = {
       id: 'main',
       label: 'หลัก',
       items: [
-        { key: 'home', label: 'หน้าแรก', page: 'agent/index.html' }
+        { key: 'home', label: 'หน้าแรก', page: 'agent/' }
       ]
     },
     {
       id: 'products',
       label: 'ออกกรมธรรม์',
       items: [
-        { key: 'compulsory-ergo', label: 'พ.ร.บ. — เออร์โก', page: 'compulsory/ergo.html' },
+        { key: 'compulsory-ergo', label: 'พ.ร.บ. — เออร์โก', page: 'compulsory/ergo' },
         { key: 'compulsory-axa', label: 'พ.ร.บ. — AXA' },
         { key: 'compulsory-bki', label: 'พ.ร.บ. — BKI กรุงเทพ' },
         { key: 'compulsory-chubb', label: 'พ.ร.บ. — CHUBB' },
         { key: 'compulsory-indara', label: 'พ.ร.บ. — อินทรประกันภัย' },
-        { key: 'voluntary-axa', label: '2+/3+ — AXA', page: 'voluntary/axa.html' },
+        { key: 'voluntary-axa', label: '2+/3+ — AXA', page: 'voluntary/axa' },
         { key: 'voluntary-bki', label: '2+/3+ — BKI กรุงเทพ' },
         { key: 'voluntary-chubb', label: '2+/3+ — CHUBB' },
         { key: 'voluntary-indara', label: '2+/3+ — อินทรประกันภัย' },
@@ -29,46 +29,46 @@ App.AgentFeatures = {
         { key: 'pa-bki', label: 'อุบัติเหตุ — BKI กรุงเทพ' },
         { key: 'travel-axa', label: 'เดินทาง — AXA' },
         { key: 'travel-bki', label: 'เดินทาง — BKI กรุงเทพ' },
-        { key: 'renew', label: 'ต่ออายุกรมธรรม์', page: 'agent/renew.html' }
+        { key: 'renew', label: 'ต่ออายุกรมธรรม์', page: 'agent/renew' }
       ]
     },
     {
       id: 'reports',
       label: 'รายงาน & ข้อมูล',
       items: [
-        { key: 'reports-daily-policies', label: 'ขายกรมธรรม์ประจำวัน', page: 'agent/reports/daily-policies.html' },
-        { key: 'reports-daily-summary', label: 'สรุปการขายประจำวัน', page: 'agent/reports/daily-summary.html' },
-        { key: 'reports-monthly', label: 'รายงานรายเดือน', page: 'agent/reports/monthly.html' },
-        { key: 'reports-team', label: 'รายงานลูกทีม', page: 'agent/reports/team.html' },
-        { key: 'inquiry', label: 'สอบถามกรมธรรม์', page: 'agent/inquiry.html' }
+        { key: 'reports-daily-policies', label: 'ขายกรมธรรม์ประจำวัน', page: 'agent/reports/daily-policies' },
+        { key: 'reports-daily-summary', label: 'สรุปการขายประจำวัน', page: 'agent/reports/daily-summary' },
+        { key: 'reports-monthly', label: 'รายงานรายเดือน', page: 'agent/reports/monthly' },
+        { key: 'reports-team', label: 'รายงานลูกทีม', page: 'agent/reports/team' },
+        { key: 'inquiry', label: 'สอบถามกรมธรรม์', page: 'agent/inquiry' }
       ]
     },
     {
       id: 'finance',
       label: 'การเงิน',
       items: [
-        { key: 'commission', label: 'ค่าคอมมิชชัน', page: 'agent/commission.html' },
-        { key: 'wht50', label: 'หนังสือ 50 ทวิ', page: 'agent/wht50.html' },
-        { key: 'credit', label: 'ขอเติมวงเงิน', page: 'agent/credit.html' },
-        { key: 'credit-history', label: 'ประวัติการเติมเงิน', page: 'agent/credit-history.html' }
+        { key: 'commission', label: 'ค่าคอมมิชชัน', page: 'agent/commission' },
+        { key: 'wht50', label: 'หนังสือ 50 ทวิ', page: 'agent/wht50' },
+        { key: 'credit', label: 'ขอเติมวงเงิน', page: 'agent/credit' },
+        { key: 'credit-history', label: 'ประวัติการเติมเงิน', page: 'agent/credit-history' }
       ]
     },
     {
       id: 'receipt',
       label: 'ใบเสร็จ',
       items: [
-        { key: 'receipt-issue', label: 'ออกใบเสร็จ', page: 'agent/receipt/issue.html' },
-        { key: 'receipt-inquiry', label: 'สอบถามข้อมูลใบเสร็จ', page: 'agent/receipt/inquiry.html' },
-        { key: 'receipt-summary', label: 'สรุปประจำวัน', page: 'agent/receipt/daily-summary.html' },
-        { key: 'receipt-detail', label: 'รายละเอียดประจำวัน', page: 'agent/receipt/daily-detail.html' },
-        { key: 'receipt-settings', label: 'ตั้งค่าใบเสร็จ', page: 'agent/receipt/settings.html' }
+        { key: 'receipt-issue', label: 'ออกใบเสร็จ', page: 'agent/receipt/issue' },
+        { key: 'receipt-inquiry', label: 'สอบถามข้อมูลใบเสร็จ', page: 'agent/receipt/inquiry' },
+        { key: 'receipt-summary', label: 'สรุปประจำวัน', page: 'agent/receipt/daily-summary' },
+        { key: 'receipt-detail', label: 'รายละเอียดประจำวัน', page: 'agent/receipt/daily-detail' },
+        { key: 'receipt-settings', label: 'ตั้งค่าใบเสร็จ', page: 'agent/receipt/settings' }
       ]
     },
     {
       id: 'team',
       label: 'ทีมงาน',
       items: [
-        { key: 'team', label: 'ลูกทีม', page: 'agent/team.html' }
+        { key: 'team', label: 'ลูกทีม', page: 'agent/team' }
       ]
     }
   ],
@@ -134,8 +134,10 @@ App.AgentFeatures = {
   },
 
   pageToFeature(pagePath) {
-    const normalized = String(pagePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
-    const item = this.allItems().find((entry) => entry.page === normalized);
+    const normalized = App.RoleGuard.normalizePagePath(pagePath);
+    const item = this.allItems().find(
+      (entry) => App.RoleGuard.normalizePagePath(entry.page) === normalized
+    );
     return item ? item.key : null;
   },
 
@@ -144,7 +146,7 @@ App.AgentFeatures = {
     if (!user || user.role !== 'agent') return true;
 
     const page = App.RoleGuard.currentPagePath();
-    if (page === 'agent/access-denied.html') return true;
+    if (page === 'agent/access-denied') return true;
 
     const featureKey = this.pageToFeature(page);
     if (!featureKey) return true;
@@ -152,13 +154,16 @@ App.AgentFeatures = {
 
     const base = options.basePath || '';
     const allowed = this.firstAllowedPage(user);
-    if (allowed?.page && allowed.page !== page) {
+    const allowedPath = allowed?.page
+      ? App.RoleGuard.normalizePagePath(allowed.page)
+      : '';
+    if (allowedPath && allowedPath !== page) {
       window.location.replace(`${base}${allowed.page}`);
       return false;
     }
 
-    if (page !== 'agent/access-denied.html') {
-      window.location.replace(`${base}agent/access-denied.html`);
+    if (page !== 'agent/access-denied') {
+      window.location.replace(`${base}agent/access-denied`);
     }
     return false;
   },

@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return App.Permissions.homePath(user.role);
     }
 
-    const safe = next.replace(/^\/+/, '').replace(/\.\./g, '');
+    let safe = next.replace(/^\/+/, '').replace(/\.\./g, '');
     if (!safe || /^https?:/i.test(safe) || safe.indexOf('javascript:') === 0) {
       return App.Permissions.homePath(user.role);
     }
@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return App.Permissions.homePath(user.role);
     }
 
+    safe = safe.replace(/\.html$/i, '').replace(/\/index$/i, '');
+    if (safe === 'agent' || safe === 'admin') safe += '/';
     return safe;
   }
 

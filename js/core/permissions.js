@@ -26,10 +26,10 @@ App.Permissions = {
   },
 
   homePath(role) {
-    return role === 'admin' ? 'admin/index.html' : 'agent/index.html';
+    return role === 'admin' ? 'admin/' : 'agent/';
   },
 
   loginPath() {
-    return 'login.html';
+    return 'login';
   }
 };

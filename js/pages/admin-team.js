@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const root = document.getElementById('teamHierarchyRoot');
   if (!root) return;
 
@@ -84,7 +84,7 @@
       root.innerHTML = `
         <div class="team-org-empty">
           <p>ยังไม่มีโครงสร้างทีม</p>
-          <a class="btn-primary btn-sm" href="agents.html">ไปตั้งค่าทีมที่จัดการนายหน้า</a>
+          <a class="btn-primary btn-sm" href="agents">ไปตั้งค่าทีมที่จัดการนายหน้า</a>
         </div>`;
       return;
     }
@@ -192,7 +192,7 @@
             <span class="status-pill ${statusClass(t.leaderStatus)}">${statusLabel(t.leaderStatus)}</span>
           </p>
         </div>
-        <a class="btn-secondary btn-sm" href="agents.html">จัดการบัญชีนี้</a>
+        <a class="btn-secondary btn-sm" href="agents">จัดการบัญชีนี้</a>
       </header>
 
       <dl class="team-org__metrics">

@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         phone: form.phone.value.trim()
       });
       App.Session.updateUser(updated);
-      App.Shell.init({ basePath, profilePath: `${basePath}agent/profile.html` });
+      App.Shell.init({ basePath, profilePath: `${basePath}agent/profile` });
       msg.textContent = 'บันทึกโปรไฟล์เรียบร้อย';
       msg.style.color = 'var(--accent-green)';
     } catch (err) {

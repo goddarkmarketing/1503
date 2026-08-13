@@ -4,23 +4,25 @@
 window.App = window.App || {};
 
 App.RoleGuard = {
+  normalizePagePath(path) {
+    let p = String(path || '').replace(/\\/g, '/').replace(/^\/+/, '');
+    p = p.replace(/\.html$/i, '');
+    p = p.replace(/\/index$/i, '');
+    p = p.replace(/\/+$/, '');
+    return p;
+  },
+
   currentPagePath() {
     const parts = window.location.pathname.split('/').filter(Boolean);
     const roots = ['kladeebroker', '1503'];
-    let rootIdx = -1;
-    for (let i = parts.length - 1; i >= 0; i -= 1) {
+    let start = 0;
+    for (let i = 0; i < parts.length; i += 1) {
       if (roots.includes(parts[i])) {
-        rootIdx = i;
+        start = i + 1;
         break;
       }
     }
-    if (rootIdx >= 0 && rootIdx < parts.length - 1) {
-      return parts.slice(rootIdx + 1).join('/');
-    }
-    if (parts.length >= 2 && ['compulsory', 'agent', 'admin', 'pa', 'voluntary', 'travel'].includes(parts[parts.length - 2])) {
-      return parts.slice(-2).join('/');
-    }
-    return parts[parts.length - 1] || '';
+    return this.normalizePagePath(parts.slice(start).join('/'));
   },
 
   /**

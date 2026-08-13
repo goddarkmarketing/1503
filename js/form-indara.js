@@ -1,4 +1,4 @@
-/* ภาคบังคับ (พ.ร.บ.) — อินทร */
+﻿/* ภาคบังคับ (พ.ร.บ.) — อินทร */
 
 let licenseProvinceSS;
 let insuredProvinceSS;
@@ -293,7 +293,7 @@ async function submitPolicy(form) {
     if (window.App?.PolicyService) {
       const policy = await App.PolicyService.createPolicy(data);
       sessionStorage.setItem('lastIssuedPolicy', JSON.stringify(policy));
-      window.location.href = '../agent/success.html';
+      window.location.href = '../agent/success';
     } else {
       alert('บันทึกข้อมูลเรียบร้อย — พร้อมดำเนินการต่อ');
     }

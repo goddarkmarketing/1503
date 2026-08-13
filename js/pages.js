@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
 	'use strict';
 
 	/* ---- News: filter by category ---- */
@@ -174,41 +174,41 @@
 
 	if (searchForm && searchInput && searchResults) {
 		var searchIndex = [
-			{ title: 'ประกันรถยนต์', href: 'plans/car.html', tag: 'ผลิตภัณฑ์', keywords: 'รถยนต์ ชั้น1 2+ 3+ พรบ' },
-			{ title: 'เปรียบเทียบเบี้ยประกันรถ', href: 'plans/car-compare.html', tag: 'ผลิตภัณฑ์', keywords: 'เปรียบเทียบ รถ' },
-			{ title: 'ประกันชั้น 1', href: 'plans/car-class1.html', tag: 'ผลิตภัณฑ์', keywords: 'ชั้น1 รถ' },
-			{ title: 'ประกันชั้น 2+ / 3+', href: 'plans/car-class2plus.html', tag: 'ผลิตภัณฑ์', keywords: '2+ 3+ รถ' },
-			{ title: 'ประกันชั้น 2 / 3', href: 'plans/car-class23.html', tag: 'ผลิตภัณฑ์', keywords: 'ชั้น2 ชั้น3 รถ' },
-			{ title: 'พ.ร.บ. รถยนต์', href: 'plans/compulsory.html', tag: 'ผลิตภัณฑ์', keywords: 'พรบ ภาคบังคับ' },
-			{ title: 'ประกันสุขภาพ', href: 'plans/health.html', tag: 'ผลิตภัณฑ์', keywords: 'สุขภาพ IPD OPD' },
-			{ title: 'ผู้ป่วยใน (IPD)', href: 'plans/health-ipd.html', tag: 'ผลิตภัณฑ์', keywords: 'ipd ผู้ป่วยใน' },
-			{ title: 'ผู้ป่วยนอก (OPD)', href: 'plans/health-opd.html', tag: 'ผลิตภัณฑ์', keywords: 'opd ผู้ป่วยนอก' },
-			{ title: 'ประกันชีวิต', href: 'plans/life.html', tag: 'ผลิตภัณฑ์', keywords: 'ชีวิต ตลอดชีพ สะสมทรัพย์' },
-			{ title: 'แบบตลอดชีพ', href: 'plans/life-whole.html', tag: 'ผลิตภัณฑ์', keywords: 'whole life ตลอดชีพ' },
-			{ title: 'แบบสะสมทรัพย์', href: 'plans/life-savings.html', tag: 'ผลิตภัณฑ์', keywords: 'สะสมทรัพย์ เงินคืน' },
-			{ title: 'แบบชั่วระยะเวลา', href: 'plans/life-term.html', tag: 'ผลิตภัณฑ์', keywords: 'term ชั่วระยะ' },
-			{ title: 'ประกันอุบัติเหตุ (PA)', href: 'plans/pa.html', tag: 'ผลิตภัณฑ์', keywords: 'pa อุบัติเหตุ' },
-			{ title: 'ประกันบ้าน/ทรัพย์สิน', href: 'plans/home.html', tag: 'ผลิตภัณฑ์', keywords: 'บ้าน ทรัพย์สิน' },
-			{ title: 'ติดต่อสมัครนายหน้า', href: 'contact.html', tag: 'บริการ', keywords: 'สมัคร นายหน้า ตัวแทน ติดต่อ' },
-			{ title: 'เข้าสู่ระบบนายหน้า', href: 'login.html', tag: 'บริการ', keywords: 'login เข้าสู่ระบบ' },
-			{ title: 'ติดต่อเจ้าหน้าที่', href: 'contact.html', tag: 'บริการ', keywords: 'ติดต่อ สอบถาม' },
-			{ title: 'แจ้งเคลม', href: 'claims.html', tag: 'บริการ', keywords: 'เคลม claim เบอร์เคลมบริษัทประกัน' },
-			{ title: 'เอกสารเคลมรถยนต์', href: 'claims-motor-docs.html', tag: 'บริการ', keywords: 'เคลม เอกสาร รถยนต์ motor แบบฟอร์ม ภาคสมัครใจ' },
-			{ title: 'เอกสารเคลม พ.ร.บ.', href: 'claims-motor-compulsory.html', tag: 'บริการ', keywords: 'เคลม พรบ ภาคบังคับ สินไหมทดแทน' },
-			{ title: 'เบอร์เคลม Non-Motor', href: 'claims-nonmotor-phones.html', tag: 'บริการ', keywords: 'เคลม non-motor สุขภาพ ชีวิต เบอร์' },
-			{ title: 'เอกสารเคลม Non-Motor', href: 'claims-nonmotor-docs.html', tag: 'บริการ', keywords: 'เคลม เอกสาร non-motor อัคคีภัย' },
-			{ title: 'เอกสารเคลมประกันเดินทาง', href: 'claims-nonmotor-travel.html', tag: 'บริการ', keywords: 'เคลม ประกันเดินทาง travel' },
-			{ title: 'เอกสารเคลมสุขภาพ', href: 'claims-nonmotor-health.html', tag: 'บริการ', keywords: 'เคลม สุขภาพ อุบัติเหตุ' },
-			{ title: 'บัญชีบริษัทประกัน', href: 'insurance-company-account.html', tag: 'บริการ', keywords: 'บัญชี ธนาคาร ชำระเบี้ย โอนเงิน เลขบัญชี' },
-			{ title: 'ข่าวสารและกิจกรรม', href: 'news.html?view=newsfeed', tag: 'ข่าวสาร', keywords: 'ข่าว กิจกรรม' },
-			{ title: 'บทความน่ารู้', href: 'news.html?cat=article', tag: 'ข่าวสาร', keywords: 'บทความ ความรู้' },
-			{ title: 'แนะนำบริษัท', href: 'about-intro.html', tag: 'บริษัท', keywords: 'about แนะนำ กล้าดี' },
-			{ title: 'ประวัติความเป็นมา', href: 'about-history.html', tag: 'บริษัท', keywords: 'ประวัติ history' },
-			{ title: 'วิสัยทัศน์และพันธกิจ', href: 'about-vision.html', tag: 'บริษัท', keywords: 'vision mission ค่านิยม' },
-			{ title: 'ทีมงานของเรา', href: 'about-team.html', tag: 'บริษัท', keywords: 'ทีม team ผู้บริหาร' },
-			{ title: 'สาส์นจากผู้บริหาร', href: 'about-message.html', tag: 'บริษัท', keywords: 'สาส์น message' },
-			{ title: 'เกี่ยวกับเรา', href: 'about.html', tag: 'บริษัท', keywords: 'about กล้าดี' },
-			{ title: 'แผนผังเว็บไซต์', href: 'sitemap.html', tag: 'เว็บไซต์', keywords: 'sitemap แผนผัง' }
+			{ title: 'ประกันรถยนต์', href: 'plans/car', tag: 'ผลิตภัณฑ์', keywords: 'รถยนต์ ชั้น1 2+ 3+ พรบ' },
+			{ title: 'เปรียบเทียบเบี้ยประกันรถ', href: 'plans/car-compare', tag: 'ผลิตภัณฑ์', keywords: 'เปรียบเทียบ รถ' },
+			{ title: 'ประกันชั้น 1', href: 'plans/car-class1', tag: 'ผลิตภัณฑ์', keywords: 'ชั้น1 รถ' },
+			{ title: 'ประกันชั้น 2+ / 3+', href: 'plans/car-class2plus', tag: 'ผลิตภัณฑ์', keywords: '2+ 3+ รถ' },
+			{ title: 'ประกันชั้น 2 / 3', href: 'plans/car-class23', tag: 'ผลิตภัณฑ์', keywords: 'ชั้น2 ชั้น3 รถ' },
+			{ title: 'พ.ร.บ. รถยนต์', href: 'plans/compulsory', tag: 'ผลิตภัณฑ์', keywords: 'พรบ ภาคบังคับ' },
+			{ title: 'ประกันสุขภาพ', href: 'plans/health', tag: 'ผลิตภัณฑ์', keywords: 'สุขภาพ IPD OPD' },
+			{ title: 'ผู้ป่วยใน (IPD)', href: 'plans/health-ipd', tag: 'ผลิตภัณฑ์', keywords: 'ipd ผู้ป่วยใน' },
+			{ title: 'ผู้ป่วยนอก (OPD)', href: 'plans/health-opd', tag: 'ผลิตภัณฑ์', keywords: 'opd ผู้ป่วยนอก' },
+			{ title: 'ประกันชีวิต', href: 'plans/life', tag: 'ผลิตภัณฑ์', keywords: 'ชีวิต ตลอดชีพ สะสมทรัพย์' },
+			{ title: 'แบบตลอดชีพ', href: 'plans/life-whole', tag: 'ผลิตภัณฑ์', keywords: 'whole life ตลอดชีพ' },
+			{ title: 'แบบสะสมทรัพย์', href: 'plans/life-savings', tag: 'ผลิตภัณฑ์', keywords: 'สะสมทรัพย์ เงินคืน' },
+			{ title: 'แบบชั่วระยะเวลา', href: 'plans/life-term', tag: 'ผลิตภัณฑ์', keywords: 'term ชั่วระยะ' },
+			{ title: 'ประกันอุบัติเหตุ (PA)', href: 'plans/pa', tag: 'ผลิตภัณฑ์', keywords: 'pa อุบัติเหตุ' },
+			{ title: 'ประกันบ้าน/ทรัพย์สิน', href: 'plans/home', tag: 'ผลิตภัณฑ์', keywords: 'บ้าน ทรัพย์สิน' },
+			{ title: 'ติดต่อสมัครนายหน้า', href: 'contact', tag: 'บริการ', keywords: 'สมัคร นายหน้า ตัวแทน ติดต่อ' },
+			{ title: 'เข้าสู่ระบบนายหน้า', href: 'login', tag: 'บริการ', keywords: 'login เข้าสู่ระบบ' },
+			{ title: 'ติดต่อเจ้าหน้าที่', href: 'contact', tag: 'บริการ', keywords: 'ติดต่อ สอบถาม' },
+			{ title: 'แจ้งเคลม', href: 'claims', tag: 'บริการ', keywords: 'เคลม claim เบอร์เคลมบริษัทประกัน' },
+			{ title: 'เอกสารเคลมรถยนต์', href: 'claims-motor-docs', tag: 'บริการ', keywords: 'เคลม เอกสาร รถยนต์ motor แบบฟอร์ม ภาคสมัครใจ' },
+			{ title: 'เอกสารเคลม พ.ร.บ.', href: 'claims-motor-compulsory', tag: 'บริการ', keywords: 'เคลม พรบ ภาคบังคับ สินไหมทดแทน' },
+			{ title: 'เบอร์เคลม Non-Motor', href: 'claims-nonmotor-phones', tag: 'บริการ', keywords: 'เคลม non-motor สุขภาพ ชีวิต เบอร์' },
+			{ title: 'เอกสารเคลม Non-Motor', href: 'claims-nonmotor-docs', tag: 'บริการ', keywords: 'เคลม เอกสาร non-motor อัคคีภัย' },
+			{ title: 'เอกสารเคลมประกันเดินทาง', href: 'claims-nonmotor-travel', tag: 'บริการ', keywords: 'เคลม ประกันเดินทาง travel' },
+			{ title: 'เอกสารเคลมสุขภาพ', href: 'claims-nonmotor-health', tag: 'บริการ', keywords: 'เคลม สุขภาพ อุบัติเหตุ' },
+			{ title: 'บัญชีบริษัทประกัน', href: 'insurance-company-account', tag: 'บริการ', keywords: 'บัญชี ธนาคาร ชำระเบี้ย โอนเงิน เลขบัญชี' },
+			{ title: 'ข่าวสารและกิจกรรม', href: 'news?view=newsfeed', tag: 'ข่าวสาร', keywords: 'ข่าว กิจกรรม' },
+			{ title: 'บทความน่ารู้', href: 'news?cat=article', tag: 'ข่าวสาร', keywords: 'บทความ ความรู้' },
+			{ title: 'แนะนำบริษัท', href: 'about-intro', tag: 'บริษัท', keywords: 'about แนะนำ กล้าดี' },
+			{ title: 'ประวัติความเป็นมา', href: 'about-history', tag: 'บริษัท', keywords: 'ประวัติ history' },
+			{ title: 'วิสัยทัศน์และพันธกิจ', href: 'about-vision', tag: 'บริษัท', keywords: 'vision mission ค่านิยม' },
+			{ title: 'ทีมงานของเรา', href: 'about-team', tag: 'บริษัท', keywords: 'ทีม team ผู้บริหาร' },
+			{ title: 'สาส์นจากผู้บริหาร', href: 'about-message', tag: 'บริษัท', keywords: 'สาส์น message' },
+			{ title: 'เกี่ยวกับเรา', href: 'about', tag: 'บริษัท', keywords: 'about กล้าดี' },
+			{ title: 'แผนผังเว็บไซต์', href: 'sitemap', tag: 'เว็บไซต์', keywords: 'sitemap แผนผัง' }
 		];
 
 		function runSearch(query) {
@@ -227,7 +227,7 @@
 			if (searchMeta) {
 				searchMeta.textContent = hits.length
 					? 'พบ ' + hits.length + ' รายการสำหรับ “' + query.trim() + '”'
-					: 'ไม่พบผลลัพธ์สำหรับ “' + query.trim() + '” — ลองคำอื่นหรือ <a href="contact.html">ติดต่อเจ้าหน้าที่</a>';
+					: 'ไม่พบผลลัพธ์สำหรับ “' + query.trim() + '” — ลองคำอื่นหรือ <a href="contact">ติดต่อเจ้าหน้าที่</a>';
 			}
 			hits.forEach(function (item) {
 				var li = document.createElement('li');
@@ -243,8 +243,8 @@
 			e.preventDefault();
 			var q = searchInput.value.trim();
 			if (q) {
-				var url = 'search.html?q=' + encodeURIComponent(q);
-				if (window.location.pathname.indexOf('search.html') >= 0) {
+				var url = 'search?q=' + encodeURIComponent(q);
+				if (window.location.pathname.indexOf('search') >= 0) {
 					window.history.replaceState(null, '', url);
 					runSearch(q);
 				} else {

@@ -30,7 +30,7 @@
   }
 
   function getPlanSlug() {
-    var match = window.location.pathname.match(/\/plans\/([^/.]+)\.html/i);
+    var match = window.location.pathname.match(/\/plans\/([^/.]+?)(?:\.html)?\/?$/i);
     return match ? match[1] : '';
   }
 

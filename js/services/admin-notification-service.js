@@ -1,4 +1,4 @@
-window.App = window.App || {};
+﻿window.App = window.App || {};
 
 App.AdminNotificationService = {
   STORAGE_KEY: 'kladee_admin_nav_badge_ack',
@@ -10,7 +10,7 @@ App.AdminNotificationService = {
       type: 'policy',
       title: 'กรมธรรม์ค้าง',
       message: (n) => `มีกรมธรรม์ค้าง ${n} รายการรอดำเนินการ`,
-      href: 'admin/pending.html'
+      href: 'admin/pending'
     },
     {
       id: 'admin-renew',
@@ -18,7 +18,7 @@ App.AdminNotificationService = {
       type: 'renew',
       title: 'ต่ออายุกรมธรรม์',
       message: (n) => `มีกรมธรรม์ใกล้หมดอายุ ${n} รายการ`,
-      href: 'admin/renew.html'
+      href: 'admin/renew'
     },
     {
       id: 'admin-credit-requests',
@@ -26,7 +26,7 @@ App.AdminNotificationService = {
       type: 'credit',
       title: 'ขอเติมวงเงิน',
       message: (n) => `มีคำขอเติมวงเงินรออนุมัติ ${n} รายการ`,
-      href: 'admin/credit-requests.html'
+      href: 'admin/credit-requests'
     },
     {
       id: 'admin-commission',
@@ -34,7 +34,7 @@ App.AdminNotificationService = {
       type: 'commission',
       title: 'ค่าคอมมิชชัน',
       message: (n) => `มีค่าคอมมิชชันค้างจ่าย ${n} รายการ`,
-      href: 'admin/commission.html'
+      href: 'admin/commission'
     }
   ],
 

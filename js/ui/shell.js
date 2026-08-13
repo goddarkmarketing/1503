@@ -58,7 +58,7 @@ App.Shell = {
 
     const base = options.basePath || '';
     const profilePath = user.role === 'agent'
-      ? (options.profilePath || `${base}agent/profile.html`)
+      ? (options.profilePath || `${base}agent/profile`)
       : '#';
 
     menu.innerHTML = `
@@ -187,7 +187,7 @@ App.Shell = {
 
     const pill = document.createElement('a');
     pill.className = 'commission-pill';
-    pill.href = `${this._basePath}agent/commission.html`;
+    pill.href = `${this._basePath}agent/commission`;
     pill.setAttribute('aria-label', 'ดูรายละเอียดค่าคอมมิชชันเดือนนี้');
     pill.innerHTML = `
       <span class="commission-pill__icon"><i data-lucide="coins"></i></span>

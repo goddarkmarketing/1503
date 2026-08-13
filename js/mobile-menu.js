@@ -278,7 +278,7 @@
         }
         if (!$lay.find('.total_m').length) {
           $lay.append(
-            '<div class="total_m main kbMobNav"><ul class="allmenu kbMobNav__list"><li><a href="index.html">หน้าแรก</a></li></ul></div>'
+            '<div class="total_m main kbMobNav"><ul class="allmenu kbMobNav__list"><li><a href="./">หน้าแรก</a></li></ul></div>'
           );
         }
         applyMenuState();
