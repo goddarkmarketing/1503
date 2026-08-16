@@ -7,6 +7,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const PARTIAL = path.join(ROOT, 'partials', 'admin-sidebar-nav.html');
+const CACHE = '20260816f';
 
 const PAGES = [
   'admin/index.html',
@@ -17,6 +18,7 @@ const PAGES = [
   'admin/pending.html',
   'admin/renew.html',
   'admin/credit-requests.html',
+  'admin/withdraw-requests.html',
   'admin/credit-ledger.html',
   'admin/credit-bank-accounts.html',
   'admin/commission.html',
@@ -90,10 +92,14 @@ function syncFile(relPath) {
 
   html = html.replace(/<nav class="sidebar-nav"[\s\S]*?<\/nav>/, newNav);
 
-  const templateScript = `<script src="${base}js/admin-sidebar-nav-template.js?v=20260806b"></script>`;
+  html = html.replace(/js\/admin-sidebar-nav-template\.js(?:\?v=[^"']*)?/g, `js/admin-sidebar-nav-template.js?v=${CACHE}`);
+  html = html.replace(/js\/load-admin\.js(?:\?v=[^"']*)?/g, `js/load-admin.js?v=${CACHE}`);
+  html = html.replace(/js\/admin-app\.js(?:\?v=[^"']*)?/g, `js/admin-app.js?v=${CACHE}`);
+
+  const templateScript = `<script src="${base}js/admin-sidebar-nav-template.js?v=${CACHE}"></script>`;
   if (!html.includes('admin-sidebar-nav-template.js')) {
     html = html.replace(
-      /(<script src="[^"]*load-admin\.js"><\/script>)/,
+      /(<script src="[^"]*load-admin\.js(?:\?v=[^"]*)?"><\/script>)/,
       `${templateScript}\n  $1`
     );
   }

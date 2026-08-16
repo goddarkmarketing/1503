@@ -7,6 +7,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const PARTIAL = path.join(ROOT, 'partials', 'agent-sidebar-nav.html');
+const CACHE = '20260816f';
 
 const PAGES = [
   'agent/index.html',
@@ -29,6 +30,7 @@ const PAGES = [
   'agent/wht50.html',
   'agent/credit.html',
   'agent/credit-history.html',
+  'agent/withdraw.html',
   'compulsory/ergo.html',
   'compulsory/indara.html',
   'pa/indara.html',
@@ -75,7 +77,20 @@ function syncFile(relPath) {
   const indent = html.slice(lineStart, html.indexOf('<nav', lineStart)).length;
   const newNav = marker + '\n' + buildNavBlock(base, indent + 2);
 
-  html = html.replace(/<nav class="sidebar-nav" data-agent-sidebar[\s\S]*?<\/nav>/, newNav);
+  html = html.replace(/(?:\s*<!-- AGENT_SIDEBAR_V3 -->)*\s*<nav class="sidebar-nav" data-agent-sidebar[\s\S]*?<\/nav>/, '\n' + newNav);
+
+  html = html.replace(/js\/agent-sidebar-nav-template\.js(?:\?v=[^"']*)?/g, `js/agent-sidebar-nav-template.js?v=${CACHE}`);
+  html = html.replace(/js\/load-agent\.js(?:\?v=[^"']*)?/g, `js/load-agent.js?v=${CACHE}`);
+  html = html.replace(/js\/app\.js(?:\?v=[^"']*)?/g, `js/app.js?v=${CACHE}`);
+
+  const templateScript = `<script src="${base}js/agent-sidebar-nav-template.js?v=${CACHE}"></script>`;
+  if (!html.includes('agent-sidebar-nav-template.js')) {
+    html = html.replace(
+      /(<script src="[^"]*load-agent\.js(?:\?v=[^"]*)?"><\/script>)/,
+      `${templateScript}\n  $1`
+    );
+  }
+
   fs.writeFileSync(filePath, html, 'utf8');
   console.log('synced:', relPath);
 }

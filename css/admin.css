@@ -560,6 +560,16 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
   color: #166534;
 }
 
+.status-pill.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .status-pill.wht50-printed {
   background: #dcfce7;
   color: #166534;
@@ -1953,6 +1963,10 @@ body[data-portal="admin"] .content-card--team {
   margin-top: 4px;
 }
 
+.agent-commission-rates__override .wht50-settings__option {
+  margin-top: 0;
+}
+
 .agent-commission-rates__group {
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -2738,6 +2752,15 @@ body[data-portal="admin"] .content-card--team {
   object-fit: contain;
 }
 
+.wht50-settings__signaturePreview--stamp img {
+  max-height: 120px;
+}
+
+.wht50-settings__previewEmpty {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
 .wht50-settings__option {
   display: flex;
   align-items: flex-start;
@@ -2903,4 +2926,55 @@ body[data-portal="admin"] .content-card--team {
   .wht50-settings__actions .btn-secondary {
     justify-content: center;
   }
+}
+
+/* ── Adjust balance slip upload ── */
+.req {
+  color: #dc2626;
+}
+
+.adjust-slip-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  padding: 12px 14px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.adjust-slip-upload:hover,
+.adjust-slip-upload.has-file {
+  border-color: #1f379d;
+  background: #f5f7ff;
+  color: #1f379d;
+}
+
+.adjust-slip-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.adjust-slip-preview img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.adjust-slip-preview__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 0.85rem;
 }

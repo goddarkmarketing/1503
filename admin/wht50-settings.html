@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ตั้งค่า 50 ทวิ — Admin</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css?v=20260811g">
+  <link rel="stylesheet" href="../css/admin.css?v=20260816a">
   <link rel="stylesheet" href="../css/portal.css">
   <link rel="stylesheet" href="../css/wht50-print.css?v=20260811c">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -14,7 +14,7 @@
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-              <a href="../admin/" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
+              <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
                 <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
               </a>
               <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
@@ -61,6 +61,7 @@
           <p class="nav-group__title">การเงิน</p>
           <ul class="nav-group__list">
             <li class="nav-item"><a href="../admin/credit-requests" class="nav-link" data-nav="credit-requests"><i data-lucide="inbox"></i><span class="nav-link-text">อนุมัติเติมวงเงิน</span></a></li>
+            <li class="nav-item"><a href="../admin/withdraw-requests" class="nav-link" data-nav="withdraw-requests"><i data-lucide="banknote"></i><span class="nav-link-text">อนุมัติถอนเงิน</span></a></li>
             <li class="nav-item"><a href="../admin/credit-ledger" class="nav-link" data-nav="credit-ledger"><i data-lucide="wallet"></i><span class="nav-link-text">ประวัติวงเงิน</span></a></li>
             <li class="nav-item"><a href="../admin/credit-bank-accounts" class="nav-link" data-nav="credit-bank-accounts"><i data-lucide="banknote"></i><span class="nav-link-text">บัญชีรับโอน</span></a></li>
             <li class="nav-item"><a href="../admin/commission" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
@@ -125,7 +126,7 @@
                   </h3>
                   <span class="agent-form__sectionBadge" id="signatureStatusBadge">ค่าเริ่มต้น</span>
                 </div>
-                <p class="agent-form__sectionHint">อัปโหลดลายเซ็นเพื่อแสดงตรงช่องผู้จ่ายเงินบนแบบฟอร์ม 50 ทวิ</p>
+                <p class="agent-form__sectionHint">อัปโหลดลายเซ็นเพื่อแสดงตรงช่องผู้จ่ายเงินบนแบบฟอร์ม 50 ทวิ · ใช้ทั้งกรณีออกชื่อบุคคลและบริษัท</p>
 
                 <div class="wht50-settings__signRow">
                   <label class="wht50-settings__dropzone" for="payerSignatureFile">
@@ -149,6 +150,39 @@
                 </div>
               </section>
 
+              <section class="agent-form__section" id="stampSection">
+                <div class="agent-form__sectionHead">
+                  <h3 class="agent-form__sectionTitle">
+                    <i data-lucide="stamp" class="wht50-settings__titleIcon"></i>
+                    ตราประทับนิติบุคคล
+                  </h3>
+                  <span class="agent-form__sectionBadge agent-form__sectionBadge--muted" id="stampStatusBadge">ยังไม่อัปโหลด</span>
+                </div>
+                <p class="agent-form__sectionHint">ใช้เฉพาะเมื่อชื่อผู้จ่ายเงินเป็นบริษัท / ห้าง / นิติบุคคล — ถ้าออกชื่อบุคคล ระบบจะแสดงเฉพาะลายเซ็น</p>
+
+                <div class="wht50-settings__signRow">
+                  <label class="wht50-settings__dropzone" for="payerStampFile">
+                    <input id="payerStampFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                    <input type="hidden" id="payerStampUrlData" name="stampUrlData">
+                    <span class="wht50-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
+                    <span class="wht50-settings__dropzoneTitle">อัปโหลดรูปตราประทับ</span>
+                    <span class="wht50-settings__dropzoneMeta">PNG พื้นโปร่งใสแนะนำ · JPG / WebP · สูงสุด 2MB</span>
+                    <span class="wht50-settings__dropzoneBtn">เลือกไฟล์</span>
+                  </label>
+
+                  <div class="wht50-settings__signPreviewCard">
+                    <div class="wht50-settings__signPreviewHead">
+                      <span>ตัวอย่างตราประทับ</span>
+                      <button type="button" class="btn-secondary btn-sm" id="btnClearStamp">ล้าง</button>
+                    </div>
+                    <div class="wht50-settings__signaturePreview wht50-settings__signaturePreview--stamp">
+                      <img id="payerStampPreview" alt="ตัวอย่างตราประทับ" hidden>
+                      <span class="wht50-settings__previewEmpty" id="payerStampEmpty">ยังไม่มีรูปตรา</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <section class="agent-form__section">
                 <div class="agent-form__sectionHead">
                   <h3 class="agent-form__sectionTitle">
@@ -162,6 +196,7 @@
                   <div class="form-field full">
                     <label for="payerName">ชื่อผู้จ่ายเงิน <span class="form-req">*</span></label>
                     <input id="payerName" name="payerName" type="text" required placeholder="เช่น บริษัท กล้าดีโบรคเกอร์ จำกัด" autocomplete="organization">
+                    <span class="form-field__hint" id="payerTypeHint">ถ้าชื่อมีคำว่า บริษัท / จำกัด ระบบจะประทับตราด้วยลายเซ็น</span>
                   </div>
                   <div class="form-field full">
                     <label for="payerAddress">ที่อยู่ <span class="form-req">*</span></label>
@@ -219,7 +254,8 @@
               </div>
               <div class="wht50-settings__asideCard wht50-settings__asideCard--muted">
                 <h3 class="wht50-settings__asideTitle">คำแนะนำ</h3>
-                <p class="wht50-settings__asideText">ใช้ลายเซ็นพื้นโปร่งใส (PNG) ความกว้างประมาณ 400–800px จะคมชัดตอนพิมพ์</p>
+                <p class="wht50-settings__asideText">ใช้ลายเซ็นและตราประทับพื้นโปร่งใส (PNG) จะคมชัดตอนพิมพ์</p>
+                <p class="wht50-settings__asideText">ออกชื่อบุคคล = ลายเซ็นอย่างเดียว · ออกชื่อบริษัท = ลายเซ็น + ตราประทับ</p>
                 <p class="wht50-settings__asideText">ติ๊ก “อัปเดตเอกสารที่ยังไม่พิมพ์” เฉพาะเมื่อต้องการให้เอกสารค้างในระบบใช้ค่าล่าสุดทันที</p>
               </div>
             </aside>
@@ -229,9 +265,9 @@
     </div>
   </div>
 
-  <script src="../js/admin-sidebar-nav-template.js?v=20260811c"></script>
-  <script src="../js/load-admin.js?v=20260811g"></script>
-  <script src="../js/admin-app.js"></script>
-  <script src="../js/pages/admin-wht50-settings.js?v=20260811b"></script>
+  <script src="../js/admin-sidebar-nav-template.js?v=20260816k"></script>
+  <script src="../js/load-admin.js?v=20260816k"></script>
+  <script src="../js/admin-app.js?v=20260816f"></script>
+  <script src="../js/pages/admin-wht50-settings.js?v=20260816a"></script>
 </body>
 </html>

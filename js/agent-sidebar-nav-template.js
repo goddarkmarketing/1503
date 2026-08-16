@@ -5,6 +5,16 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
     <li class="nav-item"><a href="{{BASE}}agent/" class="nav-link" data-nav="home"><i data-lucide="house"></i><span class="nav-link-text">หน้าแรก</span></a></li>
   </ul>
 </div>
+<div class="nav-group" data-nav-zone="finance">
+  <p class="nav-group__title">การเงิน</p>
+  <ul class="nav-group__list">
+    <li class="nav-item"><a href="{{BASE}}agent/commission" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}agent/withdraw" class="nav-link" data-nav="withdraw"><i data-lucide="banknote"></i><span class="nav-link-text">แจ้งถอนเงิน</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}agent/wht50" class="nav-link" data-nav="wht50"><i data-lucide="file-badge"></i><span class="nav-link-text">หนังสือ 50 ทวิ</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}agent/credit" class="nav-link" data-nav="credit"><i data-lucide="wallet"></i><span class="nav-link-text">ขอเติมวงเงิน</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}agent/credit-history" class="nav-link" data-nav="credit-history"><i data-lucide="history"></i><span class="nav-link-text">ประวัติการเติมเงิน</span></a></li>
+  </ul>
+</div>
 <div class="nav-group" data-nav-zone="products">
   <p class="nav-group__title">ออกกรมธรรม์</p>
   <ul class="nav-group__list">
@@ -59,15 +69,6 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
     <li class="nav-item"><a href="{{BASE}}agent/inquiry" class="nav-link" data-nav="inquiry"><i data-lucide="search"></i><span class="nav-link-text">สอบถามกรมธรรม์</span></a></li>
   </ul>
 </div>
-<div class="nav-group" data-nav-zone="finance">
-  <p class="nav-group__title">การเงิน</p>
-  <ul class="nav-group__list">
-    <li class="nav-item"><a href="{{BASE}}agent/commission" class="nav-link" data-nav="commission"><i data-lucide="coins"></i><span class="nav-link-text">ค่าคอมมิชชัน</span></a></li>
-    <li class="nav-item"><a href="{{BASE}}agent/wht50" class="nav-link" data-nav="wht50"><i data-lucide="file-badge"></i><span class="nav-link-text">หนังสือ 50 ทวิ</span></a></li>
-    <li class="nav-item"><a href="{{BASE}}agent/credit" class="nav-link" data-nav="credit"><i data-lucide="wallet"></i><span class="nav-link-text">ขอเติมวงเงิน</span></a></li>
-    <li class="nav-item"><a href="{{BASE}}agent/credit-history" class="nav-link" data-nav="credit-history"><i data-lucide="history"></i><span class="nav-link-text">ประวัติการเติมเงิน</span></a></li>
-  </ul>
-</div>
 <div class="nav-group" data-nav-zone="receipt">
   <p class="nav-group__title">ใบเสร็จ</p>
   <ul class="nav-group__list">
@@ -90,23 +91,19 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   </ul>
 </div>`;
 
-window.AGENT_SIDEBAR_NAV_COUNT = 14;
+window.AGENT_SIDEBAR_NAV_VERSION = '20260816k';
 
 window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-agent-sidebar]');
   if (!navRoot || !window.AGENT_SIDEBAR_NAV_HTML) return false;
 
-  const itemCount = navRoot.querySelectorAll('.nav-item').length;
-  const hasReceipt = !!navRoot.querySelector('[data-receipt-nav]');
-  const hasGroups = !!navRoot.querySelector('.nav-group');
   const base = document.body?.dataset?.basePath || '';
-
-  if (itemCount >= window.AGENT_SIDEBAR_NAV_COUNT && hasReceipt && hasGroups) {
-    return true;
-  }
+  const alreadyCurrent = navRoot.dataset.sidebarVersion === window.AGENT_SIDEBAR_NAV_VERSION
+    && navRoot.querySelector('[data-nav="withdraw"]');
+  if (alreadyCurrent) return true;
 
   navRoot.innerHTML = window.AGENT_SIDEBAR_NAV_HTML.replace(/\{\{BASE\}\}/g, base);
-  navRoot.dataset.sidebarRendered = '1';
+  navRoot.dataset.sidebarVersion = window.AGENT_SIDEBAR_NAV_VERSION;
   return true;
 };
 

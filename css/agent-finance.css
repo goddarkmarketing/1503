@@ -395,9 +395,172 @@
   font-size: 1.75rem;
 }
 
-.finance-top-grid--credit .finance-request-card {
+.finance-balance-stat__icon--orange {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.finance-top-grid--withdraw {
+  grid-template-columns: minmax(280px, 0.86fr) minmax(360px, 1.14fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.finance-top-grid--withdraw .finance-request-card {
   position: sticky;
   top: 12px;
+}
+
+.finance-balance-card--withdraw .finance-balance-card__value {
+  color: #047857;
+  font-size: 2.05rem;
+}
+
+.finance-withdraw-note {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.finance-amount-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.finance-amount-input {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.finance-amount-input input {
+  padding-right: 48px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  appearance: textfield;
+}
+
+.finance-amount-input input::-webkit-outer-spin-button,
+.finance-amount-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.finance-amount-input__suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.finance-use-all {
+  flex-shrink: 0;
+  height: var(--finance-control-h);
+  padding: 0 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #047857;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.finance-use-all:hover {
+  background: #d1fae5;
+  border-color: #86efac;
+}
+
+.finance-use-all:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.finance-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 14px 16px;
+  border: 1px solid #eef2f6;
+  border-radius: 10px;
+  background: #fbfdff;
+}
+
+.finance-form-group__title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.finance-optional {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.finance-request-form__field select {
+  width: 100%;
+  height: var(--finance-control-h);
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: #f8fafc;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.finance-request-form__field select:focus {
+  outline: none;
+  border-color: #22c55e;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+}
+
+.finance-form-message[hidden] {
+  display: none !important;
+}
+
+.finance-request-form .finance-form-message {
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.finance-request-form .finance-form-message.is-error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.finance-request-form .finance-form-message.is-success {
+  background: #ecfdf5;
+  color: #166534;
+}
+
+.finance-history-card {
+  padding: 16px 18px 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.finance-history-card .finance-section-title {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  font-size: 0.95rem;
 }
 
 .finance-request-form {
@@ -891,12 +1054,22 @@
 
 @media (max-width: 860px) {
   .finance-top-grid,
-  .finance-top-grid--credit {
+  .finance-top-grid--credit,
+  .finance-top-grid--withdraw {
     grid-template-columns: 1fr;
   }
 
-  .finance-top-grid--credit .finance-request-card {
+  .finance-top-grid--credit .finance-request-card,
+  .finance-top-grid--withdraw .finance-request-card {
     position: static;
+  }
+
+  .finance-amount-row {
+    flex-wrap: wrap;
+  }
+
+  .finance-use-all {
+    width: 100%;
   }
 
   .finance-balance-stats {

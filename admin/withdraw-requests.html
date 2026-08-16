@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ตั้งค่าบริษัทประกัน — Admin</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css">
+  <title>อนุมัติถอนเงิน — Admin</title>
+  <link rel="stylesheet" href="../css/style.css?v=20260717i">
+  <link rel="stylesheet" href="../css/admin.css?v=20260816g">
+  <link rel="stylesheet" href="../css/portal.css">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body data-portal="admin" data-base-path="../">
@@ -92,17 +93,46 @@
       </nav>
       <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
     </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-wrapper">
-      <header class="top-header"><button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
-        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name">Admin</span></div></header>
+      <header class="top-header">
+        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+      </header>
       <main class="main-content">
         <div class="content-card">
-          <h1 class="admin-page-title">ตั้งค่าบริษัทประกัน / API</h1>
-          <p class="admin-hint">เปิด/ปิดการเชื่อม API ต่อบริษัท (Mock — พร้อมเชื่อม `PATCH /insurers/:id`)</p>
+          <div class="admin-toolbar">
+            <div class="admin-toolbar__head">
+              <h1 class="admin-page-title">อนุมัติถอนเงิน</h1>
+              <p class="admin-hint">นายหน้าแจ้งบัญชีรับเงินแล้ว โอนเข้าบัญชีนั้นและแนบสลิป</p>
+            </div>
+            <div class="admin-toolbar-filters">
+              <label class="admin-toolbar-filters__field" for="creditRequestFilter">
+                <span class="admin-toolbar-filters__label">สถานะ</span>
+                <select id="withdrawRequestFilter" class="admin-select admin-select--toolbar">
+                  <option value="">ทุกสถานะ</option>
+                  <option value="pending">รอโอน</option>
+                  <option value="paid">โอนแล้ว</option>
+                  <option value="rejected">ปฏิเสธ</option>
+                </select>
+              </label>
+            </div>
+          </div>
           <div class="data-table-wrap">
             <table class="data-table">
-              <thead><tr><th>บริษัท</th><th>API Provider</th><th>ผลิตภัณฑ์</th><th>เปิดใช้ API</th><th>จัดการ</th></tr></thead>
-              <tbody id="insurersTableBody"></tbody>
+              <thead>
+                <tr>
+                  <th>วันที่ขอ</th>
+                  <th>นายหน้า</th>
+                  <th>จำนวน</th>
+                  <th>บัญชีรับเงิน</th>
+                  <th>สลิป</th>
+                  <th>สถานะ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="withdrawRequestsBody"></tbody>
             </table>
           </div>
         </div>
@@ -111,7 +141,7 @@
   </div>
   <script src="../js/admin-sidebar-nav-template.js?v=20260816k"></script>
   <script src="../js/load-admin.js?v=20260816k"></script>
-  <script src="../js/admin-app.js?v=20260816f"></script>
-  <script src="../js/pages/admin-insurers.js"></script>
+  <script src="../js/admin-app.js?v=20260816g"></script>
+  <script src="../js/pages/admin-withdraw-requests.js?v=20260816k"></script>
 </body>
 </html>

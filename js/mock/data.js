@@ -727,6 +727,8 @@ App.MockData = {
     }
   ],
 
+  withdrawRequests: [],
+
   monthlySalesDetail: {
     'agent-001': {
       '2026-06': {

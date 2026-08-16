@@ -3,24 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2+ / 3+ — AXA | KLADEE BROKER</title>
-  <link rel="icon" href="../images/favicon.png?v=20260811k" type="image/png">
-  <link rel="icon" href="../favicon.ico?v=20260811k" sizes="any">
-  <link rel="apple-touch-icon" href="../images/favicon.png?v=20260811k">
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/form.css">
+  <title>แจ้งถอนเงิน — KLADEE BROKER</title>
+  <link rel="stylesheet" href="../css/style.css?v=20260717i">
+  <link rel="stylesheet" href="../css/admin.css?v=20260717k">
   <link rel="stylesheet" href="../css/portal.css">
-  <link rel="stylesheet" href="../css/admin.css">
-  <link rel="stylesheet" href="../css/product-key.css?v=20260728a">
+  <link rel="stylesheet" href="../css/agent-report.css">
+  <link rel="stylesheet" href="../css/agent-finance.css?v=20260816k">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
-<body data-base-path="../" data-product="voluntary-axa">
-  <div class="app form-page">
+<body data-base-path="../">
+  <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <div class="sidebar-logo-icon"><i data-lucide="shield-check"></i></div>
-          <a href="../agent/" class="sidebar-logo-text">KLADEE BROKER</a>
+          <a href="index" class="sidebar-logo-text">KLADEE BROKER</a>
         </div>
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
       </div>
@@ -118,9 +115,7 @@
     </ul>
   </div>
 </nav>
-      <div class="sidebar-footer">
-        <a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a>
-      </div>
+      <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
     </aside>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-wrapper">
@@ -131,53 +126,137 @@
             <span class="balance-label">วงเงินคงเหลือ</span>
             <span class="balance-value"><span class="balance-amount" id="balanceAmount">0.00</span><span class="balance-currency">บ.</span></span>
           </div>
-          <button type="button" class="balance-refresh" id="balanceRefresh" aria-label="รีเฟรชยอดเงิน"><i data-lucide="refresh-cw"></i></button>
         </div>
         <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
-        <div class="user-profile"><div class="user-avatar">CK</div><span class="user-name">-</span><i data-lucide="chevron-down" class="user-chevron" style="width:16px;height:16px"></i></div>
+        <div class="user-profile"><div class="user-avatar">CK</div><span class="user-name">-</span></div>
       </header>
       <main class="main-content">
-        <div class="product-key">
-          <aside class="product-key__brochure" id="brochurePanel" aria-label="โบรชัวร์ผลิตภัณฑ์"></aside>
-          <div class="product-key__form">
-            <form id="productKeyForm" class="product-key__card" novalidate>
-              <div class="product-key-card__head" id="productKeyHeader"></div>
-              <div class="product-key-card__body">
-                <div class="product-key__fields" id="productKeyFields"></div>
-                <div class="product-key__premium">
-                  <span class="product-key__premium-label">เบี้ยประกันภัยรวม</span>
-                  <div class="product-key__premium-value" id="productKeyPremium">—</div>
+        <div class="content-card content-card--finance">
+          <div class="finance-panel">
+            <header class="finance-panel__head">
+              <i data-lucide="banknote"></i>
+              <h1>แจ้งถอนเงิน</h1>
+            </header>
+            <div class="finance-panel__body">
+              <div class="finance-top-grid finance-top-grid--withdraw">
+                <div class="finance-top-grid__left">
+                  <div class="finance-balance-card finance-balance-card--withdraw">
+                    <header class="finance-card-head">
+                      <span class="finance-card-head__icon finance-card-head__icon--green"><i data-lucide="wallet"></i></span>
+                      <div class="finance-card-head__copy">
+                        <h2 class="finance-card-head__title">ยอดที่ถอนได้</h2>
+                        <p class="finance-card-head__sub">ค่าคอมสะสมที่ยังไม่ได้โอน</p>
+                      </div>
+                    </header>
+                    <div class="finance-balance-card__body">
+                      <div class="finance-balance-card__amount">
+                        <span class="finance-balance-card__value" id="statWithdrawAvailable">0.00</span>
+                        <span class="finance-balance-card__currency">บาท</span>
+                      </div>
+                      <div class="finance-balance-stats">
+                        <div class="finance-balance-stat">
+                          <span class="finance-balance-stat__icon finance-balance-stat__icon--blue"><i data-lucide="coins"></i></span>
+                          <div class="finance-balance-stat__text">
+                            <span class="finance-balance-stat__label">ค่าคอมสะสม</span>
+                            <span class="finance-balance-stat__value" id="statWithdrawEarned">0.00</span>
+                          </div>
+                        </div>
+                        <div class="finance-balance-stat">
+                          <span class="finance-balance-stat__icon finance-balance-stat__icon--orange"><i data-lucide="arrow-up-right"></i></span>
+                          <div class="finance-balance-stat__text">
+                            <span class="finance-balance-stat__label">โอนแล้ว / รอโอน</span>
+                            <span class="finance-balance-stat__value" id="statWithdrawReserved">0.00</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="finance-withdraw-note">ขั้นต่ำ 100 บาท · ไม่ใช่การลดวงเงินออกกรมธรรม์</p>
+                    </div>
+                  </div>
                 </div>
-                <p class="product-key__hint" id="productKeyHint"></p>
+
+                <div class="finance-request-card">
+                  <header class="finance-card-head">
+                    <span class="finance-card-head__icon finance-card-head__icon--green"><i data-lucide="send"></i></span>
+                    <div class="finance-card-head__copy">
+                      <h2 class="finance-card-head__title">ส่งคำขอถอนเงิน</h2>
+                      <p class="finance-card-head__sub">กรอกบัญชีรับเงิน แล้วรอแอดมินโอนและแนบสลิป</p>
+                    </div>
+                  </header>
+                  <form id="withdrawForm" class="finance-request-form" novalidate>
+                    <div class="finance-request-form__field">
+                      <label for="withdrawAmount">จำนวนเงิน</label>
+                      <div class="finance-amount-row">
+                        <div class="finance-amount-input">
+                          <input type="number" id="withdrawAmount" name="amount" min="100" step="0.01" placeholder="0.00" required>
+                          <span class="finance-amount-input__suffix">บาท</span>
+                        </div>
+                        <button type="button" class="finance-use-all" id="withdrawUseAll" hidden>ใช้ยอดทั้งหมด</button>
+                      </div>
+                      <p class="finance-field-hint" id="withdrawAmountHint">ถอนได้ไม่เกินยอดด้านซ้าย ขั้นต่ำ 100 บาท</p>
+                    </div>
+
+                    <div class="finance-form-group">
+                      <p class="finance-form-group__title">บัญชีรับเงิน</p>
+                      <div class="finance-request-form__row">
+                        <div class="finance-request-form__field">
+                          <label for="withdrawBankCode">ธนาคาร</label>
+                          <select id="withdrawBankCode" name="bankCode" required>
+                            <option value="">เลือกธนาคาร</option>
+                          </select>
+                        </div>
+                        <div class="finance-request-form__field">
+                          <label for="withdrawAccountNo">เลขบัญชี</label>
+                          <input type="text" id="withdrawAccountNo" name="accountNo" inputmode="numeric" autocomplete="off" placeholder="xxx-x-xxxxx-x" required>
+                        </div>
+                      </div>
+                      <div class="finance-request-form__field">
+                        <label for="withdrawAccountName">ชื่อบัญชี</label>
+                        <input type="text" id="withdrawAccountName" name="accountName" placeholder="ชื่อ-นามสกุล ตามหน้าสมุด" required>
+                      </div>
+                    </div>
+
+                    <div class="finance-request-form__field">
+                      <label for="withdrawNote">หมายเหตุ <span class="finance-optional">ถ้ามี</span></label>
+                      <div class="finance-field-textarea-wrap">
+                        <textarea id="withdrawNote" name="note" rows="3" maxlength="200" placeholder="เช่น ถอนค่าคอมงวดนี้"></textarea>
+                        <span class="finance-field-counter" id="withdrawNoteCounter">0 / 200</span>
+                      </div>
+                    </div>
+                    <p class="finance-form-message" id="withdrawFormMessage" hidden></p>
+                    <div class="finance-request-form__actions">
+                      <button type="submit" class="btn-primary btn-primary--block"><i data-lucide="send"></i> ส่งคำขอถอนเงิน</button>
+                    </div>
+                  </form>
+                </div>
               </div>
-              <div class="product-key-card__foot">
-                <p class="product-key-card__foot-hint" id="productKeyPageTitle">2+ / 3+ — AXA</p>
-                <button type="submit" class="btn-next">
-                  บันทึกออกกรมธรรม์
-                  <i data-lucide="check" style="width:18px;height:18px"></i>
-                </button>
+
+              <div class="finance-section finance-history-card">
+                <h2 class="finance-section-title">ประวัติคำขอถอนเงิน</h2>
+                <div class="report-table-wrap">
+                  <table class="report-table">
+                    <thead>
+                      <tr>
+                        <th>วันที่ขอ</th>
+                        <th class="col-money">จำนวน</th>
+                        <th>บัญชีรับเงิน</th>
+                        <th>สลิป</th>
+                        <th>สถานะ</th>
+                        <th>วันที่โอน</th>
+                      </tr>
+                    </thead>
+                    <tbody id="withdrawRequestBody"></tbody>
+                  </table>
+                </div>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </main>
-      <footer class="page-footer"><span>KLADEE BROKER — Agent Portal</span></footer>
     </div>
   </div>
   <script src="../js/agent-sidebar-nav-template.js?v=20260816k"></script>
   <script src="../js/load-agent.js?v=20260816k"></script>
   <script src="../js/app.js?v=20260816f"></script>
-  <script src="../js/config/product-brochures.js?v=20260725s"></script>
-  <script src="../js/ui/brochure-panel.js?v=20260725i"></script>
-  <script src="../js/pages/voluntary-axa-quote.js?v=20260728a"></script>
-  <script src="../js/pages/product-key.js?v=20260725i"></script>
-  <script>
-  (function () {
-    const btn = document.getElementById('mobileMenuBtn');
-    function check() { if (btn) btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; }
-    check();
-    window.addEventListener('resize', check);
-  })();
-  </script>
+  <script src="../js/pages/agent-withdraw.js?v=20260816k"></script>
 </body>
 </html>

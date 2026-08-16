@@ -29,6 +29,14 @@ App.AdminNotificationService = {
       href: 'admin/credit-requests'
     },
     {
+      id: 'admin-withdraw-requests',
+      key: 'withdraw-requests',
+      type: 'withdraw',
+      title: 'แจ้งถอนเงิน',
+      message: (n) => `มีคำขอถอนเงินรอโอน ${n} รายการ`,
+      href: 'admin/withdraw-requests'
+    },
+    {
       id: 'admin-commission',
       key: 'commission',
       type: 'commission',
@@ -56,10 +64,19 @@ App.AdminNotificationService = {
   },
 
   async _fetchCounts() {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.getAdminNavBadgeCounts();
+    const counts = App.Config.USE_MOCK_API
+      ? await App.MockAPI.getAdminNavBadgeCounts()
+      : await App.API.request('/admin/nav-badge-counts');
+
+    if (App.Config.USE_REAL_CREDIT && App.CreditService?.getAllRequests) {
+      try {
+        const pending = await App.CreditService.getAllRequests({ status: 'pending' });
+        counts['credit-requests'] = Array.isArray(pending) ? pending.length : 0;
+      } catch {
+        counts['credit-requests'] = 0;
+      }
     }
-    return App.API.request('/admin/nav-badge-counts');
+    return counts;
   },
 
   async getBadgeMap() {

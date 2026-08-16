@@ -13,6 +13,17 @@ App.AgentFeatures = {
       ]
     },
     {
+      id: 'finance',
+      label: 'การเงิน',
+      items: [
+        { key: 'commission', label: 'ค่าคอมมิชชัน', page: 'agent/commission' },
+        { key: 'withdraw', label: 'แจ้งถอนเงิน', page: 'agent/withdraw' },
+        { key: 'wht50', label: 'หนังสือ 50 ทวิ', page: 'agent/wht50' },
+        { key: 'credit', label: 'ขอเติมวงเงิน', page: 'agent/credit' },
+        { key: 'credit-history', label: 'ประวัติการเติมเงิน', page: 'agent/credit-history' }
+      ]
+    },
+    {
       id: 'products',
       label: 'ออกกรมธรรม์',
       items: [
@@ -41,16 +52,6 @@ App.AgentFeatures = {
         { key: 'reports-monthly', label: 'รายงานรายเดือน', page: 'agent/reports/monthly' },
         { key: 'reports-team', label: 'รายงานลูกทีม', page: 'agent/reports/team' },
         { key: 'inquiry', label: 'สอบถามกรมธรรม์', page: 'agent/inquiry' }
-      ]
-    },
-    {
-      id: 'finance',
-      label: 'การเงิน',
-      items: [
-        { key: 'commission', label: 'ค่าคอมมิชชัน', page: 'agent/commission' },
-        { key: 'wht50', label: 'หนังสือ 50 ทวิ', page: 'agent/wht50' },
-        { key: 'credit', label: 'ขอเติมวงเงิน', page: 'agent/credit' },
-        { key: 'credit-history', label: 'ประวัติการเติมเงิน', page: 'agent/credit-history' }
       ]
     },
     {

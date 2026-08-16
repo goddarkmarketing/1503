@@ -163,6 +163,16 @@ App.MockAPI = {
       if (Array.isArray(data.creditLedger)) {
         App.MockData.creditLedger = data.creditLedger;
       }
+      let withdrawMigrated = false;
+      if (Array.isArray(data.withdrawRequests)) {
+        const next = data.withdrawRequests.filter((r) => !(
+          r.id === 'WD-001'
+          && Number(r.amount) === 3500
+          && r.status === 'pending'
+        ));
+        withdrawMigrated = next.length !== data.withdrawRequests.length;
+        App.MockData.withdrawRequests = next;
+      }
       if (data.balances && typeof data.balances === 'object') {
         Object.keys(data.balances).forEach((agentId) => {
           const balance = Number(data.balances[agentId]);
@@ -173,6 +183,7 @@ App.MockAPI = {
           if (user) user.balance = balance;
         });
       }
+      if (withdrawMigrated) this._persistCreditData();
     } catch (e) {
       console.warn('hydrateCreditData failed', e);
     }
@@ -187,6 +198,7 @@ App.MockAPI = {
       localStorage.setItem(App.Config.CREDIT_DATA_KEY, JSON.stringify({
         creditRequests: App.MockData.creditRequests || [],
         creditLedger: App.MockData.creditLedger || [],
+        withdrawRequests: App.MockData.withdrawRequests || [],
         balances
       }));
     } catch (e) {
@@ -251,7 +263,8 @@ App.MockAPI = {
             address: company.address || '',
             taxId: company.taxId || ''
           },
-          signatureUrlData: null
+          signatureUrlData: null,
+          stampUrlData: null
         };
         return;
       }
@@ -263,7 +276,8 @@ App.MockAPI = {
           address: payer.address ?? (company.address || ''),
           taxId: payer.taxId ?? (company.taxId || '')
         },
-        signatureUrlData: parsed?.signatureUrlData || null
+        signatureUrlData: parsed?.signatureUrlData || null,
+        stampUrlData: parsed?.stampUrlData || null
       };
     } catch (e) {
       console.warn('hydrateWht50Settings failed', e);
@@ -274,7 +288,8 @@ App.MockAPI = {
           address: company.address || '',
           taxId: company.taxId || ''
         },
-        signatureUrlData: null
+        signatureUrlData: null,
+        stampUrlData: null
       };
     }
   },
@@ -297,7 +312,8 @@ App.MockAPI = {
         address: payer.address ?? company.address ?? '',
         taxId: payer.taxId ?? company.taxId ?? ''
       },
-      signatureUrlData: payload.signatureUrlData || null
+      signatureUrlData: payload.signatureUrlData || null,
+      stampUrlData: payload.stampUrlData || null
     };
 
     App.MockData.wht50Settings = next;
@@ -315,7 +331,8 @@ App.MockAPI = {
         d.payer = {
           ...(d.payer || {}),
           ...next.payer,
-          signatureUrl: next.signatureUrlData || undefined
+          signatureUrl: next.signatureUrlData || undefined,
+          stampUrl: next.stampUrlData || undefined
         };
       });
       this._persistWht50Documents();
@@ -361,6 +378,50 @@ App.MockAPI = {
     return `${category}-${insurerCode}`;
   },
 
+  _postCommissionRecord(agent, policy, payload, settlement, extra = {}) {
+    if (!App.MockData.commissions[agent.id]) App.MockData.commissions[agent.id] = [];
+    const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
+    const earnedAt = policy.issuedAt || new Date().toISOString().slice(0, 10);
+    const grossPremium = Number(payload.premiumTotal ?? policy.premium) || 0;
+    const netPremium = Number(payload.netPremium ?? payload.premiumNet ?? grossPremium) || 0;
+    const commission = {
+      id: `COM-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      policyNo: policy.id,
+      policyType: policy.type,
+      policyTypeLabel: policy.typeLabel,
+      insurer: policy.insurer,
+      insurerCode: policy.insurerCode,
+      productKey: extra.productKey || this._mapPolicyToProductKey(policy),
+      plate: policy.plate,
+      premium: grossPremium,
+      netPremium,
+      rate: settlement.rate,
+      amount: settlement.netCommission,
+      commissionGross: settlement.commission,
+      taxWithhold: settlement.taxWithhold,
+      taxEnabled: settlement.taxEnabled,
+      status: immediate ? 'paid' : 'pending',
+      period: earnedAt.slice(0, 7),
+      earnedAt,
+      paidAt: immediate ? earnedAt : null,
+      issueForm50Tawi: settlement.issueForm50Tawi,
+      wht50Id: null,
+      ...extra.fields
+    };
+    App.MockData.commissions[agent.id].unshift(commission);
+
+    if (settlement.issueForm50Tawi) {
+      const wht = this._createWht50Document({
+        agent,
+        commission,
+        policy,
+        settlement
+      });
+      commission.wht50Id = wht.id;
+    }
+    return commission;
+  },
+
   _clearCommissionForPolicy(agent, policy, payload = {}) {
     if (!agent || !App.AgentCommissionRates) return null;
     this._hydrateAgentCommissionRates();
@@ -375,45 +436,34 @@ App.MockAPI = {
       productKey
     });
 
-    if (!App.MockData.commissions[agent.id]) App.MockData.commissions[agent.id] = [];
-    const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
-    const earnedAt = policy.issuedAt || new Date().toISOString().slice(0, 10);
-    const commission = {
-      id: `COM-${Date.now()}`,
-      policyNo: policy.id,
-      policyType: policy.type,
-      policyTypeLabel: policy.typeLabel,
-      insurer: policy.insurer,
-      insurerCode: policy.insurerCode,
-      productKey,
-      plate: policy.plate,
-      premium: grossPremium,
-      netPremium,
-      rate: settlement.rate,
-      amount: settlement.netCommission,
-      commissionGross: settlement.commission,
-      taxWithhold: settlement.taxWithhold,
-      taxEnabled: settlement.taxEnabled,
-      status: immediate ? 'paid' : 'pending',
-      period: earnedAt.slice(0, 7),
-      earnedAt,
-      paidAt: immediate ? earnedAt : null,
-      issueForm50Tawi: settlement.issueForm50Tawi,
-      wht50Id: null
-    };
-    App.MockData.commissions[agent.id].unshift(commission);
+    const commission = this._postCommissionRecord(agent, policy, payload, settlement, { productKey });
 
-    if (settlement.issueForm50Tawi) {
-      const wht = this._createWht50Document({
-        agent,
-        commission,
-        policy,
-        settlement
-      });
-      commission.wht50Id = wht.id;
+    let overrideCommission = null;
+    if (agent.parentId && rates.overrideEnabled) {
+      const parent = App.MockData.agents.find((a) => a.id === agent.parentId);
+      if (parent) {
+        const overrideRates = App.AgentCommissionRates.overrideAsRates(rates);
+        const overrideSettlement = App.AgentCommissionRates.calcSettlement({
+          netPremium,
+          grossPremium,
+          rates: overrideRates,
+          productKey
+        });
+        if (overrideSettlement.rate > 0) {
+          overrideCommission = this._postCommissionRecord(parent, policy, payload, overrideSettlement, {
+            productKey,
+            fields: {
+              kind: 'team-override',
+              sourceAgentId: agent.id,
+              sourceAgentCode: agent.code,
+              sourceAgentName: agent.name
+            }
+          });
+        }
+      }
     }
 
-    return { commission, settlement };
+    return { commission, settlement, overrideCommission };
   },
 
   _createWht50Document({ agent, commission, policy, settlement }) {
@@ -436,7 +486,8 @@ App.MockAPI = {
         name: payerSettings.name || company.name || 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
         address: payerSettings.address || company.address || '',
         taxId: payerSettings.taxId || company.taxId || '',
-        signatureUrl: whtSettings.signatureUrlData || undefined
+        signatureUrl: whtSettings.signatureUrlData || undefined,
+        stampUrl: whtSettings.stampUrlData || undefined
       },
       payee: {
         name: agent.name,
@@ -503,9 +554,10 @@ App.MockAPI = {
     return entry;
   },
 
-  _pushCreditLedger({ agentId, amount, balanceAfter, note, type }) {
+  _pushCreditLedger({ agentId, amount, balanceAfter, note, type, slipFileName, slipDataUrl }) {
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     const actor = this._actor();
+    const hasSlip = !!slipDataUrl;
     const entry = {
       id: `CL-${String(App.MockData.creditLedger.length + 1).padStart(3, '0')}`,
       agentId,
@@ -517,7 +569,10 @@ App.MockAPI = {
       note: note || '',
       createdBy: actor.id,
       createdByName: actor.name,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      hasSlip,
+      slipFileName: hasSlip ? (slipFileName || 'slip.jpg') : null,
+      slipDataUrl: slipDataUrl || null
     };
     App.MockData.creditLedger.unshift(entry);
     return entry;
@@ -671,27 +726,35 @@ App.MockAPI = {
     return { ...App.MockData.agents[idx] };
   },
 
-  async adjustAgentBalance(agentId, amount, note, { skipAudit = false, skipHydrate = false } = {}) {
+  async adjustAgentBalance(agentId, amount, note, extra = {}) {
     await this._delay();
-    if (!skipHydrate) this._hydrateCreditData();
+    if (!extra.skipHydrate) this._hydrateCreditData();
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
+    const slipDataUrl = extra.slipDataUrl || extra.slip?.dataUrl || '';
+    const slipFileName = extra.slipFileName || extra.slip?.fileName || '';
+    if (amount < 0 && !slipDataUrl) {
+      throw new Error('กรุณาแนบหลักฐานการโอนเงิน');
+    }
     const prev = agent.balance;
     agent.balance = Math.max(0, Math.round((agent.balance + amount) * 100) / 100);
     const user = App.MockData.users.find((u) => u.id === agentId);
     if (user) user.balance = agent.balance;
+    const payoutNote = amount < 0 && !String(note || '').trim() ? 'โอนเงินให้นายหน้า' : note;
 
     this._pushCreditLedger({
       agentId,
       amount,
       balanceAfter: agent.balance,
-      note,
-      type: amount >= 0 ? 'credit' : 'debit'
+      note: payoutNote,
+      type: amount >= 0 ? 'credit' : 'debit',
+      slipFileName,
+      slipDataUrl
     });
-    if (!skipAudit) {
+    if (!extra.skipAudit) {
       this._logAudit(
         'balance_adjust',
-        'ปรับวงเงิน',
+        amount >= 0 ? 'ปรับวงเงิน' : 'โอนเงินให้นายหน้า',
         `${amount >= 0 ? 'เติม' : 'หัก'} ${agent.code} ${amount >= 0 ? '+' : ''}${amount.toLocaleString('th-TH')} บาท (ยอดก่อน ${prev.toLocaleString('th-TH')})`
       );
     }
@@ -701,7 +764,7 @@ App.MockAPI = {
       agentId,
       balance: agent.balance,
       adjustment: amount,
-      note: note || '',
+      note: payoutNote || '',
       currency: 'THB'
     };
   },
@@ -812,6 +875,7 @@ App.MockAPI = {
     const policiesToday = App.MockData.policies.filter((p) => p.issuedAt === today).length;
     const pendingPolicies = App.MockData.policies.filter((p) => p.status === 'pending').length;
     const pendingCreditRequests = App.MockData.creditRequests.filter((r) => r.status === 'pending').length;
+    const pendingWithdrawRequests = (App.MockData.withdrawRequests || []).filter((r) => r.status === 'pending').length;
     const todayStr = new Date().toISOString().slice(0, 10);
     const expiringPolicies = App.MockData.policies.filter((p) => {
       if (!p.expiresAt) return false;
@@ -825,6 +889,7 @@ App.MockAPI = {
       policiesToday,
       pendingPolicies,
       pendingCreditRequests,
+      pendingWithdrawRequests,
       expiringPolicies
     };
   },
@@ -834,6 +899,7 @@ App.MockAPI = {
     this._hydrateCreditData();
     const pendingPolicies = App.MockData.policies.filter((p) => p.status === 'pending').length;
     const pendingCreditRequests = App.MockData.creditRequests.filter((r) => r.status === 'pending').length;
+    const pendingWithdrawRequests = (App.MockData.withdrawRequests || []).filter((r) => r.status === 'pending').length;
     const todayStr = new Date().toISOString().slice(0, 10);
     const expiringPolicies = App.MockData.policies.filter((p) => {
       if (!p.expiresAt) return false;
@@ -849,6 +915,7 @@ App.MockAPI = {
       pending: pendingPolicies,
       renew: expiringPolicies,
       'credit-requests': pendingCreditRequests,
+      'withdraw-requests': pendingWithdrawRequests,
       commission: pendingCommissions
     };
   },
@@ -1348,6 +1415,175 @@ App.MockAPI = {
     return { ...req };
   },
 
+  _readPayoutBank(agentId) {
+    try {
+      const raw = localStorage.getItem(App.Config.AGENT_PAYOUT_BANK_KEY);
+      const map = raw ? JSON.parse(raw) : {};
+      return map[agentId] || null;
+    } catch {
+      return null;
+    }
+  },
+
+  _writePayoutBank(agentId, bank) {
+    try {
+      const raw = localStorage.getItem(App.Config.AGENT_PAYOUT_BANK_KEY);
+      const map = raw ? JSON.parse(raw) : {};
+      map[agentId] = bank;
+      localStorage.setItem(App.Config.AGENT_PAYOUT_BANK_KEY, JSON.stringify(map));
+    } catch (e) {
+      console.warn('persist payout bank failed', e);
+    }
+  },
+
+  _roundMoney(n) {
+    return Math.round((Number(n) || 0) * 100) / 100;
+  },
+
+  _getWithdrawBalance(agentId, { ignoreRequestId } = {}) {
+    const earned = this._roundMoney(
+      (App.MockData.commissions[agentId] || []).reduce((s, c) => s + (Number(c.amount) || 0), 0)
+    );
+    const requests = (App.MockData.withdrawRequests || []).filter((r) => (
+      r.agentId === agentId && r.id !== ignoreRequestId
+    ));
+    const sumBy = (status) => this._roundMoney(
+      requests.filter((r) => r.status === status).reduce((s, r) => s + (Number(r.amount) || 0), 0)
+    );
+    const pending = sumBy('pending');
+    const paid = sumBy('paid');
+    const available = this._roundMoney(Math.max(0, earned - pending - paid));
+    return { earned, pending, paid, available };
+  },
+
+  async getWithdrawBalance(agentId) {
+    await this._delay(40);
+    this._hydrateCreditData();
+    return this._getWithdrawBalance(agentId);
+  },
+
+  async getPayoutBank(agentId) {
+    await this._delay(40);
+    return this._readPayoutBank(agentId);
+  },
+
+  async getWithdrawRequests(agentId, { status } = {}) {
+    await this._delay();
+    this._hydrateCreditData();
+    let list = (App.MockData.withdrawRequests || []).filter((r) => r.agentId === agentId);
+    if (status) list = list.filter((r) => r.status === status);
+    return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async createWithdrawRequest(agentId, payload = {}) {
+    await this._delay();
+    this._hydrateCreditData();
+    if (!Array.isArray(App.MockData.withdrawRequests)) App.MockData.withdrawRequests = [];
+    const agent = App.MockData.agents.find((a) => a.id === agentId);
+    if (!agent) throw new Error('ไม่พบนายหน้า');
+    const num = this._roundMoney(payload.amount);
+    if (!num || num < 100) throw new Error('กรุณาระบุจำนวนเงินขั้นต่ำ 100 บาท');
+    const bankCode = String(payload.bankCode || '').trim();
+    const accountNo = String(payload.accountNo || '').replace(/\s+/g, '');
+    const accountName = String(payload.accountName || '').trim();
+    if (!bankCode) throw new Error('กรุณาเลือกธนาคาร');
+    if (!accountNo) throw new Error('กรุณากรอกเลขบัญชี');
+    if (!accountName) throw new Error('กรุณากรอกชื่อบัญชี');
+    const pending = App.MockData.withdrawRequests.some(
+      (r) => r.agentId === agentId && r.status === 'pending'
+    );
+    if (pending) throw new Error('มีคำขอถอนเงินที่รอโอนอยู่แล้ว กรุณารอแอดมินดำเนินการก่อน');
+    const balance = this._getWithdrawBalance(agentId);
+    if (balance.available < 100) {
+      throw new Error('ยอดค่าคอมที่ถอนได้ไม่ถึงขั้นต่ำ 100 บาท');
+    }
+    if (num > balance.available) {
+      throw new Error(`ถอนได้ไม่เกิน ${balance.available.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท (ยอดค่าคอมคงเหลือ)`);
+    }
+
+    const bank = App.ThaiBanks?.findByCode(bankCode);
+    const entry = {
+      id: `WD-${String(App.MockData.withdrawRequests.length + 1).padStart(3, '0')}`,
+      agentId,
+      agentCode: agent.code,
+      agentName: agent.name,
+      amount: Math.round(num * 100) / 100,
+      bankCode: bank?.code || bankCode,
+      bankName: bank?.name || bankCode,
+      accountNo,
+      accountName,
+      note: String(payload.note || '').trim(),
+      status: 'pending',
+      slipFileName: null,
+      slipDataUrl: null,
+      createdAt: new Date().toISOString(),
+      reviewedAt: null,
+      reviewedByName: null
+    };
+    App.MockData.withdrawRequests.unshift(entry);
+    this._writePayoutBank(agentId, {
+      bankCode: entry.bankCode,
+      accountNo: entry.accountNo,
+      accountName: entry.accountName
+    });
+    this._persistCreditData();
+    this._logAudit('withdraw_request', 'แจ้งถอนเงิน', `${agent.code} ขอถอน ${entry.amount.toLocaleString('th-TH')} บาท`);
+    return { ...entry };
+  },
+
+  async getAllWithdrawRequests({ status } = {}) {
+    await this._delay();
+    this._hydrateCreditData();
+    let list = [...(App.MockData.withdrawRequests || [])];
+    if (status) list = list.filter((r) => r.status === status);
+    return list
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((r) => {
+        const balance = this._getWithdrawBalance(r.agentId, {
+          ignoreRequestId: r.status === 'pending' ? r.id : null
+        });
+        return {
+          ...r,
+          commissionEarned: balance.earned,
+          commissionAvailable: balance.available
+        };
+      });
+  },
+
+  async reviewWithdrawRequest(requestId, action, extra = {}) {
+    await this._delay();
+    this._hydrateCreditData();
+    const req = (App.MockData.withdrawRequests || []).find((r) => r.id === requestId);
+    if (!req) throw new Error('ไม่พบคำขอถอนเงิน');
+    if (req.status !== 'pending') throw new Error('คำขอนี้ดำเนินการแล้ว');
+    const actor = this._actor();
+    if (action === 'pay') {
+      const slipDataUrl = extra.slipDataUrl || extra.slip?.dataUrl || '';
+      if (!slipDataUrl) throw new Error('กรุณาแนบหลักฐานการโอนเงิน');
+      const balance = this._getWithdrawBalance(req.agentId, { ignoreRequestId: req.id });
+      if (req.amount > balance.available) {
+        throw new Error(`ยอดนี้เกินค่าคอมที่ถอนได้ (${balance.available.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท)`);
+      }
+      req.status = 'paid';
+      req.slipFileName = extra.slipFileName || extra.slip?.fileName || 'slip.jpg';
+      req.slipDataUrl = slipDataUrl;
+      req.hasSlip = true;
+    } else if (action === 'reject') {
+      req.status = 'rejected';
+    } else {
+      throw new Error('การดำเนินการไม่ถูกต้อง');
+    }
+    req.reviewedAt = new Date().toISOString();
+    req.reviewedByName = actor.name;
+    this._persistCreditData();
+    this._logAudit(
+      'withdraw_review',
+      action === 'pay' ? 'โอนเงินให้นายหน้า' : 'ปฏิเสธถอนเงิน',
+      `${req.agentCode} ${req.amount.toLocaleString('th-TH')} บาท`
+    );
+    return { ...req };
+  },
+
   async getAllCommissions({ period, status, agentId } = {}) {
     await this._delay();
     let list = [];
@@ -1403,7 +1639,12 @@ App.MockAPI = {
             const agent = App.MockData.agents.find((a) => a.id === aid);
             if (agent && App.AgentCommissionRates) {
               this._hydrateAgentCommissionRates();
-              const rates = App.AgentCommissionRates.normalize(agent.commissionRates);
+              const sourceAgent = commission.sourceAgentId
+                ? App.MockData.agents.find((a) => a.id === commission.sourceAgentId)
+                : null;
+              const rates = (commission.kind === 'team-override' && sourceAgent)
+                ? App.AgentCommissionRates.overrideAsRates(sourceAgent.commissionRates)
+                : App.AgentCommissionRates.normalize(agent.commissionRates);
               const settlement = App.AgentCommissionRates.calcSettlement({
                 netPremium: commission.netPremium ?? commission.premium,
                 grossPremium: commission.premium,
