@@ -242,16 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  document.querySelectorAll('.login-mock__item').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (remainingLockMs() > 0) return;
-      form.username.value = btn.dataset.username || '';
-      form.password.value = btn.dataset.password || '';
-      errorEl.classList.remove('visible');
-      form.password.focus();
-    });
-  });
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorEl.classList.remove('visible');
