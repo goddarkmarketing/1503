@@ -137,19 +137,23 @@
 .receipt-doc__meta {
   width: 100%;
   font-size: 12.5px;
+  table-layout: auto;
 }
 .receipt-doc__meta th {
-  width: 48%;
+  width: 1%;
   font-weight: 650;
   text-align: left;
   white-space: nowrap;
-  padding: 6px 8px;
+  padding: 6px 10px;
   background: #f7f8fa;
 }
 .receipt-doc__meta td {
   text-align: left;
-  padding: 6px 8px;
+  white-space: nowrap;
+  padding: 6px 10px;
   background: #fff;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 /* Customer info — separate table so columns don't fight the items grid */
