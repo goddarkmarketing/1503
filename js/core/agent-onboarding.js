@@ -142,8 +142,15 @@ App.AgentOnboarding = {
           </div>
           <div data-ig-step="2" hidden>
             <div class="identity-gate-field">
-              <label for="igBankCode">ธนาคาร *</label>
-              <select id="igBankCode" name="payoutBankCode" required>${this._bankOptions()}</select>
+              <label>ธนาคาร *</label>
+              <input type="hidden" id="igBankCode" name="payoutBankCode" required>
+              <div class="ig-bank-picker" id="igBankPicker">
+                <button type="button" class="ig-bank-picker__trigger" id="igBankTrigger" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="ig-bank-picker__preview" id="igBankChosen">เลือกธนาคาร</span>
+                  <span class="ig-bank-picker__chevron" aria-hidden="true">▾</span>
+                </button>
+                <div class="ig-bank-picker__menu" id="igBankMenu" hidden role="listbox"></div>
+              </div>
             </div>
             <div class="identity-gate-row">
               <div class="identity-gate-field">
@@ -202,6 +209,7 @@ App.AgentOnboarding = {
     });
 
     this._bindFileInputs(overlay);
+    this._bindBankPicker(overlay);
 
     const form = overlay.querySelector('#identityGateForm');
     if (!form) {
@@ -230,7 +238,10 @@ App.AgentOnboarding = {
       });
       if (backBtn) backBtn.hidden = n === 1;
       if (nextBtn) nextBtn.hidden = n === 3;
-      if (submitBtn) submitBtn.hidden = n !== 3;
+      if (submitBtn) {
+        submitBtn.hidden = n !== 3;
+        this._syncSubmitState(overlay, submitBtn);
+      }
       if (confirmBox) confirmBox.hidden = true;
       if (actions) actions.hidden = false;
     };
@@ -272,6 +283,9 @@ App.AgentOnboarding = {
       }
       return true;
     };
+
+    overlay.addEventListener('input', () => this._syncSubmitState(overlay, submitBtn));
+    overlay.addEventListener('change', () => this._syncSubmitState(overlay, submitBtn));
 
     nextBtn?.addEventListener('click', () => {
       if (!validateStep(step)) return;
@@ -349,11 +363,101 @@ App.AgentOnboarding = {
       .replace(/"/g, '&quot;');
   },
 
-  _bankOptions() {
+  _logoUrl(bank) {
+    const logo = bank?.logo || '';
+    if (!logo) return '';
+    if (/^https?:\/\//i.test(logo)) return logo;
+    return App.Paths?.absolute ? App.Paths.absolute(logo) : `../${logo}`;
+  },
+
+  _isFormComplete(root) {
+    const form = root.querySelector('#identityGateForm');
+    if (!form) return false;
+    const bankFile = root.querySelector('#igBank')?.files?.[0];
+    const idFile = root.querySelector('#igIdCard')?.files?.[0];
+    return !!(
+      form.name?.value.trim()
+      && form.email?.value.trim()
+      && form.phone?.value.trim()
+      && form.payoutBankCode?.value.trim()
+      && (form.payoutAccountNo?.value || '').replace(/\D+/g, '').length >= 8
+      && form.payoutAccountName?.value.trim()
+      && bankFile
+      && idFile
+    );
+  },
+
+  _syncSubmitState(root, submitBtn) {
+    if (!submitBtn || submitBtn.hidden) return;
+    const ready = this._isFormComplete(root);
+    submitBtn.disabled = !ready;
+    submitBtn.classList.toggle('is-idle', !ready);
+  },
+
+  _bindBankPicker(root) {
+    const hidden = root.querySelector('#igBankCode');
+    const trigger = root.querySelector('#igBankTrigger');
+    const menu = root.querySelector('#igBankMenu');
+    const preview = root.querySelector('#igBankChosen');
+    const picker = root.querySelector('#igBankPicker');
+    if (!hidden || !trigger || !menu || !preview) return;
+
     const banks = App.ThaiBanks?.list?.() || [];
-    return '<option value="">เลือกธนาคาร</option>' + banks.map((b) => (
-      `<option value="${this._esc(b.code)}">${this._esc(b.name)}</option>`
-    )).join('');
+    menu.innerHTML = banks.map((b) => `
+      <button type="button" class="ig-bank-picker__option" role="option" data-code="${this._esc(b.code)}">
+        <img src="${this._esc(this._logoUrl(b))}" alt="" width="28" height="28">
+        <span>
+          <strong>${this._esc(b.short || b.name)}</strong>
+          <em>${this._esc(b.name)}</em>
+        </span>
+      </button>
+    `).join('');
+
+    const close = () => {
+      menu.hidden = true;
+      picker?.classList.remove('is-open');
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+
+    const apply = (code) => {
+      const bank = App.ThaiBanks?.findByCode?.(code);
+      hidden.value = bank?.code || '';
+      menu.querySelectorAll('.ig-bank-picker__option').forEach((btn) => {
+        btn.classList.toggle('is-selected', btn.dataset.code === hidden.value);
+      });
+      if (!bank) {
+        preview.innerHTML = 'เลือกธนาคาร';
+        preview.classList.add('is-placeholder');
+        return;
+      }
+      preview.classList.remove('is-placeholder');
+      preview.innerHTML = `
+        <img src="${this._esc(this._logoUrl(bank))}" alt="" width="24" height="24">
+        <span>${this._esc(bank.name)}</span>
+      `;
+    };
+
+    trigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const open = menu.hidden;
+      menu.hidden = !open;
+      picker?.classList.toggle('is-open', open);
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const btn = e.target.closest('.ig-bank-picker__option');
+      if (!btn) return;
+      apply(btn.dataset.code);
+      close();
+      hidden.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    root.addEventListener('click', () => close());
+
+    apply(hidden.value);
   },
 
   _bindFileInputs(root) {
@@ -470,29 +574,80 @@ App.AgentOnboarding = {
         color:#b91c1c;font-size:.82rem;
       }
 
-      .identity-gate-form{display:flex;flex-direction:column;gap:8px}
-      .identity-gate-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .identity-gate-form{display:flex;flex-direction:column;gap:12px}
+      .identity-gate-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
       @media(max-width:560px){.identity-gate-row{grid-template-columns:1fr}}
+      [data-ig-step]{display:flex;flex-direction:column;gap:14px;padding-top:4px}
+      [data-ig-step][hidden]{display:none !important}
 
       .identity-gate-steps{
-        list-style:none;margin:0 0 12px;padding:0;
-        display:flex;align-items:flex-start;justify-content:space-between;gap:6px;
+        list-style:none;margin:2px 8px 8px;padding:0;
+        display:flex;align-items:flex-start;justify-content:space-between;
       }
       .identity-gate-step{
-        flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
-        font-size:.72rem;color:var(--text-muted);text-align:center;position:relative;
+        flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
+        font-size:.72rem;color:#94a3b8;text-align:center;position:relative;
+      }
+      .identity-gate-step:not(:last-child)::after{
+        content:'';position:absolute;top:13px;
+        left:calc(50% + 16px);right:calc(-50% + 16px);
+        border-top:1.5px dashed #cbd5e1;pointer-events:none;
+      }
+      .identity-gate-step.is-done:not(:last-child)::after,
+      .identity-gate-step.is-active:not(:last-child)::after{
+        border-top-color:#86efac;
       }
       .identity-gate-step span{
-        width:28px;height:28px;border-radius:50%;
+        width:26px;height:26px;border-radius:50%;
         display:flex;align-items:center;justify-content:center;
-        border:2px solid var(--border);background:#fff;
-        font-weight:700;font-size:.82rem;color:#64748b;
+        border:2px solid #cbd5e1;background:#fff;
+        font-weight:700;font-size:.8rem;color:#64748b;
+        position:relative;z-index:1;
       }
       .identity-gate-step.is-active{color:var(--accent-green);font-weight:700}
       .identity-gate-step.is-active span,
       .identity-gate-step.is-done span{
         border-color:var(--accent-green);background:var(--accent-green);color:#fff;
       }
+
+      .ig-bank-picker{position:relative}
+      .ig-bank-picker__trigger{
+        width:100%;min-height:46px;padding:8px 12px;
+        border:1px solid var(--border);border-radius:10px;
+        background:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;
+        font:inherit;cursor:pointer;text-align:left;box-sizing:border-box;
+      }
+      .ig-bank-picker.is-open .ig-bank-picker__trigger{
+        border-color:var(--accent-green);box-shadow:0 0 0 3px var(--accent-green-soft);
+      }
+      .ig-bank-picker__preview{
+        display:flex;align-items:center;gap:10px;color:#334155;font-size:.9rem;
+      }
+      .ig-bank-picker__preview.is-placeholder,
+      .ig-bank-picker__preview:not(:has(img)){color:#94a3b8}
+      .ig-bank-picker__preview img{
+        width:28px;height:28px;object-fit:contain;border-radius:6px;background:#f8fafc;flex-shrink:0;
+      }
+      .ig-bank-picker__chevron{color:#94a3b8;font-size:.85rem}
+      .ig-bank-picker__menu{
+        position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;
+        max-height:240px;overflow:auto;
+        background:#fff;border:1px solid var(--border);border-radius:12px;
+        box-shadow:0 12px 32px rgba(15,23,42,.14);padding:6px;
+      }
+      .ig-bank-picker__option{
+        width:100%;display:flex;align-items:center;gap:10px;
+        padding:8px 10px;border:0;border-radius:10px;background:transparent;
+        font:inherit;text-align:left;cursor:pointer;
+      }
+      .ig-bank-picker__option img{
+        width:28px;height:28px;object-fit:contain;border-radius:6px;background:#f8fafc;flex-shrink:0;
+      }
+      .ig-bank-picker__option span{display:flex;flex-direction:column;line-height:1.25}
+      .ig-bank-picker__option strong{font-size:.86rem;color:#0f172a}
+      .ig-bank-picker__option em{font-style:normal;font-size:.72rem;color:#64748b}
+      .ig-bank-picker__option:hover,
+      .ig-bank-picker__option.is-selected{background:#f0fdf4}
 
       .identity-gate-preview{
         margin-top:8px;border:1px solid var(--border);border-radius:10px;
@@ -505,7 +660,7 @@ App.AgentOnboarding = {
       .identity-gate-preview-pdf{margin:8px;font-size:.8rem;color:var(--text-muted)}
 
       .identity-gate-field label{
-        display:block;margin-bottom:4px;
+        display:block;margin:0 0 8px;
         font-size:.8rem;font-weight:700;color:#334155
       }
 
@@ -580,7 +735,12 @@ App.AgentOnboarding = {
         box-shadow:var(--brand-green-shadow);
       }
 
-      .identity-gate-primary:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
+      .identity-gate-primary[hidden],
+      .identity-gate-logout[hidden]{display:none !important}
+      .identity-gate-primary.is-idle,
+      .identity-gate-primary:disabled{
+        background:#e2e8f0;color:#64748b;box-shadow:none;cursor:not-allowed;
+      }
 
       .identity-gate-logout{
         padding:11px 14px;border:1px solid var(--border);
