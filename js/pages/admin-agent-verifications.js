@@ -64,12 +64,12 @@
       title: `ยืนยันตัวตน ${req.agentCode || req.agentId}`,
       size: 'wide',
       body: `
-        <dl class="credit-review__dl">
+        <dl class="credit-review__dl identity-review__dl">
           <div><dt>ชื่อ-นามสกุล</dt><dd>${escapeHtml(req.name)}</dd></div>
           <div><dt>อีเมล</dt><dd>${escapeHtml(req.email || '-')}</dd></div>
           <div><dt>โทรศัพท์</dt><dd>${escapeHtml(req.phone || '-')}</dd></div>
           <div><dt>วันที่ส่ง</dt><dd>${App.AdminUtils.formatDateTime(req.submittedAt)}</dd></div>
-          ${req.adminNote ? `<div><dt>หมายเหตุ</dt><dd>${escapeHtml(req.adminNote)}</dd></div>` : ''}
+          ${req.adminNote ? `<div class="identity-review__note"><dt>หมายเหตุ</dt><dd>${escapeHtml(req.adminNote)}</dd></div>` : ''}
         </dl>
         <div class="identity-review-docs">
           <figure class="identity-review-doc">

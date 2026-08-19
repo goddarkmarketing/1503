@@ -2984,6 +2984,15 @@ body[data-portal="admin"] .content-card--team {
   font-size: 0.85rem;
 }
 
+.identity-review__dl {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 28px;
+}
+
+.identity-review__note {
+  grid-column: 1 / -1;
+}
+
 .identity-review-docs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3040,6 +3049,7 @@ body[data-portal="admin"] .content-card--team {
 }
 
 @media (max-width: 720px) {
+  .identity-review__dl,
   .identity-review-docs {
     grid-template-columns: 1fr;
   }
