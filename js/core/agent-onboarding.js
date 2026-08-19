@@ -119,21 +119,23 @@ App.AgentOnboarding = {
               <input id="igPhone" name="phone" type="tel" required value="${this._esc(reference?.phone || user.phone || '')}">
             </div>
           </div>
-          <div class="identity-gate-field">
-            <label for="igBank">รูปหน้าบัญชีธนาคาร *</label>
-            <label class="identity-gate-file" for="igBank">
-              <input id="igBank" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required hidden>
-              <span class="identity-gate-file-btn">เลือกไฟล์</span>
-              <span class="identity-gate-file-name">JPG, PNG, WEBP, PDF สูงสุด 5 MB</span>
-            </label>
-          </div>
-          <div class="identity-gate-field">
-            <label for="igIdCard">สำเนาบัตรประชาชน *</label>
-            <label class="identity-gate-file" for="igIdCard">
-              <input id="igIdCard" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required hidden>
-              <span class="identity-gate-file-btn">เลือกไฟล์</span>
-              <span class="identity-gate-file-name">JPG, PNG, WEBP, PDF สูงสุด 5 MB</span>
-            </label>
+          <div class="identity-gate-row">
+            <div class="identity-gate-field">
+              <label for="igBank">รูปหน้าบัญชีธนาคาร *</label>
+              <label class="identity-gate-file" for="igBank">
+                <input id="igBank" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required hidden>
+                <span class="identity-gate-file-btn">เลือกไฟล์</span>
+                <span class="identity-gate-file-name">JPG / PNG / PDF</span>
+              </label>
+            </div>
+            <div class="identity-gate-field">
+              <label for="igIdCard">สำเนาบัตรประชาชน *</label>
+              <label class="identity-gate-file" for="igIdCard">
+                <input id="igIdCard" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required hidden>
+                <span class="identity-gate-file-btn">เลือกไฟล์</span>
+                <span class="identity-gate-file-name">JPG / PNG / PDF</span>
+              </label>
+            </div>
           </div>
           ${reference?.name ? `<p class="identity-gate-hint">ข้อมูลต้องตรงกับที่ลงทะเบียน: ${this._esc([reference.name, reference.email, reference.phone].filter(Boolean).join(' · '))}</p>` : ''}
           <div class="identity-gate-actions">
@@ -225,72 +227,72 @@ App.AgentOnboarding = {
     style.textContent = `
       .identity-gate-overlay{
         position:fixed;inset:0;z-index:20000;
-        display:flex;align-items:center;justify-content:center;padding:20px;
+        display:flex;align-items:center;justify-content:center;padding:16px;
         background:rgba(15,23,42,.42);
         backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
       }
 
       .identity-gate-dialog{
-        width:min(720px,100%);
-        max-height:92vh;overflow:auto;
+        width:min(620px,100%);
+        overflow:hidden;
         background:#fff;border-radius:18px;
         text-align:center;
         box-shadow:0 24px 64px rgba(15,23,42,.22);
         border:1px solid var(--border);
-        padding:24px 22px;
+        padding:16px 20px 14px;
       }
 
       .identity-gate-dialog--wide{ text-align:left; }
 
       .identity-gate-icon{
-        width:52px;height:52px;margin:0 auto 10px;
+        width:40px;height:40px;margin:0 auto 6px;
         background:var(--accent-green-soft);
         color:var(--accent-green);
-        border-radius:16px;
+        border-radius:12px;
         display:flex;align-items:center;justify-content:center;
-        font-size:1.9rem;
+        font-size:1.35rem;
       }
 
       .identity-gate-dialog h2{
-        margin:0 0 8px;
-        font-size:1.35rem;
+        margin:0 0 4px;
+        font-size:1.18rem;
         color:var(--accent-green);
         text-align:center;
       }
 
       .identity-gate-lead{
-        margin:0 0 16px;
+        margin:0 0 10px;
         color:var(--text-muted);
-        font-size:.95rem;line-height:1.6;
+        font-size:.82rem;line-height:1.45;
         text-align:center;
       }
 
       .identity-gate-reject{
-        margin:0 0 12px;
-        padding:10px 12px;background:#fef2f2;
-        border:1px solid #fecaca;border-radius:12px;
-        color:#b91c1c;font-size:.9rem;
+        margin:0 0 10px;
+        padding:8px 10px;background:#fef2f2;
+        border:1px solid #fecaca;border-radius:10px;
+        color:#b91c1c;font-size:.82rem;
       }
 
-      .identity-gate-form{display:flex;flex-direction:column;gap:14px}
-      .identity-gate-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      .identity-gate-form{display:flex;flex-direction:column;gap:8px}
+      .identity-gate-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
       @media(max-width:560px){.identity-gate-row{grid-template-columns:1fr}}
 
       .identity-gate-field label{
-        display:block;margin-bottom:6px;
-        font-size:.86rem;font-weight:700;color:#334155
+        display:block;margin-bottom:4px;
+        font-size:.8rem;font-weight:700;color:#334155
       }
 
       .identity-gate-field input:not([type=file]){
-        width:100%;padding:11px 12px;
-        border:1px solid var(--border);border-radius:12px;
+        width:100%;padding:9px 12px;
+        border:1px solid var(--border);border-radius:10px;
         font:inherit;box-sizing:border-box;background:#fff;
       }
 
       .identity-gate-file{
-        display:flex;align-items:center;gap:12px;
-        width:100%;min-height:72px;padding:14px 16px;
-        border:1.5px dashed var(--border);border-radius:12px;
+        display:flex;align-items:center;gap:8px;
+        width:100%;padding:8px 10px;
+        border:1.5px dashed var(--border);border-radius:10px;
         background:#f8fafc;cursor:pointer;box-sizing:border-box;
         transition:border-color .15s,background .15s;
       }
@@ -303,14 +305,14 @@ App.AgentOnboarding = {
 
       .identity-gate-file-btn{
         display:inline-flex;align-items:center;
-        padding:8px 14px;border-radius:10px;
+        padding:6px 12px;border-radius:8px;
         background:var(--brand-green-gradient);
-        color:#fff;font-size:.85rem;font-weight:700;
+        color:#fff;font-size:.78rem;font-weight:700;
         white-space:nowrap;flex-shrink:0;
       }
 
       .identity-gate-file-name{
-        flex:1;font-size:.85rem;color:var(--text-muted);
+        flex:1;font-size:.75rem;color:var(--text-muted);
         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
       }
 
@@ -324,17 +326,18 @@ App.AgentOnboarding = {
       }
 
       .identity-gate-hint{
-        margin:0;font-size:.82rem;color:var(--text-muted);
+        margin:0;font-size:.75rem;color:var(--text-muted);
         text-align:center;
       }
 
       .identity-gate-actions{
-        display:flex;flex-direction:column;gap:10px;margin-top:8px;
+        display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:4px;
       }
+      @media(max-width:560px){.identity-gate-actions{grid-template-columns:1fr}}
 
       .identity-gate-primary{
         display:block;width:100%;
-        padding:14px 18px;border:0;border-radius:12px;
+        padding:11px 14px;border:0;border-radius:10px;
         background:var(--brand-green-gradient);
         color:#fff;font-weight:700;font:inherit;
         cursor:pointer;text-align:center;
@@ -344,8 +347,8 @@ App.AgentOnboarding = {
       .identity-gate-primary:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
 
       .identity-gate-logout{
-        padding:12px 16px;border:1px solid var(--border);
-        border-radius:12px;background:#fff;color:var(--text-muted);
+        padding:11px 14px;border:1px solid var(--border);
+        border-radius:10px;background:#fff;color:var(--text-muted);
         font:inherit;cursor:pointer;
       }
 
