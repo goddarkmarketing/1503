@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!next) {
-      return App.Permissions.homePath(user.role);
+      return App.AgentOnboarding?.postLoginPath?.(user, App.Permissions.homePath(user.role))
+        ?? App.Permissions.homePath(user.role);
     }
 
     let safe = next.replace(/^\/+/, '').replace(/\.\./g, '');
@@ -135,6 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const rememberMe = document.getElementById('rememberMe');
   const togglePass = document.getElementById('togglePassword');
   const forgotBtn = document.getElementById('forgotPasswordBtn');
+  const forgotModal = document.getElementById('forgotPasswordModal');
+  const forgotForm = document.getElementById('forgotPasswordForm');
+  const forgotCancelBtn = document.getElementById('forgotCancelBtn');
+  const forgotSubmitBtn = document.getElementById('forgotSubmitBtn');
 
   let lockTimer = null;
 
@@ -237,9 +242,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   forgotBtn?.addEventListener('click', () => {
     if (errorEl) errorEl.classList.remove('visible');
-    window.alert(
-      'ลืมรหัสผ่าน?\n\nระบบนี้ให้แอดมินเป็นผู้ตั้งและรีเซ็ตรหัสผ่าน\nกรุณาติดต่อผู้ดูแลระบบเพื่อขอรหัสผ่านใหม่'
-    );
+    if (forgotModal) forgotModal.hidden = false;
+    document.getElementById('forgotUsername')?.focus();
+  });
+
+  forgotCancelBtn?.addEventListener('click', () => {
+    if (forgotModal) forgotModal.hidden = true;
+  });
+
+  forgotModal?.addEventListener('click', (e) => {
+    if (e.target === forgotModal) forgotModal.hidden = true;
+  });
+
+  forgotForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = forgotForm.username.value.trim();
+    if (!username) return;
+
+    if (forgotSubmitBtn) {
+      forgotSubmitBtn.disabled = true;
+      forgotSubmitBtn.textContent = 'กำลังส่ง...';
+    }
+
+    try {
+      const result = await App.AuthService.requestPasswordReset(username);
+      if (forgotModal) forgotModal.hidden = true;
+      window.alert(result.message || 'ส่งลิงก์รีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบอีเมล');
+      forgotForm.reset();
+    } catch (err) {
+      window.alert(err.message || 'ส่งลิงก์ไม่สำเร็จ');
+    } finally {
+      if (forgotSubmitBtn) {
+        forgotSubmitBtn.disabled = false;
+        forgotSubmitBtn.textContent = 'ส่งลิงก์รีเซ็ต';
+      }
+    }
   });
 
   form.addEventListener('submit', async (e) => {
@@ -265,7 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const user = await App.AuthService.login(username, password);
       clearLockout();
       saveRemember(username, remember);
-      window.location.replace(resolveRedirect(user));
+      let target = resolveRedirect(user);
+      if (App.AgentOnboarding?.needsVerification?.(user)) {
+        target = App.AgentOnboarding.VERIFY_PAGE;
+      }
+      window.location.replace(target);
     } catch (err) {
       const fail = registerFailedAttempt();
       errorEl.textContent = fail.locked

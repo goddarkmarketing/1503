@@ -1,6 +1,10 @@
 window.App = window.App || {};
 
 App.AuditService = {
+  _useRealCreditLedger() {
+    return !!App.Config.USE_REAL_AGENTS || !App.Config.USE_MOCK_API;
+  },
+
   async getLogs(filters = {}) {
     if (App.Config.USE_MOCK_API) {
       return App.MockAPI.getAuditLogs(filters);
@@ -10,11 +14,15 @@ App.AuditService = {
   },
 
   async getCreditLedger(filters = {}) {
-    if (App.Config.USE_MOCK_API) {
-      return App.MockAPI.getCreditLedger(filters);
+    if (this._useRealCreditLedger()) {
+      const params = new URLSearchParams();
+      Object.entries(filters || {}).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+      });
+      const q = params.toString();
+      return App.API.request(`/credit-ledger${q ? `?${q}` : ''}`);
     }
-    const params = new URLSearchParams(filters).toString();
-    return App.API.request(`/credit-ledger${params ? `?${params}` : ''}`);
+    return App.MockAPI.getCreditLedger(filters);
   },
 
   async getAdminStats() {

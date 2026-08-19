@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = App.AuthService.getCurrentUser();
   const form = document.getElementById('profileForm');
   const msg = document.getElementById('profileMessage');
-  const basePath = document.body.dataset.basePath || '../';
+  const basePath = App.Paths.detectBasePath();
 
   if (!form || !user) return;
 
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         phone: form.phone.value.trim()
       });
       App.Session.updateUser(updated);
-      App.Shell.init({ basePath, profilePath: `${basePath}agent/profile` });
+      App.Shell.init({ basePath, profilePath: App.Paths.agentProfile(basePath) });
       msg.textContent = 'บันทึกโปรไฟล์เรียบร้อย';
       msg.style.color = 'var(--accent-green)';
     } catch (err) {

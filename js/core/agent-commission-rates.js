@@ -79,7 +79,29 @@ App.AgentCommissionRates = {
         taxWithholdEnabled[key] = true;
       });
     });
-    return { categories, products, taxWithhold, taxWithholdEnabled };
+    return {
+      categories,
+      products,
+      taxWithhold,
+      taxWithholdEnabled,
+      overrideEnabled: false,
+      override: this.emptyOverrideRates()
+    };
+  },
+
+  emptyOverrideRates() {
+    const products = {};
+    const taxWithhold = {};
+    const taxWithholdEnabled = {};
+    this.listCategoryGroups().forEach((group) => {
+      group.insurers.forEach((ins) => {
+        const key = this.productKey(group.code, ins.code);
+        products[key] = 0;
+        taxWithhold[key] = this.DEFAULT_TAX_WITHHOLD;
+        taxWithholdEnabled[key] = true;
+      });
+    });
+    return { products, taxWithhold, taxWithholdEnabled };
   },
 
   _parseRate(value, fallback) {
@@ -148,7 +170,30 @@ App.AgentCommissionRates = {
       }
     });
 
-    return { categories, products, taxWithhold, taxWithholdEnabled };
+    return {
+      categories,
+      products,
+      taxWithhold,
+      taxWithholdEnabled,
+      overrideEnabled: this._parseEnabled(rates.overrideEnabled, false),
+      override: this._normalizeOverride(rates.override)
+    };
+  },
+
+  _normalizeOverride(override) {
+    const defaults = this.emptyOverrideRates();
+    if (!override || typeof override !== 'object') return defaults;
+    const products = { ...defaults.products };
+    const taxWithhold = { ...defaults.taxWithhold };
+    const taxWithholdEnabled = { ...defaults.taxWithholdEnabled };
+    Object.keys(defaults.products).forEach((key) => {
+      products[key] = this._parseRate(override.products?.[key] ?? override[key], products[key]);
+      taxWithhold[key] = this._parseRate(override.taxWithhold?.[key], taxWithhold[key]);
+      if (override.taxWithholdEnabled && Object.prototype.hasOwnProperty.call(override.taxWithholdEnabled, key)) {
+        taxWithholdEnabled[key] = this._parseEnabled(override.taxWithholdEnabled[key], true);
+      }
+    });
+    return { products, taxWithhold, taxWithholdEnabled };
   },
 
   readFromForm(form) {
@@ -165,6 +210,24 @@ App.AgentCommissionRates = {
         if (taxEnabledInput) raw.taxWithholdEnabled[key] = taxEnabledInput.checked;
       });
     });
+
+    const overrideEnabledInput = form.querySelector('[name="overrideEnabled"]');
+    if (overrideEnabledInput) {
+      raw.overrideEnabled = overrideEnabledInput.checked;
+      raw.override = { products: {}, taxWithhold: {}, taxWithholdEnabled: {} };
+      this.listCategoryGroups().forEach((group) => {
+        group.insurers.forEach((ins) => {
+          const key = this.productKey(group.code, ins.code);
+          const rateInput = form.querySelector(`[name="override_commissionProduct_${key}"]`);
+          const taxInput = form.querySelector(`[name="override_taxWithhold_${key}"]`);
+          const taxEnabledInput = form.querySelector(`[name="override_taxWithholdEnabled_${key}"]`);
+          if (rateInput) raw.override.products[key] = rateInput.value;
+          if (taxInput) raw.override.taxWithhold[key] = taxInput.value;
+          if (taxEnabledInput) raw.override.taxWithholdEnabled[key] = taxEnabledInput.checked;
+        });
+      });
+    }
+
     return this.normalize(raw);
   },
 
@@ -252,11 +315,16 @@ App.AgentCommissionRates = {
     `;
   },
 
-  renderRatesGrid(rates) {
-    const normalized = this.normalize(rates);
+  renderRatesGrid(rates, options = {}) {
+    const prefix = options.prefix || '';
+    const rateColLabel = options.rateColumnLabel || 'นายหน้าได้คอม';
+    const source = options.rateSource === 'override'
+      ? this.normalize(rates).override
+      : this.normalize(rates);
     const groups = this.listCategoryGroups();
 
     const panels = groups.map((group, index) => {
+      const groupId = `${prefix}${group.code}`;
       const open = index === 0 ? ' is-open' : '';
       const insurerRows = group.insurers.map((ins) => {
         const key = this.productKey(group.code, ins.code);
@@ -264,28 +332,29 @@ App.AgentCommissionRates = {
         const logoHtml = logoSrc
           ? `<span class="agent-commission-rates__logo" aria-hidden="true"><img src="${this._escape(logoSrc)}" alt="" width="36" height="36" loading="lazy"></span>`
           : `<span class="agent-commission-rates__logo agent-commission-rates__logo--fallback" aria-hidden="true">${this._escape((ins.name || '?').slice(0, 2))}</span>`;
-        const taxEnabled = normalized.taxWithholdEnabled[key] !== false;
+        const taxEnabled = source.taxWithholdEnabled[key] !== false;
+        const fieldPrefix = prefix;
 
         return `
           <div class="agent-commission-rates__row agent-commission-rates__row--insurer" data-product-key="${this._escape(key)}">
-            <label class="agent-commission-rates__brand" for="commission-product-${key}">
+            <label class="agent-commission-rates__brand" for="${fieldPrefix}commission-product-${key}">
               ${logoHtml}
               <span class="agent-commission-rates__label">${this._escape(ins.name)}</span>
             </label>
             <div class="agent-commission-rates__cell">
               ${this._rateInput({
-                id: `commission-product-${key}`,
-                name: `commissionProduct_${key}`,
-                value: normalized.products[key],
-                ariaLabel: `อัตราคอมมิชชัน ${ins.name} (${group.label})`
+                id: `${fieldPrefix}commission-product-${key}`,
+                name: `${fieldPrefix}commissionProduct_${key}`,
+                value: source.products[key],
+                ariaLabel: `${rateColLabel} ${ins.name} (${group.label})`
               })}
             </div>
             <div class="agent-commission-rates__tax-block${taxEnabled ? '' : ' is-off'}">
               <label class="agent-commission-rates__tax-toggle">
                 <input
                   type="checkbox"
-                  name="taxWithholdEnabled_${key}"
-                  data-tax-enabled="${key}"
+                  name="${fieldPrefix}taxWithholdEnabled_${key}"
+                  data-tax-enabled
                   ${taxEnabled ? 'checked' : ''}
                   aria-label="เปิดหักภาษี ${ins.name} (${group.label})"
                 >
@@ -294,13 +363,14 @@ App.AgentCommissionRates = {
               <div class="agent-commission-rates__input-wrap">
                 <input
                   type="number"
-                  id="tax-withhold-${key}"
-                  name="taxWithhold_${key}"
+                  id="${fieldPrefix}tax-withhold-${key}"
+                  name="${fieldPrefix}taxWithhold_${key}"
                   class="agent-commission-rates__input"
+                  data-tax-rate-input
                   min="0"
                   max="100"
                   step="0.01"
-                  value="${normalized.taxWithhold[key]}"
+                  value="${source.taxWithhold[key]}"
                   inputmode="decimal"
                   aria-label="หักภาษี % จากค่าคอม ${this._escape(ins.name)} (${this._escape(group.label)})"
                   ${taxEnabled ? '' : 'disabled'}
@@ -308,22 +378,21 @@ App.AgentCommissionRates = {
                 <span class="agent-commission-rates__suffix">%</span>
               </div>
             </div>
-            <span class="agent-commission-rates__result" data-tax-hint="${key}">
-              ${taxEnabled ? `หัก ${normalized.taxWithhold[key]}% จากคอม` : 'ออกใบ 50 ทวิ'}
+            <span class="agent-commission-rates__result" data-tax-hint>
+              ${taxEnabled ? `หัก ${source.taxWithhold[key]}% จากคอม` : 'ออกใบ 50 ทวิ'}
             </span>
           </div>
         `;
       }).join('');
 
-      const firstRate = group.insurers[0]
-        ? normalized.products[this.productKey(group.code, group.insurers[0].code)]
-        : group.defaultRate;
-      const firstTax = group.insurers[0]
-        ? normalized.taxWithhold[this.productKey(group.code, group.insurers[0].code)]
-        : this.DEFAULT_TAX_WITHHOLD;
+      const firstKey = group.insurers[0]
+        ? this.productKey(group.code, group.insurers[0].code)
+        : null;
+      const firstRate = firstKey ? source.products[firstKey] : group.defaultRate;
+      const firstTax = firstKey ? source.taxWithhold[firstKey] : this.DEFAULT_TAX_WITHHOLD;
 
       return `
-        <div class="agent-commission-rates__group${open}" data-commission-group="${group.code}">
+        <div class="agent-commission-rates__group${open}" data-commission-group="${groupId}">
           <button type="button" class="agent-commission-rates__category" data-commission-toggle aria-expanded="${index === 0 ? 'true' : 'false'}">
             <span class="agent-commission-rates__category-left">
               <i data-lucide="${group.icon}" class="agent-commission-rates__cat-icon" aria-hidden="true"></i>
@@ -336,19 +405,19 @@ App.AgentCommissionRates = {
             <div class="agent-commission-rates__bulk">
               <span>ตั้งทั้งหมวดนี้</span>
               <label>คอม
-                <input type="number" min="0" max="100" step="0.01" value="${firstRate}" data-bulk-rate="${group.code}">
+                <input type="number" min="0" max="100" step="0.01" value="${firstRate}" data-bulk-rate="${groupId}">
               </label>
               <label class="agent-commission-rates__bulkTax">
-                <input type="checkbox" checked data-bulk-tax-on="${group.code}"> หักภาษี
+                <input type="checkbox" checked data-bulk-tax-on="${groupId}"> หักภาษี
               </label>
               <label>ภาษี
-                <input type="number" min="0" max="100" step="0.01" value="${firstTax}" data-bulk-tax="${group.code}">
+                <input type="number" min="0" max="100" step="0.01" value="${firstTax}" data-bulk-tax="${groupId}">
               </label>
-              <button type="button" class="btn-secondary btn-sm" data-bulk-apply="${group.code}">ใส่ให้ทุกบริษัท</button>
+              <button type="button" class="btn-secondary btn-sm" data-bulk-apply="${groupId}">ใส่ให้ทุกบริษัท</button>
             </div>
             <div class="agent-commission-rates__cols" aria-hidden="true">
               <span>บริษัทประกัน</span>
-              <span>นายหน้าได้คอม</span>
+              <span>${this._escape(rateColLabel)}</span>
               <span>หักภาษีจากคอม</span>
               <span>ผลลัพธ์</span>
             </div>
@@ -363,9 +432,9 @@ App.AgentCommissionRates = {
 
   _syncTaxEnabledUI(root) {
     root.querySelectorAll('[data-tax-enabled]').forEach((checkbox) => {
-      const key = checkbox.getAttribute('data-tax-enabled');
-      const taxInput = root.querySelector(`[name="taxWithhold_${key}"]`);
-      const hint = root.querySelector(`[data-tax-hint="${key}"]`);
+      const row = checkbox.closest('[data-product-key]');
+      const taxInput = row?.querySelector('[data-tax-rate-input]') || row?.querySelector('[name*="taxWithhold_"]');
+      const hint = row?.querySelector('[data-tax-hint]');
       const block = checkbox.closest('.agent-commission-rates__tax-block');
       const enabled = checkbox.checked;
       if (taxInput) taxInput.disabled = !enabled;
@@ -380,10 +449,9 @@ App.AgentCommissionRates = {
 
   bindForm(root) {
     if (!root) return;
-    const container = root.querySelector('[data-commission-rates]') || root;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    container.querySelectorAll('[data-commission-toggle]').forEach((btn) => {
+    root.querySelectorAll('[data-commission-toggle]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const group = btn.closest('[data-commission-group]');
         if (!group) return;
@@ -395,47 +463,98 @@ App.AgentCommissionRates = {
       });
     });
 
-    container.querySelectorAll('[data-tax-enabled]').forEach((checkbox) => {
-      checkbox.addEventListener('change', () => this._syncTaxEnabledUI(container));
+    root.querySelectorAll('[data-tax-enabled]').forEach((checkbox) => {
+      checkbox.addEventListener('change', () => this._syncTaxEnabledUI(root));
     });
-    container.querySelectorAll('[name^="taxWithhold_"]').forEach((input) => {
-      input.addEventListener('input', () => this._syncTaxEnabledUI(container));
+    root.querySelectorAll('[name*="taxWithhold_"]').forEach((input) => {
+      input.addEventListener('input', () => this._syncTaxEnabledUI(root));
     });
-    container.querySelectorAll('[data-bulk-apply]').forEach((btn) => {
+    root.querySelectorAll('[data-bulk-apply]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const code = btn.getAttribute('data-bulk-apply');
-        const group = container.querySelector(`[data-commission-group="${code}"]`);
+        const group = root.querySelector(`[data-commission-group="${code}"]`);
         if (!group) return;
         const rate = group.querySelector(`[data-bulk-rate="${code}"]`)?.value;
         const taxOn = group.querySelector(`[data-bulk-tax-on="${code}"]`)?.checked;
         const tax = group.querySelector(`[data-bulk-tax="${code}"]`)?.value;
         group.querySelectorAll('[data-product-key]').forEach((row) => {
-          const key = row.getAttribute('data-product-key');
-          const rateInput = row.querySelector(`[name="commissionProduct_${key}"]`);
-          const taxInput = row.querySelector(`[name="taxWithhold_${key}"]`);
-          const taxEnabled = row.querySelector(`[name="taxWithholdEnabled_${key}"]`);
+          const rateInput = row.querySelector('[name*="commissionProduct_"]');
+          const taxInput = row.querySelector('[data-tax-rate-input]');
+          const taxEnabled = row.querySelector('[data-tax-enabled]');
           if (rateInput && rate !== '' && rate != null) rateInput.value = rate;
           if (taxEnabled) taxEnabled.checked = !!taxOn;
           if (taxInput && tax !== '' && tax != null) taxInput.value = tax;
         });
-        this._syncTaxEnabledUI(container);
+        this._syncTaxEnabledUI(root);
       });
     });
-    this._syncTaxEnabledUI(container);
+
+    this._bindOverrideSection(root);
+    this._syncTaxEnabledUI(root);
+  },
+
+  _bindOverrideSection(root) {
+    const section = root.querySelector('[data-override-section]');
+    if (!section) return;
+    const parentSelect = root.querySelector('[name="parentId"]');
+    const enableCb = section.querySelector('[name="overrideEnabled"]');
+    const grid = section.querySelector('[data-override-grid]');
+
+    const sync = () => {
+      const hasParent = !!(parentSelect && String(parentSelect.value || '').trim());
+      section.hidden = !hasParent;
+      const on = hasParent && !!enableCb?.checked;
+      if (grid) grid.hidden = !on;
+    };
+
+    parentSelect?.addEventListener('change', sync);
+    enableCb?.addEventListener('change', sync);
+    sync();
+  },
+
+  overrideAsRates(rates) {
+    const normalized = this.normalize(rates);
+    return {
+      categories: normalized.categories,
+      products: normalized.override.products,
+      taxWithhold: normalized.override.taxWithhold,
+      taxWithholdEnabled: normalized.override.taxWithholdEnabled
+    };
   },
 
   renderFormSection(rates) {
+    const normalized = this.normalize(rates);
     return `
       <section class="agent-form__section">
         <div class="agent-form__sectionHead">
-          <h3 class="agent-form__sectionTitle">2. ค่าคอมและภาษี</h3>
+          <h3 class="agent-form__sectionTitle">2. ค่าคอมของนายหน้าคนนี้</h3>
         </div>
         <ol class="agent-commission-rates__howto">
-          <li>ใส่ <strong>% คอม</strong> ที่นายหน้าได้จากเบี้ยสุทธิ</li>
-          <li>ถ้าต้องการหักภาษี จากค่าคอม ให้ติ๊ก <strong>หักภาษี</strong> แล้วใส่ %</li>
+          <li>ใส่ <strong>% คอม</strong> ที่นายหน้าได้จากเบี้ยสุทธิ เช่น ลูกทีมได้ 12</li>
+          <li>ถ้าต้องการหักภาษี จากค่าคอม ให้ติ๊ก <strong>หักภาษี</strong> แล้วใส่ % เช่น หัก 10</li>
           <li>ถ้าไม่หักภาษี ระบบจะ <strong>ออกใบ 50 ทวิ</strong> ให้อัตโนมัติ</li>
         </ol>
-        ${this.renderRatesGrid(rates)}
+        ${this.renderRatesGrid(normalized)}
+      </section>
+      <section class="agent-form__section agent-commission-rates__override" data-override-section hidden>
+        <div class="agent-form__sectionHead">
+          <h3 class="agent-form__sectionTitle">3. คอมแม่ทีม (จากยอดขายลูกทีมคนนี้)</h3>
+        </div>
+        <p class="agent-form__sectionHint">ใช้เมื่อนายหน้าคนนี้เป็นลูกทีม — คิดแบบเดียวกัน แยกหักภาษี / ออก 50 ทวิ ของแม่ทีมได้เอง</p>
+        <label class="wht50-settings__option" for="overrideEnabled" style="margin-bottom:14px">
+          <input id="overrideEnabled" name="overrideEnabled" type="checkbox" ${normalized.overrideEnabled ? 'checked' : ''}>
+          <span class="wht50-settings__optionBody">
+            <span class="wht50-settings__optionTitle">เปิดคอมแม่ทีมจากยอดขายของลูกทีมคนนี้</span>
+            <span class="wht50-settings__optionDesc">เช่น ลูกได้ 12 หัก 10 · แม่ได้ 3 หัก 10 — ถ้าปิดหักภาษีของใคร ระบบออก 50 ทวิให้คนนั้น</span>
+          </span>
+        </label>
+        <div data-override-grid ${normalized.overrideEnabled ? '' : 'hidden'}>
+          ${this.renderRatesGrid(normalized, {
+            prefix: 'override_',
+            rateSource: 'override',
+            rateColumnLabel: 'แม่ทีมได้คอม'
+          })}
+        </div>
       </section>
     `;
   },

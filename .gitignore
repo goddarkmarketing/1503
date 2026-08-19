@@ -5,3 +5,6 @@ Thumbs.db
 .env
 .env.*
 api/config.php
+uploads/credit-slips/*
+!uploads/credit-slips/.gitkeep
+!uploads/credit-slips/.htaccess

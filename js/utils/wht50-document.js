@@ -74,6 +74,20 @@
     return `${formatMoney(n)} บาท`;
   }
 
+  function isCompanyPayer(name) {
+    return /บริษัท|ห้างหุ้นส่วน|หจก\.?|บจก\.?|บมจ\.?|จำกัด|นิติบุคคล/i.test(String(name || ''));
+  }
+
+  function resolveAssetUrl(value, fallback) {
+    const custom = String(value || '').trim();
+    if (!custom) return fallback || '';
+    if (custom.startsWith('http') || custom.startsWith('data:') || custom.startsWith('blob:')) {
+      return custom;
+    }
+    const base = document.body?.dataset?.basePath || '../';
+    return `${base}${custom.replace(/^\//, '')}`;
+  }
+
   function sampleFormUrl(query) {
     const base = document.body?.dataset?.basePath || '../';
     const url = new URL(`${base}assets/wht50/50.html`, window.location.href);
@@ -139,14 +153,26 @@
 
     const signImg = doc.getElementById('payerSignature');
     if (signImg) {
-      const base = document.body?.dataset?.basePath || '../';
-      const custom = payer.signatureUrl || data.signatureUrl || '';
-      signImg.src = custom
-        ? (custom.startsWith('http') || custom.startsWith('data:') ? custom : `${base}${custom.replace(/^\//, '')}`)
-        : 'payer-signature.png';
+      signImg.src = resolveAssetUrl(payer.signatureUrl || data.signatureUrl, 'payer-signature.png');
       signImg.alt = 'ลายเซ็นผู้จ่ายเงิน';
       signImg.style.display = '';
     }
+
+    const stampWrap = doc.getElementById('payerStampWrap');
+    const stampImg = doc.getElementById('payerStamp');
+    const stampIcon = doc.getElementById('payerStampIcon');
+    const stampUrl = payer.stampUrl || data.stampUrl || '';
+    const showStamp = isCompanyPayer(payer.name) && !!String(stampUrl).trim();
+    if (stampWrap) stampWrap.classList.toggle('is-visible', showStamp);
+    if (stampImg) {
+      if (showStamp) {
+        stampImg.src = resolveAssetUrl(stampUrl, '');
+        stampImg.alt = 'ตรานิติบุคคล';
+      } else {
+        stampImg.removeAttribute('src');
+      }
+    }
+    if (stampIcon) stampIcon.style.visibility = showStamp ? 'hidden' : '';
 
     for (let i = 1; i <= 7; i++) {
       const chk = doc.getElementById(`chk_${i}`);
@@ -292,6 +318,7 @@
   App.Wht50Document = {
     DEFAULT_PAYER,
     SAMPLE_FROM_PDF,
+    isCompanyPayer,
     sampleFormUrl,
     fillForm,
     buildHtml,

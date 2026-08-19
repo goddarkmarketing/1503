@@ -69,5 +69,25 @@ App.AuthService = {
     const user = await App.MockAPI.getCurrentUser(session.user.id);
     App.Session.updateUser(user);
     return user;
+  },
+
+  async requestPasswordReset(username) {
+    if (this._useRealAuth() || !App.Config.USE_MOCK_API) {
+      return App.API.request('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ username })
+      });
+    }
+    return App.MockAPI.requestPasswordReset(username);
+  },
+
+  async resetPassword(token, newPassword) {
+    if (this._useRealAuth() || !App.Config.USE_MOCK_API) {
+      return App.API.request('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, newPassword })
+      });
+    }
+    return App.MockAPI.resetPassword(token, newPassword);
   }
 };

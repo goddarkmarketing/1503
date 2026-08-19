@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
-  const cache = '20260819d';
+  const cache = '20260819e';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'admin-sidebar-nav-template.js',
@@ -22,6 +22,7 @@
     'services/credit-service.js',
     'services/withdraw-service.js',
     'services/agent-registration-service.js',
+    'services/agent-identity-service.js',
     'services/wht50-service.js',
     'utils/wht50-document.js',
     'utils/credit-slip.js',

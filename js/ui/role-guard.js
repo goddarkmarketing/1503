@@ -47,7 +47,12 @@ App.RoleGuard = {
     }
 
     if (requiredRole === 'agent' && App.AgentFeatures) {
-      return App.AgentFeatures.enforceCurrentPage({ basePath: base });
+      const permOk = App.AgentFeatures.enforceCurrentPage({ basePath: base });
+      if (!permOk) return false;
+    }
+
+    if (requiredRole === 'agent' && App.AgentOnboarding) {
+      return App.AgentOnboarding.enforce({ basePath: base });
     }
 
     return true;

@@ -1,12 +1,13 @@
 /** Synchronous core stack loader for agent pages — keep before app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-agent\.js.*$/, '');
-  const cache = '20260819d';
+  const cache = '20260819f';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'agent-sidebar-nav-template.js',
     'config/app-config.js',
     'mock/data.js',
+    'core/paths.js',
     'core/permissions.js',
     'core/agent-features.js',
     'core/agent-commission-rates.js',
@@ -22,6 +23,7 @@
     'services/credit-service.js',
     'services/withdraw-service.js',
     'services/agent-registration-service.js',
+    'services/agent-identity-service.js',
     'services/wht50-service.js',
     'utils/wht50-document.js',
     'utils/credit-slip.js',
@@ -30,6 +32,8 @@
     'services/notification-service.js',
     'services/team-service.js',
     'ui/role-guard.js',
+    'core/agent-onboarding.js',
+    'core/agent-portal-init.js',
     'ui/shell.js',
     'ui/table-ui.js'
   ].forEach((file) => {

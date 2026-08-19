@@ -121,6 +121,33 @@
             user-select: none;
         }
 
+        .payer-cert-box {
+            position: relative;
+        }
+        .payer-stamp-wrap {
+            position: absolute;
+            right: 10px;
+            bottom: 22px;
+            width: 72px;
+            height: 72px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .payer-stamp-wrap.is-visible {
+            display: flex;
+        }
+        .payer-stamp-wrap img {
+            max-width: 72px;
+            max-height: 72px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+        }
+
         /* Print Media Styles */
         @media print {
             @page {
@@ -498,7 +525,7 @@
             </div>
 
             <!-- Right Box: Certification & Signature -->
-            <div class="col-span-7 tax-border p-2 rounded-sm text-center flex flex-col justify-between min-h-[125px]">
+            <div class="col-span-7 tax-border p-2 rounded-sm text-center flex flex-col justify-between min-h-[125px] payer-cert-box">
                 <div class="font-semibold text-[11.5px]">
                     ขอรับรองว่าข้อความและตัวเลขดังกล่าวข้างต้นถูกต้องตรงกับความจริงทุกประการ
                 </div>
@@ -517,9 +544,13 @@
                     </div>
                 </div>
 
+                <div class="payer-stamp-wrap" id="payerStampWrap">
+                    <img id="payerStamp" alt="ตรานิติบุคคล">
+                </div>
+
                 <div class="text-[10px] text-gray-500 border-t border-gray-300 pt-1 flex justify-between items-center px-2">
                     <span>ประทับตรานิติบุคคล (ถ้ามี)</span>
-                    <i class="fa-solid fa-stamp text-gray-300 text-lg"></i>
+                    <i class="fa-solid fa-stamp text-gray-300 text-lg" id="payerStampIcon"></i>
                 </div>
             </div>
         </div>

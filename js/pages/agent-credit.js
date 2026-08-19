@@ -249,38 +249,19 @@
             <span>${r.accountNo || '-'}</span>
           </div>
         </td>
-        <td>
-          ${r.slipDataUrl
-            ? `<button type="button" class="btn-text btn-view-slip" data-slip="${encodeURIComponent(r.slipDataUrl)}" data-name="${r.slipFileName || 'slip'}">ดูสลิป</button>`
-            : '-'}
-        </td>
+        <td>${App.CreditSlip ? App.CreditSlip.buttonHtml(r) : '-'}</td>
         <td><span class="status-pill ${r.status}">${statusLabel(r.status)}</span></td>
         <td>${r.reviewedAt ? App.AdminUtils.formatDateTime(r.reviewedAt) : '-'}</td>
       </tr>
     `).join('');
-
-    requestTbody.querySelectorAll('.btn-view-slip').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const src = decodeURIComponent(btn.dataset.slip || '');
-        const name = btn.dataset.name || 'slip';
-        const isPdf = /\.pdf$/i.test(name) || src.startsWith('data:application/pdf');
-        const win = window.open('', '_blank');
-        if (!win) return;
-        if (isPdf) {
-          win.document.write(`<title>${name}</title><embed src="${src}" type="application/pdf" width="100%" height="100%">`);
-        } else {
-          win.document.write(`<title>${name}</title><img src="${src}" alt="${name}" style="max-width:100%;height:auto;display:block;margin:0 auto">`);
-        }
-        win.document.close();
-      });
-    });
+    App.CreditSlip?.bindButtons(requestTbody, list);
   }
 
   async function loadLedger() {
-    App.TableUI.showLoading(ledgerTbody, 4);
+    App.TableUI.showLoading(ledgerTbody, 5);
     const list = await App.CreditService.getLedger();
     if (!list.length) {
-      App.TableUI.showEmpty(ledgerTbody, 4, 'ไม่มีประวัติวงเงิน');
+      App.TableUI.showEmpty(ledgerTbody, 5, 'ไม่มีประวัติวงเงิน');
       return;
     }
     ledgerTbody.innerHTML = list.map((e) => `
@@ -289,8 +270,10 @@
         <td class="col-money ${e.amount >= 0 ? 'text-green' : 'text-red'}">${e.amount >= 0 ? '+' : ''}${formatMoney(e.amount)}</td>
         <td class="col-money">${formatMoney(e.balanceAfter)}</td>
         <td>${e.note || '-'}</td>
+        <td>${App.CreditSlip ? App.CreditSlip.buttonHtml(e) : '-'}</td>
       </tr>
     `).join('');
+    App.CreditSlip?.bindButtons(ledgerTbody, list);
   }
 
   noteInput?.addEventListener('input', updateNoteCounter);

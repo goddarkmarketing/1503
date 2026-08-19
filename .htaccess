@@ -8,6 +8,9 @@ DirectoryIndex index.html
   # Keep API and static tooling untouched
   RewriteRule ^(api|node_modules)/ - [L]
 
+  # Slip files are served only via authenticated PHP, never as public static files
+  RewriteRule ^uploads/ - [F,L]
+
   # Do not rewrite these .html assets (fetched by JS / templates)
   RewriteRule ^(partials|assets|totalmenu)/ - [L]
 

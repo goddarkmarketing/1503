@@ -1,9 +1,9 @@
 /* KLADEE BROKER — Dashboard App */
 
-const AGENT_SIDEBAR_CACHE = '20260709b';
+const AGENT_SIDEBAR_CACHE = '20260819f';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const basePath = document.body.dataset.basePath || '';
+  const basePath = App.Paths.detectBasePath();
 
   if (window.App?.AuthService?.isAuthenticated?.()) {
     try {
@@ -11,14 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
       /* session may be invalid */
     }
-  }
-
-  if (window.App) {
-    App.RoleGuard.enforce('agent', { basePath });
-    await App.Shell.init({
-      basePath,
-      profilePath: `${basePath}agent/profile.html`
-    });
   }
 
   await loadAgentSidebarNav();

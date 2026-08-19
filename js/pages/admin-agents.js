@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnAddAgent')?.addEventListener('click', openAddAgentModal);
   try {
     await renderAgents();
-    document.getElementById('ledgerAgentFilter')?.addEventListener('change', renderMiniLedger);
-    await renderMiniLedger();
   } catch (err) {
     console.error(err);
     App.TableUI.showEmpty(
@@ -17,6 +15,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       8,
       `โหลดข้อมูลไม่สำเร็จ: ${err.message || 'เกิดข้อผิดพลาด'}`
     );
+    return;
+  }
+  document.getElementById('ledgerAgentFilter')?.addEventListener('change', renderMiniLedger);
+  try {
+    await renderMiniLedger();
+  } catch (err) {
+    console.error(err);
   }
 });
 
@@ -223,14 +228,18 @@ async function renderMiniLedger() {
       <td class="${e.amount >= 0 ? 'amount-positive' : 'amount-negative'}">${e.amount >= 0 ? '+' : ''}${App.Shell.formatCurrency(e.amount)}</td>
       <td>${App.Shell.formatCurrency(e.balanceAfter)}</td>
       <td>${e.note || '-'}</td>
+      <td>${App.CreditSlip ? App.CreditSlip.buttonHtml(e) : '-'}</td>
       <td>${e.createdByName}</td>
     </tr>
-  `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-muted)">ไม่มีรายการ</td></tr>';
+  `).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">ไม่มีรายการ</td></tr>';
+  App.CreditSlip?.bindButtons(tbody, entries.slice(0, 10));
 }
 
 function openAdjustModal(agentId) {
   const agent = agentsCache.find((a) => a.id === agentId);
   if (!agent) return;
+
+  let selectedSlip = null;
 
   const overlay = App.Modal.open({
     title: `ปรับวงเงิน — ${agent.name}`,
@@ -241,7 +250,7 @@ function openAdjustModal(agentId) {
           <label>ประเภท</label>
           <select name="adjustType" required>
             <option value="credit">เพิ่มวงเงิน</option>
-            <option value="debit">ลดวงเงิน</option>
+            <option value="debit">จ่ายเงินให้นายหน้า (ลดวงเงิน)</option>
           </select>
         </div>
         <div class="form-field">
@@ -250,7 +259,22 @@ function openAdjustModal(agentId) {
         </div>
         <div class="form-field">
           <label>หมายเหตุ</label>
-          <textarea name="note" rows="2" placeholder="ระบุเหตุผล"></textarea>
+          <textarea name="note" rows="2" placeholder="เช่น โอนคอมมิชชันงวด..."></textarea>
+        </div>
+        <div class="form-field" id="adjustSlipField" hidden>
+          <label for="adjustSlipInput">หลักฐานการโอนเงิน <span class="req">*</span></label>
+          <p class="admin-hint" style="margin:0 0 8px">แนบสลิปหลังโอนแล้ว นายหน้าจะเห็นหลักฐานนี้ในประวัติวงเงิน</p>
+          <label class="adjust-slip-upload" id="adjustSlipUpload" for="adjustSlipInput">
+            <input type="file" id="adjustSlipInput" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
+            <span>คลิกเพื่ออัปโหลดสลิป (JPG, PNG, WEBP, PDF สูงสุด 5 MB)</span>
+          </label>
+          <div class="adjust-slip-preview" id="adjustSlipPreview" hidden>
+            <img id="adjustSlipPreviewImg" alt="ตัวอย่างสลิป">
+            <div class="adjust-slip-preview__meta">
+              <span id="adjustSlipFileName">-</span>
+              <button type="button" class="btn-text" id="adjustSlipClear">ลบไฟล์</button>
+            </div>
+          </div>
         </div>
       </form>
     `,
@@ -260,24 +284,88 @@ function openAdjustModal(agentId) {
     `
   });
 
+  const typeSelect = overlay.querySelector('[name="adjustType"]');
+  const slipField = overlay.querySelector('#adjustSlipField');
+  const slipInput = overlay.querySelector('#adjustSlipInput');
+  const slipUpload = overlay.querySelector('#adjustSlipUpload');
+  const slipPreview = overlay.querySelector('#adjustSlipPreview');
+  const slipPreviewImg = overlay.querySelector('#adjustSlipPreviewImg');
+  const slipFileNameEl = overlay.querySelector('#adjustSlipFileName');
+
+  function clearSlip() {
+    selectedSlip = null;
+    if (slipInput) slipInput.value = '';
+    if (slipPreview) slipPreview.hidden = true;
+    if (slipPreviewImg) {
+      slipPreviewImg.removeAttribute('src');
+      slipPreviewImg.hidden = false;
+    }
+    if (slipFileNameEl) slipFileNameEl.textContent = '-';
+    slipUpload?.classList.remove('has-file');
+  }
+
+  function syncSlipField() {
+    const isDebit = typeSelect?.value === 'debit';
+    if (slipField) slipField.hidden = !isDebit;
+    if (!isDebit) clearSlip();
+  }
+
+  async function onSlipSelected(file) {
+    try {
+      selectedSlip = await App.CreditSlip.readFile(file);
+      if (slipPreview) slipPreview.hidden = false;
+      if (slipFileNameEl) slipFileNameEl.textContent = selectedSlip.fileName;
+      if (slipPreviewImg) {
+        if (selectedSlip.mimeType === 'application/pdf') {
+          slipPreviewImg.hidden = true;
+          slipPreviewImg.removeAttribute('src');
+        } else {
+          slipPreviewImg.hidden = false;
+          slipPreviewImg.src = selectedSlip.dataUrl;
+        }
+      }
+      slipUpload?.classList.add('has-file');
+    } catch (err) {
+      clearSlip();
+      App.AdminUtils.showToast(err.message || 'อัปโหลดสลิปไม่สำเร็จ', 'error');
+    }
+  }
+
+  typeSelect?.addEventListener('change', syncSlipField);
+  syncSlipField();
+  slipInput?.addEventListener('change', () => {
+    const file = slipInput.files?.[0];
+    if (file) onSlipSelected(file);
+  });
+  overlay.querySelector('#adjustSlipClear')?.addEventListener('click', clearSlip);
+
   overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
   overlay.querySelector('#confirmAdjust')?.addEventListener('click', async () => {
     const form = overlay.querySelector('#adjustForm');
     const btn = overlay.querySelector('#confirmAdjust');
     let amount = parseFloat(form.amount.value);
     if (Number.isNaN(amount) || amount <= 0) return alert('กรุณาใส่จำนวนเงินที่ถูกต้อง');
-    if (form.adjustType.value === 'debit') amount = -amount;
+    const isDebit = form.adjustType.value === 'debit';
+    if (isDebit && !selectedSlip) {
+      App.AdminUtils.showToast('กรุณาแนบหลักฐานการโอนเงิน', 'error');
+      return;
+    }
+    if (isDebit) amount = -amount;
 
     try {
       await App.ButtonUI.withLoading(btn, async () => {
-        const res = await App.AgentService.adjustBalance(agentId, amount, form.note.value.trim());
+        const res = await App.AgentService.adjustBalance(agentId, amount, form.note.value.trim(), {
+          slip: selectedSlip
+        });
         const row = document.querySelector(`tr[data-agent-id="${agentId}"]`);
         row?.querySelector('.agent-balance')?.replaceChildren(document.createTextNode(App.Shell.formatCurrency(res.balance)));
         const idx = agentsCache.findIndex((a) => a.id === agentId);
         if (idx >= 0) agentsCache[idx].balance = res.balance;
         await renderMiniLedger();
         App.Modal.close();
-        App.AdminUtils.showToast(`ปรับวงเงิน ${agent.code} เรียบร้อยแล้ว`);
+        App.AdminUtils.showToast(
+          isDebit ? `บันทึกการโอนเงิน ${agent.code} แล้ว นายหน้าเห็นสลิปได้ในประวัติวงเงิน` : `ปรับวงเงิน ${agent.code} เรียบร้อยแล้ว`
+        );
       }, { label: 'กำลังบันทึก...' });
     } catch (err) {
       App.AdminUtils.showToast(err.message || 'ปรับวงเงินไม่สำเร็จ', 'error');

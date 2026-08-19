@@ -87,6 +87,20 @@ try {
     ));
   }
 
+  if ($method === 'POST' && $path === '/auth/forgot-password') {
+    $body = api_json_body();
+    Response::json(PasswordReset::request($pdo, (string)($body['username'] ?? '')));
+  }
+
+  if ($method === 'POST' && $path === '/auth/reset-password') {
+    $body = api_json_body();
+    Response::json(PasswordReset::reset(
+      $pdo,
+      (string)($body['token'] ?? ''),
+      (string)($body['newPassword'] ?? '')
+    ));
+  }
+
   if ($method === 'GET' && $path === '/admin/users') {
     Auth::requireAdmin($pdo);
     Response::json(AdminUsers::fetchAll($pdo));
@@ -318,6 +332,44 @@ try {
       $admin = Auth::requireAdmin($pdo);
       $body = api_json_body();
       Response::json(Agents::setStatus($pdo, urldecode($m[1]), (string)($body['status'] ?? ''), $admin));
+    }
+  }
+
+  if (preg_match('#^/agents/([^/]+)/identity-verification$#', $path, $m)) {
+    $user = Auth::requireUser($pdo);
+    $agentId = urldecode($m[1]);
+    if (($user['role'] ?? '') === 'agent' && ($user['id'] ?? '') !== $agentId) {
+      Response::error('Forbidden', 403, 'FORBIDDEN');
+    }
+    if ($method === 'GET') {
+      Response::json(AgentIdentity::getForAgent($pdo, $agentId));
+    }
+    if ($method === 'POST') {
+      if (($user['role'] ?? '') !== 'agent' && ($user['role'] ?? '') !== 'admin') {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+      Response::json(AgentIdentity::submit($pdo, $agentId, api_json_body(), $user), 201);
+    }
+  }
+
+  if (preg_match('#^/identity-verifications/([^/]+)/(bank|id-card)$#', $path, $m)) {
+    if ($method === 'GET') {
+      $user = Auth::requireUser($pdo);
+      AgentIdentity::streamDoc($pdo, urldecode($m[1]), $m[2] === 'bank' ? 'bank' : 'id-card', $user);
+    }
+  }
+
+  if ($method === 'GET' && $path === '/admin/agent-identity-verifications') {
+    Auth::requireAdmin($pdo);
+    Response::json(AgentIdentity::listAll($pdo, [
+      'status' => (string)($_GET['status'] ?? ''),
+    ]));
+  }
+
+  if (preg_match('#^/admin/agent-identity-verifications/([^/]+)/(approve|reject)$#', $path, $m)) {
+    if ($method === 'POST') {
+      $admin = Auth::requireAdmin($pdo);
+      Response::json(AgentIdentity::review($pdo, urldecode($m[1]), $m[2], $admin, api_json_body()));
     }
   }
 

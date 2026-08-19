@@ -11,7 +11,8 @@ App.API = {
       || !!App.Config.USE_REAL_ADMIN_USERS
       || !!App.Config.USE_REAL_CREDIT
       || !!App.Config.USE_REAL_WITHDRAW
-      || !!App.Config.USE_REAL_AGENT_REQUESTS;
+      || !!App.Config.USE_REAL_AGENT_REQUESTS
+      || !!App.Config.USE_REAL_IDENTITY;
   },
 
   _headers(options = {}, { json = true } = {}) {

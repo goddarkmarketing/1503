@@ -10,6 +10,7 @@ window.ADMIN_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   <ul class="nav-group__list">
     <li class="nav-item"><a href="{{BASE}}admin/agents" class="nav-link" data-nav="agents"><i data-lucide="users"></i><span class="nav-link-text">จัดการนายหน้า</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/agent-requests" class="nav-link" data-nav="agent-requests"><i data-lucide="user-plus"></i><span class="nav-link-text">อนุมัติเพิ่มตัวแทน</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}admin/agent-verifications" class="nav-link" data-nav="agent-verifications"><i data-lucide="badge-check"></i><span class="nav-link-text">ยืนยันตัวตน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/team" class="nav-link" data-nav="team"><i data-lucide="users-round"></i><span class="nav-link-text">โครงสร้างทีม</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/users" class="nav-link" data-nav="users"><i data-lucide="shield"></i><span class="nav-link-text">ผู้ดูแลระบบ</span></a></li>
   </ul>
@@ -71,7 +72,7 @@ window.ADMIN_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   </ul>
 </div>`;
 
-window.ADMIN_SIDEBAR_NAV_VERSION = '20260819d';
+window.ADMIN_SIDEBAR_NAV_VERSION = '20260819e';
 
 window.renderAdminSidebarNav = function renderAdminSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-admin-sidebar]');
@@ -79,7 +80,7 @@ window.renderAdminSidebarNav = function renderAdminSidebarNav() {
 
   const base = document.body?.dataset?.basePath || '';
   const alreadyCurrent = navRoot.dataset.sidebarVersion === window.ADMIN_SIDEBAR_NAV_VERSION
-    && navRoot.querySelector('[data-nav="agent-requests"]');
+    && navRoot.querySelector('[data-nav="agent-verifications"]');
   if (alreadyCurrent) return true;
 
   navRoot.innerHTML = window.ADMIN_SIDEBAR_NAV_HTML.replace(/\{\{BASE\}\}/g, base);

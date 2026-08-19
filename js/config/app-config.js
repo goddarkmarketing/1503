@@ -6,6 +6,7 @@
  * - USE_REAL_CREDIT: บัญชีรับโอน + คำขอเติมวงเงิน ใช้ PHP API + MySQL
  * - USE_REAL_WITHDRAW: คำขอถอนเงิน ใช้ PHP API + MySQL และส่งอีเมลแจ้งแอดมิน
  * - USE_REAL_AGENT_REQUESTS: คำขอเพิ่มตัวแทนจากนายหน้า → แอดมินอนุมัติ + อีเมล
+ * - USE_REAL_IDENTITY: ยืนยันตัวตนครั้งแรก + ลืมรหัสผ่านทางอีเมล (auth routes)
  * - USE_MOCK_API: ฟีเจอร์อื่นยังใช้ mock จนกว่า endpoint จะครบ
  */
 window.App = window.App || {};
@@ -18,6 +19,7 @@ App.Config = {
   USE_REAL_CREDIT: false,
   USE_REAL_WITHDRAW: true,
   USE_REAL_AGENT_REQUESTS: true,
+  USE_REAL_IDENTITY: true,
   // Production on Atom/Plesk: '/api/v1'
   // Local XAMPP under /kladeebroker/ is detected automatically
   API_BASE_URL: (() => {

@@ -74,7 +74,7 @@
         <td>
           <div class="admin-agent-cell">
             <span class="admin-agent-cell__code">${c.agentCode || '-'}</span>
-            <span class="admin-agent-cell__name">${c.agentName || '-'}</span>
+            <span class="admin-agent-cell__name">${c.agentName || '-'}${c.kind === 'team-override' ? ` · คอมแม่ทีมจาก ${c.sourceAgentCode || '-'}` : ''}</span>
           </div>
         </td>
         <td>${c.policyNo}</td>

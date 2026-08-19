@@ -27,6 +27,16 @@ final class Mailer
     return $url !== '' ? rtrim($url, '/') : 'https://www.kladeebroker.co.th';
   }
 
+  public static function identityNotifyTo(): string
+  {
+    $config = Auth::config();
+    $to = trim((string)($config['mail']['identity_to'] ?? ''));
+    if ($to !== '') {
+      return $to;
+    }
+    return self::agentRequestNotifyTo();
+  }
+
   /** HTML email — card layout + table + CTA button (email-client safe). */
   public static function withdrawRequestHtml(array $data): string
   {
@@ -194,6 +204,82 @@ final class Mailer
       . '</table>'
       . '</td></tr></table>'
       . '</body></html>';
+  }
+
+  /** HTML email for password reset link. */
+  public static function passwordResetHtml(array $data): string
+  {
+    $name = self::e((string)($data['name'] ?? ''));
+    $username = self::e((string)($data['username'] ?? ''));
+    $resetUrl = self::e((string)($data['resetUrl'] ?? ''));
+    $hours = (int)($data['expiresHours'] ?? 24);
+
+    return '<!DOCTYPE html>'
+      . '<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+      . '<body style="margin:0;padding:0;background:#f1f5f9;font-family:\'Segoe UI\',Tahoma,Arial,sans-serif;color:#0f172a">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 12px">'
+      . '<tr><td align="center">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">'
+      . '<tr><td style="background:#1a7d58;padding:22px 24px">'
+      . '<p style="margin:0 0 4px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.85)">Kladee Broker</p>'
+      . '<h1 style="margin:0;font-size:20px;font-weight:700;color:#ffffff">รีเซ็ตรหัสผ่าน</h1>'
+      . '<p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.92)">คุณ ' . $name . ' ได้ขอเปลี่ยนรหัสผ่านสำหรับบัญชี ' . $username . '</p>'
+      . '</td></tr>'
+      . '<tr><td style="padding:24px;text-align:center">'
+      . '<p style="margin:0 0 16px;font-size:14px;color:#64748b;line-height:1.6">กดปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่ ลิงก์นี้ใช้ได้ ' . $hours . ' ชั่วโมง</p>'
+      . '<table role="presentation" cellpadding="0" cellspacing="0" align="center"><tr><td style="border-radius:8px;background:#1a7d58">'
+      . '<a href="' . $resetUrl . '" target="_blank" rel="noopener" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px">ตั้งรหัสผ่านใหม่</a>'
+      . '</td></tr></table>'
+      . '<p style="margin:16px 0 0;font-size:12px;color:#94a3b8;line-height:1.5">หากไม่ได้ขอรีเซ็ต สามารถละเว้นอีเมลนี้ได้<br>'
+      . '<a href="' . $resetUrl . '" style="color:#1a7d58;word-break:break-all">' . $resetUrl . '</a></p>'
+      . '</td></tr>'
+      . '<tr><td style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e8edf2;text-align:center">'
+      . '<p style="margin:0;font-size:12px;color:#94a3b8">อีเมลนี้ส่งอัตโนมัติจากระบบ กล้าดีโบรคเกอร์</p>'
+      . '</td></tr>'
+      . '</table></td></tr></table></body></html>';
+  }
+
+  /** HTML email for agent identity verification request. */
+  public static function agentIdentityRequestHtml(array $data): string
+  {
+    $id = self::e((string)($data['id'] ?? ''));
+    $agentCode = self::e((string)($data['agentCode'] ?? ''));
+    $agentName = self::e((string)($data['agentName'] ?? ''));
+    $name = self::e((string)($data['name'] ?? ''));
+    $phone = self::e((string)($data['phone'] ?? '-'));
+    $email = self::e((string)($data['email'] ?? '-'));
+    $submittedAt = self::formatDateTime((string)($data['submittedAt'] ?? ''));
+    $adminUrl = self::e(self::adminBaseUrl() . '/admin/agent-verifications');
+
+    $row = static function (string $label, string $value): string {
+      return '<tr>'
+        . '<td style="padding:12px 16px;width:34%;color:#64748b;font-size:14px;border-bottom:1px solid #e8edf2">' . self::e($label) . '</td>'
+        . '<td style="padding:12px 16px;color:#0f172a;font-size:14px;border-bottom:1px solid #e8edf2">' . $value . '</td>'
+        . '</tr>';
+    };
+
+    return '<!DOCTYPE html>'
+      . '<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+      . '<body style="margin:0;padding:0;background:#f1f5f9;font-family:\'Segoe UI\',Tahoma,Arial,sans-serif;color:#0f172a">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 12px"><tr><td align="center">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">'
+      . '<tr><td style="background:#1a7d58;padding:22px 24px">'
+      . '<h1 style="margin:0;font-size:20px;font-weight:700;color:#ffffff">คำขอยืนยันตัวตนนายหน้า</h1>'
+      . '<p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.92)">มีนายหน้าส่งเอกสารยืนยันตัวตน รอแอดมินตรวจสอบ</p>'
+      . '</td></tr>'
+      . '<tr><td style="padding:0">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">'
+      . $row('เลขที่คำขอ', '<span style="font-family:monospace">' . $id . '</span>')
+      . $row('รหัสนายหน้า', $agentCode . ' &mdash; ' . $agentName)
+      . ($submittedAt !== '' ? $row('วันที่ส่ง', $submittedAt) : '')
+      . $row('ชื่อ-นามสกุล', $name)
+      . $row('อีเมล', $email)
+      . $row('เบอร์โทร', $phone)
+      . '</table></td></tr>'
+      . '<tr><td style="padding:20px 24px 28px;text-align:center">'
+      . '<a href="' . $adminUrl . '" target="_blank" rel="noopener" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;background:#1a7d58">เปิดหลังบ้าน &mdash; ตรวจสอบเอกสาร</a>'
+      . '</td></tr>'
+      . '</table></td></tr></table></body></html>';
   }
 
   private static function e(string $value): string

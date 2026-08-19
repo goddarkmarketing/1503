@@ -84,7 +84,9 @@
         <td>${c.plate}</td>
         <td class="col-center">${c.earnedAt ? App.AdminUtils.formatThaiDate(c.earnedAt) : '-'}</td>
         <td class="col-money">${formatMoney(c.premium)}</td>
-        <td class="col-center">${c.rate}%</td>
+        <td class="col-center">${c.kind === 'team-override'
+          ? `${c.rate}% <small style="display:block;color:var(--text-muted)">แม่ทีม จาก ${c.sourceAgentCode || '-'}</small>`
+          : `${c.rate}%`}</td>
         <td class="col-money">${formatMoney(c.amount)}</td>
         <td><span class="status-pill ${c.status}">${statusLabel(c.status)}</span></td>
         <td class="col-center">${c.paidAt ? App.AdminUtils.formatThaiDate(c.paidAt) : '-'}</td>

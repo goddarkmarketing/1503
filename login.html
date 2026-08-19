@@ -50,6 +50,23 @@
 
         <p class="login-signup">ยังไม่มีบัญชี? ติดต่อแอดมินเพื่อเปิดบัญชีและตั้งรหัสผ่าน</p>
 
+        <div class="login-forgot-modal" id="forgotPasswordModal" hidden>
+          <div class="login-forgot-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="forgotModalTitle">
+            <h2 id="forgotModalTitle">ลืมรหัสผ่าน</h2>
+            <p>กรอกชื่อผู้ใช้ ระบบจะส่งลิงก์รีเซ็ตไปยังอีเมลที่ลงทะเบียนไว้</p>
+            <form id="forgotPasswordForm" class="login-form" novalidate>
+              <div class="login-field">
+                <label for="forgotUsername">ชื่อผู้ใช้</label>
+                <input type="text" id="forgotUsername" name="username" autocomplete="username" placeholder="เช่น Ck1-039" required>
+              </div>
+              <div class="login-forgot-modal__actions">
+                <button type="button" class="login-forgot-modal__cancel" id="forgotCancelBtn">ยกเลิก</button>
+                <button type="submit" class="login-submit" id="forgotSubmitBtn">ส่งลิงก์รีเซ็ต</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <ul class="login-contact">
           <li>
             <span>สอบถาม / แจ้งปัญหา</span>
@@ -96,7 +113,10 @@
   <script src="js/services/api-client.js"></script>
   <script src="js/core/session.js"></script>
   <script src="js/core/permissions.js"></script>
+  <script src="js/ui/role-guard.js"></script>
+  <script src="js/core/agent-onboarding.js"></script>
   <script src="js/services/auth-service.js"></script>
-  <script src="js/pages/login.js?v=20260816k"></script>
+  <script src="js/services/agent-identity-service.js"></script>
+  <script src="js/pages/login.js?v=20260819e"></script>
 </body>
 </html>

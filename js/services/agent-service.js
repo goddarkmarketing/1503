@@ -29,14 +29,20 @@ App.AgentService = {
     return App.MockAPI.updateAgent(agentId, payload);
   },
 
-  async adjustBalance(agentId, amount, note) {
+  async adjustBalance(agentId, amount, note, extra = {}) {
+    const payload = {
+      amount,
+      note,
+      slipFileName: extra.slipFileName || extra.slip?.fileName || '',
+      slipDataUrl: extra.slipDataUrl || extra.slip?.dataUrl || ''
+    };
     if (this._useRealAgents()) {
       return App.API.request(`/agents/${agentId}/balance`, {
         method: 'POST',
-        body: JSON.stringify({ amount, note })
+        body: JSON.stringify(payload)
       });
     }
-    return App.MockAPI.adjustAgentBalance(agentId, amount, note);
+    return App.MockAPI.adjustAgentBalance(agentId, amount, note, extra);
   },
 
   async createAgent(payload) {

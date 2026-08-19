@@ -23,6 +23,7 @@ return [
     'from_name' => 'Kladee Broker',
     'withdraw_to' => 'goddarkmarketing@gmail.com',
     'agent_request_to' => 'goddarkmarketing@gmail.com',
+    'identity_to' => 'goddarkmarketing@gmail.com',
     'admin_base_url' => 'https://www.kladeebroker.co.th',
   ],
 ];

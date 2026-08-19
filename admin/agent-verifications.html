@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ยืนยันตัวตนนายหน้า — Admin</title>
+  <link rel="stylesheet" href="../css/style.css?v=20260717i">
+  <link rel="stylesheet" href="../css/admin.css?v=20260816g">
+  <link rel="stylesheet" href="../css/portal.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body data-portal="admin" data-base-path="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
+          <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
+        </a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+      </div>
+      <nav class="sidebar-nav" data-admin-sidebar></nav>
+      <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+      </header>
+      <main class="main-content">
+        <div class="content-card">
+          <div class="admin-toolbar">
+            <div class="admin-toolbar__head">
+              <h1 class="admin-page-title">ยืนยันตัวตนนายหน้า</h1>
+              <p class="admin-hint">ตรวจสอบข้อมูลและเอกสารจากนายหน้าก่อนเปิดใช้งานระบบ</p>
+            </div>
+            <div class="admin-toolbar-filters">
+              <label class="admin-toolbar-filters__field" for="identityFilter">
+                <span class="admin-toolbar-filters__label">สถานะ</span>
+                <select id="identityFilter" class="admin-select admin-select--toolbar">
+                  <option value="">ทุกสถานะ</option>
+                  <option value="pending">รอตรวจสอบ</option>
+                  <option value="approved">อนุมัติแล้ว</option>
+                  <option value="rejected">ปฏิเสธ</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>วันที่ส่ง</th>
+                  <th>รหัสนายหน้า</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>โทรศัพท์</th>
+                  <th>สถานะ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="identityVerificationsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="../js/admin-sidebar-nav-template.js?v=20260819e"></script>
+  <script src="../js/load-admin.js?v=20260819e"></script>
+  <script src="../js/admin-app.js?v=20260816g"></script>
+  <script src="../js/pages/admin-agent-verifications.js?v=20260819e"></script>
+</body>
+</html>

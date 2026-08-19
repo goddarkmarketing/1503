@@ -25,32 +25,24 @@
       .replace(/"/g, '&quot;');
   }
 
-  function openSlip(src, name) {
-    if (!src) return;
-    const isPdf = /\.pdf$/i.test(name || '') || String(src).startsWith('data:application/pdf');
-    App.Modal.open({
-      title: `หลักฐานการโอนเงิน${name ? ` — ${escapeHtml(name)}` : ''}`,
-      size: 'wide',
-      body: isPdf
-        ? `<div class="credit-slip-modal credit-slip-modal--pdf"><embed src="${src}" type="application/pdf" width="100%" height="640"></div>`
-        : `<div class="credit-slip-modal"><img src="${src}" alt="${escapeHtml(name || 'สลิปโอนเงิน')}"></div>`,
-      footer: '<button type="button" class="btn-secondary" data-close-slip>ปิด</button>'
-    });
-    App.Modal.getEl()?.querySelector('[data-close-slip]')?.addEventListener('click', () => App.Modal.close());
+  function openSlip(req) {
+    if (!req || !App.CreditSlip?.hasSlip(req)) return;
+    App.CreditSlip.open(req);
   }
 
   function openReviewModal(req) {
     const isPending = req.status === 'pending';
-    const isPdf = /\.pdf$/i.test(req.slipFileName || '') || String(req.slipDataUrl || '').startsWith('data:application/pdf');
-    const slipBlock = req.slipDataUrl
-      ? (isPdf
-        ? `<div class="credit-review__slip credit-review__slip--pdf">
-             <p>ไฟล์ PDF: ${escapeHtml(req.slipFileName || 'slip.pdf')}</p>
-             <button type="button" class="btn-secondary btn-sm" data-open-slip>เปิดไฟล์สลิป</button>
-           </div>`
-        : `<div class="credit-review__slip">
+    const hasSlip = !!App.CreditSlip?.hasSlip(req);
+    const canInline = !!(req.slipDataUrl && !String(req.slipDataUrl).startsWith('data:application/pdf'));
+    const slipBlock = hasSlip
+      ? (canInline
+        ? `<div class="credit-review__slip">
              <img src="${req.slipDataUrl}" alt="สลิปโอนเงิน ${escapeHtml(req.slipFileName || '')}">
              <button type="button" class="btn-text" data-open-slip>เปิดภาพเต็ม</button>
+           </div>`
+        : `<div class="credit-review__slip">
+             <p>ไฟล์: ${escapeHtml(req.slipFileName || 'slip')}</p>
+             <button type="button" class="btn-secondary btn-sm" data-open-slip>ดูสลิป</button>
            </div>`)
       : '<p class="admin-hint">ไม่มีหลักฐานสลิปแนบมา</p>';
 
@@ -99,7 +91,7 @@
     const overlay = App.Modal.getEl();
     overlay?.querySelector('[data-close]')?.addEventListener('click', () => App.Modal.close());
     overlay?.querySelector('[data-open-slip]')?.addEventListener('click', () => {
-      openSlip(req.slipDataUrl, req.slipFileName);
+      openSlip(req);
     });
     overlay?.querySelector('[data-approve]')?.addEventListener('click', async () => {
       const approveBtn = overlay.querySelector('[data-approve]');
@@ -164,11 +156,7 @@
             <span>${escapeHtml(r.accountNo || '-')}</span>
           </div>
         </td>
-        <td>
-          ${r.slipDataUrl
-            ? `<button type="button" class="btn-text btn-slip-thumb" data-id="${r.id}">ดูสลิป</button>`
-            : '-'}
-        </td>
+        <td>${App.CreditSlip ? App.CreditSlip.buttonHtml(r) : '-'}</td>
         <td><span class="status-pill ${r.status}">${statusLabel(r.status)}</span></td>
         <td>
           <div class="btn-group">
@@ -180,17 +168,11 @@
       </tr>
     `).join('');
 
+    App.CreditSlip?.bindButtons(tbody, requestCache);
     tbody.querySelectorAll('.btn-review').forEach((btn) => {
       btn.addEventListener('click', () => {
         const req = requestCache.find((item) => item.id === btn.dataset.id);
         if (req) openReviewModal(req);
-      });
-    });
-
-    tbody.querySelectorAll('.btn-slip-thumb').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const req = requestCache.find((item) => item.id === btn.dataset.id);
-        if (req?.slipDataUrl) openSlip(req.slipDataUrl, req.slipFileName);
       });
     });
   }

@@ -104,6 +104,7 @@ final class Auth
     ];
 
     if ($user['role'] === 'agent') {
+      AgentIdentity::ensureSchema($pdo);
       $stmt = $pdo->prepare('SELECT * FROM agents WHERE user_id = :id LIMIT 1');
       $stmt->execute([':id' => $user['id']]);
       $agent = $stmt->fetch();
@@ -113,6 +114,7 @@ final class Auth
         $payload['featurePermissions'] = $agent['feature_permissions']
           ? json_decode($agent['feature_permissions'], true)
           : null;
+        $payload['identityStatus'] = $agent['identity_status'] ?? 'none';
       }
     }
 

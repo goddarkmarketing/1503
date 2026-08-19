@@ -9,7 +9,7 @@ App.Shell = {
     if (!user) return;
 
     this._options = options;
-    this._basePath = options.basePath || '';
+    this._basePath = App.Paths.normalizeBasePath(options.basePath || App.Paths.detectBasePath());
 
     this._bindUser(user);
     this._bindUserMenu(user, options);
@@ -56,9 +56,11 @@ App.Shell = {
     menu.id = 'userMenuDropdown';
     wrap.appendChild(menu);
 
-    const base = options.basePath || '';
+    const base = App.Paths.normalizeBasePath(options.basePath || App.Paths.detectBasePath());
     const profilePath = user.role === 'agent'
-      ? (options.profilePath || `${base}agent/profile`)
+      ? (options.profilePath && !App.Paths.isBadBase(options.profilePath)
+        ? options.profilePath
+        : App.Paths.agentProfile(base))
       : '#';
 
     menu.innerHTML = `

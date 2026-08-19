@@ -45,6 +45,14 @@ App.AdminNotificationService = {
       href: 'admin/agent-requests'
     },
     {
+      id: 'admin-agent-verifications',
+      key: 'agent-verifications',
+      type: 'identity',
+      title: 'ยืนยันตัวตน',
+      message: (n) => `มีคำขอยืนยันตัวตนรอตรวจสอบ ${n} รายการ`,
+      href: 'admin/agent-verifications'
+    },
+    {
       id: 'admin-commission',
       key: 'commission',
       type: 'commission',
@@ -98,6 +106,14 @@ App.AdminNotificationService = {
         counts['agent-requests'] = Array.isArray(pending) ? pending.length : 0;
       } catch {
         counts['agent-requests'] = 0;
+      }
+    }
+    if (App.Config.USE_REAL_IDENTITY && App.AgentIdentityService?.getAll) {
+      try {
+        const pending = await App.AgentIdentityService.getAll({ status: 'pending' });
+        counts['agent-verifications'] = Array.isArray(pending) ? pending.length : 0;
+      } catch {
+        counts['agent-verifications'] = 0;
       }
     }
     return counts;

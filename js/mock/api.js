@@ -581,12 +581,15 @@ App.MockAPI = {
   _agentUserPayload(user) {
     if (!user || user.role !== 'agent') return user;
     const agent = App.MockData.agents.find((a) => a.id === user.id);
-    if (!App.AgentFeatures) return user;
+    const identityStatus = App.MockData.agentIdentityStatus?.[user.id] ?? 'approved';
+    if (!App.AgentFeatures) {
+      return { ...user, identityStatus, agentCode: agent?.code, balance: agent?.balance };
+    }
     const featurePermissions = App.AgentFeatures.getUserPermissions({
       role: 'agent',
       featurePermissions: agent?.featurePermissions
     });
-    return { ...user, featurePermissions };
+    return { ...user, featurePermissions, identityStatus, agentCode: agent?.code, balance: agent?.balance };
   },
 
   async login(username, password) {
@@ -918,6 +921,7 @@ App.MockAPI = {
       'credit-requests': pendingCreditRequests,
       'withdraw-requests': pendingWithdrawRequests,
       'agent-requests': pendingAgentRequests,
+      'agent-verifications': (App.MockData.agentIdentityVerifications || []).filter((r) => r.status === 'pending').length,
       commission: pendingCommissions
     };
   },
@@ -1197,6 +1201,98 @@ App.MockAPI = {
     req.reviewedAt = new Date().toISOString();
     req.reviewedByName = this._actor()?.name || 'Admin';
     return { ...req, createdAgent: created };
+  },
+
+  _ensureIdentityMock() {
+    if (!App.MockData.agentIdentityVerifications) App.MockData.agentIdentityVerifications = [];
+    if (!App.MockData.agentIdentityStatus) App.MockData.agentIdentityStatus = {};
+  },
+
+  agentNeedsIdentityVerification(user) {
+    if (!user || user.role !== 'agent') return false;
+    this._ensureIdentityMock();
+    return (App.MockData.agentIdentityStatus[user.id] ?? 'approved') !== 'approved';
+  },
+
+  async requestPasswordReset(username) {
+    await this._delay();
+    const user = App.MockData.users.find((u) => u.username === username);
+    if (!user?.email) {
+      throw new Error('บัญชีนี้ยังไม่มีอีเมลในระบบ กรุณาติดต่อแอดมิน');
+    }
+    return {
+      success: true,
+      message: 'หากบัญชีนี้มีอีเมลในระบบ เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปแล้ว กรุณาตรวจสอบกล่องจดหมาย'
+    };
+  },
+
+  async resetPassword(token, newPassword) {
+    await this._delay();
+    if (!token || token.length < 8) {
+      throw new Error('ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว');
+    }
+    return { success: true, message: 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่' };
+  },
+
+  async getAgentIdentity(agentId) {
+    await this._delay();
+    this._ensureIdentityMock();
+    const identityStatus = App.MockData.agentIdentityStatus[agentId] ?? 'approved';
+    const latest = App.MockData.agentIdentityVerifications.find((v) => v.agentId === agentId) || null;
+    const refReq = (App.MockData.agentRegistrationRequests || []).find(
+      (r) => r.createdAgentId === agentId && r.status === 'approved'
+    );
+    return {
+      identityStatus,
+      reference: refReq ? { id: refReq.id, name: refReq.name, email: refReq.email, phone: refReq.phone } : null,
+      latest
+    };
+  },
+
+  async submitAgentIdentity(agentId, payload) {
+    await this._delay();
+    this._ensureIdentityMock();
+    const status = App.MockData.agentIdentityStatus[agentId] ?? 'approved';
+    if (status === 'approved') throw new Error('บัญชีนี้ยืนยันตัวตนแล้ว');
+    if (status === 'pending') throw new Error('มีคำขอยืนยันตัวตนรอแอดมินตรวจสอบอยู่แล้ว');
+    const entry = {
+      id: `AIV-${String(App.MockData.agentIdentityVerifications.length + 1).padStart(3, '0')}`,
+      agentId,
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+      status: 'pending',
+      submittedAt: new Date().toISOString(),
+      hasBankAccountDoc: true,
+      hasIdCardDoc: true,
+      bankAccountUrl: null,
+      idCardUrl: null
+    };
+    App.MockData.agentIdentityVerifications.unshift(entry);
+    App.MockData.agentIdentityStatus[agentId] = 'pending';
+    return { ...entry };
+  },
+
+  async getAllAgentIdentities({ status } = {}) {
+    await this._delay();
+    this._ensureIdentityMock();
+    let list = [...App.MockData.agentIdentityVerifications];
+    if (status) list = list.filter((v) => v.status === status);
+    return list;
+  },
+
+  async reviewAgentIdentity(id, action, note = '') {
+    await this._delay();
+    this._ensureIdentityMock();
+    const req = App.MockData.agentIdentityVerifications.find((v) => v.id === id);
+    if (!req) throw new Error('ไม่พบคำขอ');
+    if (req.status !== 'pending') throw new Error('คำขอนี้ดำเนินการแล้ว');
+    if (action === 'reject' && !note) throw new Error('กรุณาระบุเหตุผลเมื่อปฏิเสธ');
+    req.status = action === 'approve' ? 'approved' : 'rejected';
+    req.adminNote = note || null;
+    req.reviewedAt = new Date().toISOString();
+    App.MockData.agentIdentityStatus[req.agentId] = req.status;
+    return { ...req };
   },
 
   async getRenewals(agentId) {

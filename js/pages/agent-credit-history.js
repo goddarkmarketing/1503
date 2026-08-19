@@ -71,18 +71,6 @@
     if (el('statCreditRejected')) el('statCreditRejected').textContent = formatMoney(sum(rejected));
   }
 
-  function openSlip(src, name) {
-    const isPdf = /\.pdf$/i.test(name) || src.startsWith('data:application/pdf');
-    const win = window.open('', '_blank');
-    if (!win) return;
-    if (isPdf) {
-      win.document.write(`<title>${escapeHtml(name)}</title><embed src="${src}" type="application/pdf" width="100%" height="100%">`);
-    } else {
-      win.document.write(`<title>${escapeHtml(name)}</title><img src="${src}" alt="${escapeHtml(name)}" style="max-width:100%;height:auto;display:block;margin:0 auto">`);
-    }
-    win.document.close();
-  }
-
   function formatTransferAt(r) {
     if (!r.transferDate) return '-';
     const dateLabel = App.AdminUtils?.formatThaiDate
@@ -110,22 +98,13 @@
           </div>
         </td>
         <td>${escapeHtml(formatTransferAt(r))}</td>
-        <td>
-          ${r.slipDataUrl
-            ? `<button type="button" class="btn-text btn-view-slip" data-slip="${encodeURIComponent(r.slipDataUrl)}" data-name="${escapeHtml(r.slipFileName || 'slip')}">ดูสลิป</button>`
-            : '-'}
-        </td>
+        <td>${App.CreditSlip ? App.CreditSlip.buttonHtml(r) : '-'}</td>
         <td><span class="status-pill ${r.status}">${statusLabel(r.status)}</span></td>
         <td>${r.reviewedAt ? App.AdminUtils.formatDateTime(r.reviewedAt) : '-'}</td>
         <td>${escapeHtml(r.note || '-')}</td>
       </tr>
     `).join('');
-
-    tbody.querySelectorAll('.btn-view-slip').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        openSlip(decodeURIComponent(btn.dataset.slip || ''), btn.dataset.name || 'slip');
-      });
-    });
+    App.CreditSlip?.bindButtons(tbody, pg.items);
 
     App.TableUI.renderPagination(document.getElementById('creditHistoryPagination'), {
       ...pg,

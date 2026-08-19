@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadLedger() {
   const tbody = document.getElementById('fullLedgerBody');
-  App.TableUI.showLoading(tbody, 8);
+  App.TableUI.showLoading(tbody, 9);
   ledgerCache = await App.AuditService.getCreditLedger({
     agentId: document.getElementById('filterAgent')?.value || undefined,
     dateFrom: document.getElementById('filterDateFrom')?.value || undefined,
@@ -38,7 +38,7 @@ function renderLedgerTable() {
   const pg = App.TableUI.paginate(ledgerCache, ledgerPage);
 
   if (!pg.items.length) {
-    App.TableUI.showEmpty(tbody, 8);
+    App.TableUI.showEmpty(tbody, 9);
     document.getElementById('ledgerPagination').innerHTML = '';
     return;
   }
@@ -52,9 +52,12 @@ function renderLedgerTable() {
       <td class="${e.amount >= 0 ? 'amount-positive' : 'amount-negative'}">${e.amount >= 0 ? '+' : ''}${App.Shell.formatCurrency(e.amount)}</td>
       <td>${App.Shell.formatCurrency(e.balanceAfter)}</td>
       <td>${e.note || '-'}</td>
+      <td>${App.CreditSlip ? App.CreditSlip.buttonHtml(e) : '-'}</td>
       <td>${e.createdByName}</td>
     </tr>
   `).join('');
+
+  App.CreditSlip?.bindButtons(tbody, pg.items);
 
   App.TableUI.renderPagination(document.getElementById('ledgerPagination'), {
     ...pg,
@@ -64,9 +67,11 @@ function renderLedgerTable() {
 
 function exportLedger() {
   const entries = window._ledgerExport || [];
-  const headers = ['รหัส', 'วันที่', 'นายหน้า', 'ประเภท', 'จำนวน', 'ยอดหลังปรับ', 'หมายเหตุ', 'ผู้ทำรายการ'];
+  const headers = ['รหัส', 'วันที่', 'นายหน้า', 'ประเภท', 'จำนวน', 'ยอดหลังปรับ', 'หมายเหตุ', 'สลิป', 'ผู้ทำรายการ'];
   const rows = entries.map((e) => [
-    e.id, e.createdAt, e.agentCode, e.type, e.amount, e.balanceAfter, e.note, e.createdByName
+    e.id, e.createdAt, e.agentCode, e.type, e.amount, e.balanceAfter, e.note,
+    (e.hasSlip || e.slipDataUrl) ? (e.slipFileName || 'มีสลิป') : '',
+    e.createdByName
   ]);
   const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
   const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
