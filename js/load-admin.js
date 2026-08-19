@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
-  const cache = '20260819a';
+  const cache = '20260819b';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'admin-sidebar-nav-template.js',

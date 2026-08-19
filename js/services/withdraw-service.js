@@ -24,8 +24,10 @@ App.WithdrawService = {
   async getRequests(filters = {}) {
     const agentId = App.Session.getAgentId();
     if (this._useRealWithdraw()) {
-      const params = new URLSearchParams(filters).toString();
-      return App.API.request(`/agents/${encodeURIComponent(agentId)}/withdraw-requests${params ? `?${params}` : ''}`);
+      const data = await App.API.request(
+        `/agents/${encodeURIComponent(agentId)}/withdraw-requests${this._query(filters)}`
+      );
+      return this._asList(data);
     }
     return App.MockAPI.getWithdrawRequests(agentId, filters);
   },
@@ -49,10 +51,28 @@ App.WithdrawService = {
     return App.MockAPI.createWithdrawRequest(agentId, payload);
   },
 
+  _query(filters = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value != null && String(value).trim() !== '') {
+        params.set(key, String(value));
+      }
+    });
+    const qs = params.toString();
+    return qs ? `?${qs}` : '';
+  },
+
+  _asList(data) {
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.items)) return data.items;
+    if (data && Array.isArray(data.data)) return data.data;
+    return [];
+  },
+
   async getAll(filters = {}) {
     if (this._useRealWithdraw()) {
-      const params = new URLSearchParams(filters).toString();
-      return App.API.request(`/admin/withdraw-requests${params ? `?${params}` : ''}`);
+      const data = await App.API.request(`/admin/withdraw-requests${this._query(filters)}`);
+      return this._asList(data);
     }
     return App.MockAPI.getAllWithdrawRequests(filters);
   },

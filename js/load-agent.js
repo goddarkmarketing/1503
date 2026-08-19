@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for agent pages — keep before app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-agent\.js.*$/, '');
-  const cache = '20260819a';
+  const cache = '20260819b';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'agent-sidebar-nav-template.js',

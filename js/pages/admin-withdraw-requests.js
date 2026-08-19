@@ -148,9 +148,16 @@
 
   async function load() {
     App.TableUI.showLoading(tbody, 7);
-    requestCache = await App.WithdrawService.getAll({
-      status: filter?.value || undefined
-    });
+    try {
+      requestCache = await App.WithdrawService.getAll({
+        status: filter?.value || undefined
+      });
+    } catch (err) {
+      requestCache = [];
+      App.TableUI.showEmpty(tbody, 7, err.message || 'โหลดรายการไม่สำเร็จ');
+      App.AdminUtils.showToast(err.message || 'โหลดรายการไม่สำเร็จ', 'error');
+      return;
+    }
     if (!requestCache.length) {
       App.TableUI.showEmpty(tbody, 7);
       return;
@@ -190,5 +197,14 @@
   }
 
   filter?.addEventListener('change', load);
-  load();
+
+  function init() {
+    load();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
