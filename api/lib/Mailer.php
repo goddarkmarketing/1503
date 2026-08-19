@@ -70,7 +70,7 @@ final class Mailer
       . '<tr><td style="padding:0 0 8px">'
       . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'
       . $row('เลขที่คำขอ', '<span style="font-family:Consolas,Monaco,monospace">' . $id . '</span>')
-      . $row('นายหน้า', $agentCode . ' — ' . $agentName)
+      . $row('นายหน้า', $agentCode . ' &mdash; ' . $agentName)
       . ($createdAt !== '' ? $row('วันที่ขอ', $createdAt) : '')
       . $row('ธนาคาร', $bank)
       . $row('เลขบัญชี', '<span style="font-family:Consolas,Monaco,monospace;letter-spacing:0.04em">' . $accNo . '</span>')
@@ -85,7 +85,7 @@ final class Mailer
       . '<tr><td style="border-radius:8px;background:#1a7d58">'
       . '<a href="' . $adminUrl . '" target="_blank" rel="noopener" '
       . 'style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px">'
-      . 'เปิดหลังบ้าน — อนุมัติถอนเงิน'
+      . 'เปิดหลังบ้าน &mdash; อนุมัติถอนเงิน'
       . '</a>'
       . '</td></tr>'
       . '</table>'
@@ -140,20 +140,31 @@ final class Mailer
       $from = 'noreply@kladeebroker.co.th';
     }
 
-    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $encodedSubject = self::mimeEncode($subject);
+    $encodedFromName = self::mimeEncode($fromName);
     $headers = [
       'MIME-Version: 1.0',
       'Content-Type: text/html; charset=UTF-8',
-      'From: ' . sprintf('"%s" <%s>', addcslashes($fromName, '"\\'), $from),
+      'Content-Transfer-Encoding: base64',
+      'From: ' . $encodedFromName . ' <' . $from . '>',
       'Reply-To: ' . $from,
       'X-Mailer: KladeeBroker',
     ];
     $headerStr = implode("\r\n", $headers);
+    $body = rtrim(chunk_split(base64_encode($html), 76, "\r\n"));
     $extra = PHP_OS_FAMILY === 'Windows' ? '' : '-f ' . $from;
 
     if ($extra !== '') {
-      return @mail($to, $encodedSubject, $html, $headerStr, $extra);
+      return @mail($to, $encodedSubject, $body, $headerStr, $extra);
     }
-    return @mail($to, $encodedSubject, $html, $headerStr);
+    return @mail($to, $encodedSubject, $body, $headerStr);
+  }
+
+  private static function mimeEncode(string $value): string
+  {
+    if ($value === '' || preg_match('/^[\x20-\x7E]+$/', $value)) {
+      return $value;
+    }
+    return '=?UTF-8?B?' . base64_encode($value) . '?=';
   }
 }
