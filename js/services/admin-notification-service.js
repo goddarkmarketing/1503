@@ -76,6 +76,14 @@ App.AdminNotificationService = {
         counts['credit-requests'] = 0;
       }
     }
+    if (App.Config.USE_REAL_WITHDRAW && App.WithdrawService?.getAll) {
+      try {
+        const pending = await App.WithdrawService.getAll({ status: 'pending' });
+        counts['withdraw-requests'] = Array.isArray(pending) ? pending.length : 0;
+      } catch {
+        counts['withdraw-requests'] = 0;
+      }
+    }
     return counts;
   },
 

@@ -120,6 +120,7 @@
         await App.WithdrawService.create({
           amount,
           bankCode: form.bankCode.value,
+          bankName: App.ThaiBanks?.findByCode(form.bankCode.value)?.name || form.bankCode.value,
           accountNo: form.accountNo.value.trim(),
           accountName: form.accountName.value.trim(),
           note: form.note.value.trim()
@@ -127,7 +128,7 @@
         form.amount.value = '';
         form.note.value = '';
         if (noteCounter) noteCounter.textContent = '0 / 200';
-        setMessage('ส่งคำขอถอนเงินแล้ว รอแอดมินโอนและแนบสลิป', 'success');
+        setMessage('ส่งคำขอถอนเงินแล้ว ระบบแจ้งแอดมินทางอีเมลและหลังบ้านแล้ว', 'success');
         await loadBalance();
         await loadRequests();
       }, { label: 'กำลังส่ง...' });

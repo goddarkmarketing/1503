@@ -18,4 +18,9 @@ return [
     'session_ttl_hours' => 168, // 7 days
     'cors_origin' => '*', // tighten later e.g. https://kladeebroker.co.th
   ],
+  'mail' => [
+    'from' => 'noreply@kladeebroker.co.th',
+    'from_name' => 'Kladee Broker',
+    'withdraw_to' => 'goddarkmarketing@gmail.com',
+  ],
 ];

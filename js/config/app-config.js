@@ -1,8 +1,10 @@
 /**
  * Application configuration
  * - USE_REAL_AUTH: login/me/logout/change-password ใช้ PHP API + MySQL
- * - USE_REAL_AGENTS: จัดการนายหน้าใช้ PHP API + MySQL
+ * - USE_REAL_AGENTS: จัดการนายหน้า + ประวัติวงเงิน/สลิปโอน ใช้ PHP API + MySQL
  * - USE_REAL_ADMIN_USERS: จัดการผู้ดูแลระบบใช้ PHP API + MySQL
+ * - USE_REAL_CREDIT: บัญชีรับโอน + คำขอเติมวงเงิน ใช้ PHP API + MySQL
+ * - USE_REAL_WITHDRAW: คำขอถอนเงิน ใช้ PHP API + MySQL และส่งอีเมลแจ้งแอดมิน
  * - USE_MOCK_API: ฟีเจอร์อื่นยังใช้ mock จนกว่า endpoint จะครบ
  */
 window.App = window.App || {};
@@ -12,6 +14,8 @@ App.Config = {
   USE_REAL_AUTH: true,
   USE_REAL_AGENTS: true,
   USE_REAL_ADMIN_USERS: true,
+  USE_REAL_CREDIT: false,
+  USE_REAL_WITHDRAW: true,
   // Production on Atom/Plesk: '/api/v1'
   // Local XAMPP under /kladeebroker/ is detected automatically
   API_BASE_URL: (() => {
@@ -31,6 +35,7 @@ App.Config = {
   // so there is no "pending -> mark as paid" workflow.
   COMMISSION_PAY_THROUGH_WALLET: true,
   CREDIT_BANK_ACCOUNTS_KEY: 'kladeebroker_credit_bank_accounts',
+  AGENT_PAYOUT_BANK_KEY: 'kladeebroker_agent_payout_bank',
   WHT50_DATA_KEY: 'kladeebroker_wht50_documents',
   WHT50_SETTINGS_KEY: 'kladeebroker_wht50_settings',
   LOGIN_REMEMBER_KEY: 'kladeebroker_login_remember',

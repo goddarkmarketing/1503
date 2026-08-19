@@ -109,8 +109,141 @@ try {
     }
   }
 
+  if ($method === 'GET' && $path === '/credit/bank-accounts') {
+    Auth::requireUser($pdo);
+    $enabledOnly = isset($_GET['enabledOnly']) && $_GET['enabledOnly'] !== '0' && $_GET['enabledOnly'] !== 'false';
+    Response::json(CreditBankAccounts::list($pdo, $enabledOnly));
+  }
+
+  if (($method === 'PUT' || $method === 'POST') && $path === '/credit/bank-accounts') {
+    $admin = Auth::requireAdmin($pdo);
+    $body = api_json_body();
+    $banks = (isset($body['banks']) && is_array($body['banks'])) ? $body['banks'] : $body;
+    Response::json(CreditBankAccounts::replaceAll($pdo, $banks, $admin));
+  }
+
+  if (preg_match('#^/credit-requests/([^/]+)/slip$#', $path, $m)) {
+    if ($method === 'GET') {
+      $user = Auth::requireUser($pdo);
+      CreditRequests::streamSlip($pdo, urldecode($m[1]), $user);
+    }
+  }
+
+  if (preg_match('#^/agents/([^/]+)/credit-requests$#', $path, $m)) {
+    $user = Auth::requireUser($pdo);
+    $agentId = urldecode($m[1]);
+    if (($user['role'] ?? '') === 'agent' && $user['id'] !== $agentId) {
+      Response::error('Forbidden', 403, 'FORBIDDEN');
+    }
+    if ($method === 'GET') {
+      Response::json(CreditRequests::listForAgent($pdo, $agentId, [
+        'period' => (string)($_GET['period'] ?? ''),
+        'periodType' => (string)($_GET['periodType'] ?? 'month'),
+        'status' => (string)($_GET['status'] ?? ''),
+      ]));
+    }
+    if ($method === 'POST') {
+      if (($user['role'] ?? '') !== 'agent' && ($user['role'] ?? '') !== 'admin') {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+      Response::json(CreditRequests::create($pdo, $agentId, api_json_body(), $user), 201);
+    }
+  }
+
+  if ($method === 'GET' && $path === '/admin/credit-requests') {
+    Auth::requireAdmin($pdo);
+    Response::json(CreditRequests::listAll($pdo, [
+      'status' => (string)($_GET['status'] ?? ''),
+    ]));
+  }
+
+  if (preg_match('#^/admin/credit-requests/([^/]+)/(approve|reject)$#', $path, $m)) {
+    if ($method === 'POST') {
+      $admin = Auth::requireAdmin($pdo);
+      Response::json(CreditRequests::review($pdo, urldecode($m[1]), $m[2], $admin));
+    }
+  }
+
+  if (preg_match('#^/withdraw-requests/([^/]+)/slip$#', $path, $m)) {
+    if ($method === 'GET') {
+      $user = Auth::requireUser($pdo);
+      WithdrawRequests::streamSlip($pdo, urldecode($m[1]), $user);
+    }
+  }
+
+  if (preg_match('#^/agents/([^/]+)/withdraw-requests$#', $path, $m)) {
+    $user = Auth::requireUser($pdo);
+    $agentId = urldecode($m[1]);
+    if (($user['role'] ?? '') === 'agent' && $user['id'] !== $agentId) {
+      Response::error('Forbidden', 403, 'FORBIDDEN');
+    }
+    if ($method === 'GET') {
+      Response::json(WithdrawRequests::listForAgent($pdo, $agentId, [
+        'status' => (string)($_GET['status'] ?? ''),
+      ]));
+    }
+    if ($method === 'POST') {
+      if (($user['role'] ?? '') !== 'agent' && ($user['role'] ?? '') !== 'admin') {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+      Response::json(WithdrawRequests::create($pdo, $agentId, api_json_body(), $user), 201);
+    }
+  }
+
+  if ($method === 'GET' && $path === '/admin/withdraw-requests') {
+    Auth::requireAdmin($pdo);
+    Response::json(WithdrawRequests::listAll($pdo, [
+      'status' => (string)($_GET['status'] ?? ''),
+    ]));
+  }
+
+  if (preg_match('#^/admin/withdraw-requests/([^/]+)/(pay|reject)$#', $path, $m)) {
+    if ($method === 'POST') {
+      $admin = Auth::requireAdmin($pdo);
+      Response::json(WithdrawRequests::review($pdo, urldecode($m[1]), $m[2], $admin, api_json_body()));
+    }
+  }
+
+  if ($method === 'GET' && $path === '/credit-ledger') {
+    $user = Auth::requireUser($pdo);
+    if (($user['role'] ?? '') !== 'admin' && ($user['role'] ?? '') !== 'agent') {
+      Response::error('Forbidden', 403, 'FORBIDDEN');
+    }
+    Response::json(CreditLedger::list($pdo, $user, [
+      'agentId' => (string)($_GET['agentId'] ?? ''),
+      'dateFrom' => (string)($_GET['dateFrom'] ?? ''),
+      'dateTo' => (string)($_GET['dateTo'] ?? ''),
+    ]));
+  }
+
+  if (preg_match('#^/credit-ledger/([^/]+)/slip$#', $path, $m)) {
+    if ($method === 'GET') {
+      $user = Auth::requireUser($pdo);
+      CreditLedger::streamSlip($pdo, urldecode($m[1]), $user);
+    }
+  }
+
+  if (preg_match('#^/agents/([^/]+)/credit-ledger$#', $path, $m)) {
+    if ($method === 'GET') {
+      $user = Auth::requireUser($pdo);
+      $agentId = urldecode($m[1]);
+      if (($user['role'] ?? '') === 'agent' && $user['id'] !== $agentId) {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+      if (($user['role'] ?? '') !== 'admin' && ($user['role'] ?? '') !== 'agent') {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+      Response::json(CreditLedger::list($pdo, $user, [
+        'agentId' => $agentId,
+        'dateFrom' => (string)($_GET['dateFrom'] ?? ''),
+        'dateTo' => (string)($_GET['dateTo'] ?? ''),
+      ]));
+    }
+  }
+
   if ($method === 'GET' && $path === '/agents') {
     Auth::requireAdmin($pdo);
+    Agents::ensureDemoAccounts($pdo);
     Response::json(Agents::fetchAll($pdo));
   }
 
@@ -128,7 +261,8 @@ try {
       if ($amount == 0.0) {
         Response::error('จำนวนเงินต้องไม่เป็นศูนย์', 422, 'VALIDATION');
       }
-      Response::json(Agents::adjustBalance($pdo, urldecode($m[1]), $amount, $note, $admin));
+      $slip = CreditLedger::parseSlipPayload($body);
+      Response::json(Agents::adjustBalance($pdo, urldecode($m[1]), $amount, $note, $admin, $slip));
     }
   }
 

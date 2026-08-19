@@ -26,6 +26,158 @@ final class Agents
     return $row ? self::toPublic($row) : null;
   }
 
+  public static function ensureDemoAccounts(PDO $pdo): void
+  {
+    $stmt = $pdo->query(
+      "SELECT code FROM agents WHERE code IN ('Ck1-039','Ag2-112','Ag3-205')"
+    );
+    $have = [];
+    foreach ($stmt->fetchAll() as $row) {
+      $have[$row['code']] = true;
+    }
+    if (isset($have['Ck1-039'], $have['Ag2-112'], $have['Ag3-205'])) {
+      return;
+    }
+
+    $adminStmt = $pdo->query("SELECT id FROM users WHERE username = 'admin' LIMIT 1");
+    if (!$adminStmt->fetch()) {
+      $pdo->prepare(
+        'INSERT INTO users (id, username, password_hash, role, name, email, phone, initials, status)
+         VALUES (\'admin-001\', \'admin\', :hash, \'admin\', \'ผู้ดูแลระบบ\', \'admin@kladeebroker.co.th\', \'02-000-0000\', \'AD\', \'active\')'
+      )->execute([':hash' => password_hash('demo', PASSWORD_DEFAULT)]);
+    }
+
+    $hash = password_hash('demo', PASSWORD_DEFAULT);
+    $ckRates = [
+      'categories' => ['compulsory' => 15, 'voluntary' => 12, 'pa' => 10, 'travel' => 10],
+      'products' => [
+        'compulsory-indara' => 15, 'compulsory-axa' => 12, 'compulsory-bki' => 12,
+        'compulsory-chubb' => 15, 'compulsory-ergo' => 14,
+        'voluntary-indara' => 12, 'voluntary-axa' => 12, 'voluntary-bki' => 12, 'voluntary-chubb' => 15,
+        'pa-axa' => 10, 'pa-bki' => 10, 'travel-axa' => 10, 'travel-bki' => 10,
+      ],
+      'taxWithhold' => [
+        'compulsory-indara' => 3, 'compulsory-axa' => 3, 'compulsory-bki' => 3,
+        'compulsory-chubb' => 3, 'compulsory-ergo' => 3,
+        'voluntary-indara' => 3, 'voluntary-axa' => 3, 'voluntary-bki' => 3, 'voluntary-chubb' => 3,
+        'pa-axa' => 3, 'pa-bki' => 3, 'travel-axa' => 3, 'travel-bki' => 3,
+      ],
+      'taxWithholdEnabled' => [
+        'compulsory-indara' => true, 'compulsory-axa' => true, 'compulsory-bki' => true,
+        'compulsory-chubb' => true, 'compulsory-ergo' => false,
+        'voluntary-indara' => true, 'voluntary-axa' => true, 'voluntary-bki' => true, 'voluntary-chubb' => true,
+        'pa-axa' => true, 'pa-bki' => true, 'travel-axa' => true, 'travel-bki' => true,
+      ],
+    ];
+
+    $demos = [
+      [
+        'id' => 'agent-001',
+        'code' => 'Ck1-039',
+        'name' => 'สมชาย ใจดี',
+        'email' => 'ck1039@example.com',
+        'phone' => '081-234-5678',
+        'initials' => 'CK',
+        'balance' => 34531.73,
+        'creditLimit' => 50000,
+        'parentCode' => null,
+        'featurePermissions' => null,
+        'commissionRates' => $ckRates,
+      ],
+      [
+        'id' => 'agent-002',
+        'code' => 'Ag2-112',
+        'name' => 'วิไล รักษ์ดี (ทดลองจำกัดสิทธิ์)',
+        'email' => 'ag2112@example.com',
+        'phone' => '082-345-6789',
+        'initials' => 'WR',
+        'balance' => 12890.50,
+        'creditLimit' => 30000,
+        'parentCode' => 'Ck1-039',
+        'featurePermissions' => [
+          'receipt-issue' => false,
+          'receipt-inquiry' => false,
+          'reports-monthly' => false,
+          'compulsory-bki' => false,
+          'travel-axa' => false,
+        ],
+        'commissionRates' => ['indara' => 10, 'axa' => 10, 'bki' => 10, 'chubb' => 12, 'ergo' => 12],
+      ],
+      [
+        'id' => 'agent-003',
+        'code' => 'Ag3-205',
+        'name' => 'ประเสริฐ มั่นคง (ทดลอง)',
+        'email' => 'ag3205@example.com',
+        'phone' => '089-111-2233',
+        'initials' => 'PT',
+        'balance' => 5200.00,
+        'creditLimit' => 20000,
+        'parentCode' => 'Ck1-039',
+        'featurePermissions' => [
+          'receipt-issue' => true,
+          'receipt-inquiry' => true,
+          'receipt-summary' => false,
+          'receipt-detail' => false,
+          'reports-daily-policies' => false,
+          'reports-daily-summary' => true,
+          'reports-monthly' => false,
+          'reports-team' => false,
+          'commission' => false,
+          'credit' => true,
+        ],
+        'commissionRates' => ['indara' => 12, 'axa' => 11, 'bki' => 11, 'chubb' => 13, 'ergo' => 13],
+      ],
+    ];
+
+    foreach ($demos as $demo) {
+      if (isset($have[$demo['code']])) {
+        continue;
+      }
+      $taken = $pdo->prepare('SELECT id FROM users WHERE username = :username OR id = :id LIMIT 1');
+      $taken->execute([':username' => $demo['code'], ':id' => $demo['id']]);
+      if ($taken->fetch()) {
+        continue;
+      }
+
+      $parentId = null;
+      if ($demo['parentCode']) {
+        $parent = $pdo->prepare('SELECT id FROM agents WHERE code = :code LIMIT 1');
+        $parent->execute([':code' => $demo['parentCode']]);
+        $parentRow = $parent->fetch();
+        $parentId = $parentRow['id'] ?? null;
+      }
+
+      $pdo->prepare(
+        'INSERT INTO users (id, username, password_hash, role, name, email, phone, initials, status)
+         VALUES (:id, :username, :password_hash, \'agent\', :name, :email, :phone, :initials, \'active\')'
+      )->execute([
+        ':id' => $demo['id'],
+        ':username' => $demo['code'],
+        ':password_hash' => $hash,
+        ':name' => $demo['name'],
+        ':email' => $demo['email'],
+        ':phone' => $demo['phone'],
+        ':initials' => $demo['initials'],
+      ]);
+
+      $pdo->prepare(
+        'INSERT INTO agents (id, user_id, code, balance, credit_limit, parent_id, feature_permissions, commission_rates, status)
+         VALUES (:id, :user_id, :code, :balance, :credit_limit, :parent_id, :feature_permissions, :commission_rates, \'active\')'
+      )->execute([
+        ':id' => $demo['id'],
+        ':user_id' => $demo['id'],
+        ':code' => $demo['code'],
+        ':balance' => $demo['balance'],
+        ':credit_limit' => $demo['creditLimit'],
+        ':parent_id' => $parentId,
+        ':feature_permissions' => $demo['featurePermissions'] === null
+          ? null
+          : json_encode($demo['featurePermissions'], JSON_UNESCAPED_UNICODE),
+        ':commission_rates' => json_encode($demo['commissionRates'], JSON_UNESCAPED_UNICODE),
+      ]);
+    }
+  }
+
   public static function toPublic(array $row): array
   {
     return [
@@ -94,6 +246,8 @@ final class Agents
       ? json_encode($body['commissionRates'], JSON_UNESCAPED_UNICODE)
       : null;
 
+    CreditLedger::ensureTable($pdo);
+
     $pdo->beginTransaction();
     try {
       $pdo->prepare(
@@ -122,6 +276,17 @@ final class Agents
         ':feature_permissions' => $featurePermissions,
         ':commission_rates' => $commissionRates,
       ]);
+
+      if ($initialBalance > 0) {
+        CreditLedger::record(
+          $pdo,
+          $id,
+          $initialBalance,
+          $initialBalance,
+          'วงเงินเริ่มต้น',
+          $actor
+        );
+      }
 
       $pdo->commit();
     } catch (Throwable $e) {
@@ -283,28 +448,55 @@ final class Agents
     return $agent;
   }
 
-  public static function adjustBalance(PDO $pdo, string $agentId, float $amount, string $note, ?array $actor): array
+  public static function adjustBalance(PDO $pdo, string $agentId, float $amount, string $note, ?array $actor, array $slip = []): array
   {
     $agentRow = self::rawAgent($pdo, $agentId);
     if (!$agentRow) {
       Response::error('ไม่พบนายหน้า', 404, 'NOT_FOUND');
     }
 
+    if ($amount < 0 && empty($slip['dataUrl']) && empty($slip['slipDataUrl'])) {
+      Response::error('กรุณาแนบหลักฐานการโอนเงิน', 422, 'VALIDATION');
+    }
+    if ($amount < 0 && $note === '') {
+      $note = 'โอนเงินให้นายหน้า';
+    }
+
+    CreditLedger::ensureTable($pdo);
+
     $prev = (float)$agentRow['balance'];
     $next = max(0, round($prev + $amount, 2));
-    $pdo->prepare('UPDATE agents SET balance = :balance WHERE id = :id')
-      ->execute([':balance' => $next, ':id' => $agentId]);
 
-    Auth::audit(
-      $pdo,
-      'balance_adjust',
-      'ปรับวงเงิน',
-      $actor,
-      ($amount >= 0 ? 'เติม' : 'หัก') . ' ' . $agentRow['code'] . ' ' .
-      ($amount >= 0 ? '+' : '') . number_format($amount, 2) .
-      ' บาท (ยอดก่อน ' . number_format($prev, 2) . ')' .
-      ($note !== '' ? " — {$note}" : '')
-    );
+    $ownTx = !$pdo->inTransaction();
+    if ($ownTx) {
+      $pdo->beginTransaction();
+    }
+    try {
+      $pdo->prepare('UPDATE agents SET balance = :balance WHERE id = :id')
+        ->execute([':balance' => $next, ':id' => $agentId]);
+
+      $entry = CreditLedger::record($pdo, $agentId, $amount, $next, $note, $actor, $slip);
+
+      Auth::audit(
+        $pdo,
+        'balance_adjust',
+        $amount >= 0 ? 'ปรับวงเงิน' : 'โอนเงินให้นายหน้า',
+        $actor,
+        ($amount >= 0 ? 'เติม' : 'หัก') . ' ' . $agentRow['code'] . ' ' .
+        ($amount >= 0 ? '+' : '') . number_format($amount, 2) .
+        ' บาท (ยอดก่อน ' . number_format($prev, 2) . ')' .
+        ($note !== '' ? " — {$note}" : '')
+      );
+
+      if ($ownTx) {
+        $pdo->commit();
+      }
+    } catch (Throwable $e) {
+      if ($ownTx && $pdo->inTransaction()) {
+        $pdo->rollBack();
+      }
+      throw $e;
+    }
 
     return [
       'agentId' => $agentId,
@@ -312,6 +504,7 @@ final class Agents
       'adjustment' => $amount,
       'note' => $note,
       'currency' => 'THB',
+      'ledger' => $entry,
     ];
   }
 

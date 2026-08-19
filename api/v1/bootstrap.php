@@ -21,6 +21,11 @@ require_once $apiRoot . '/lib/Response.php';
 require_once $apiRoot . '/lib/Auth.php';
 require_once $apiRoot . '/lib/Agents.php';
 require_once $apiRoot . '/lib/AdminUsers.php';
+require_once $apiRoot . '/lib/CreditLedger.php';
+require_once $apiRoot . '/lib/CreditBankAccounts.php';
+require_once $apiRoot . '/lib/CreditRequests.php';
+require_once $apiRoot . '/lib/Mailer.php';
+require_once $apiRoot . '/lib/WithdrawRequests.php';
 
 function api_json_body(): array
 {

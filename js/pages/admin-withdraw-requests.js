@@ -43,7 +43,7 @@
                 <div><dt>สถานะ</dt><dd><span class="status-pill ${pillClass(req.status)}">${statusLabel(req.status)}</span></dd></div>
                 <div><dt>หมายเหตุ</dt><dd>${escapeHtml(req.note || '-')}</dd></div>
               </dl>
-              ${isPending && Number(req.amount) > Number(req.commissionAvailable || 0)
+              ${isPending && req.commissionAvailable != null && Number(req.amount) > Number(req.commissionAvailable)
                 ? '<p class="admin-hint" style="color:var(--accent-red);margin:12px 0 0">ยอดนี้เกินค่าคอมที่ถอนได้ — ไม่สามารถบันทึกว่าโอนแล้ว</p>'
                 : ''}
             </div>
