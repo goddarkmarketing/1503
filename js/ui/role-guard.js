@@ -51,10 +51,6 @@ App.RoleGuard = {
       if (!permOk) return false;
     }
 
-    if (requiredRole === 'agent' && App.AgentOnboarding) {
-      return App.AgentOnboarding.enforce({ basePath: base });
-    }
-
     return true;
   }
 };

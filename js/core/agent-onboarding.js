@@ -111,8 +111,18 @@ App.AgentOnboarding = {
     const style = document.createElement('style');
     style.id = 'identity-gate-css';
     style.textContent = `
-      .identity-gate-overlay{position:fixed;inset:0;z-index:20000;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px}
-      .identity-gate-dialog{width:min(480px,100%);background:#fff;border-radius:16px;padding:28px 24px;text-align:center;box-shadow:0 24px 64px rgba(15,23,42,.35)}
+      .identity-gate-overlay{
+        position:fixed;inset:0;z-index:20000;
+        display:flex;align-items:center;justify-content:center;padding:20px;
+        background:rgba(241,245,249,.35);
+        backdrop-filter:blur(12px);
+        -webkit-backdrop-filter:blur(12px);
+      }
+      .identity-gate-dialog{
+        width:min(480px,100%);background:#fff;border-radius:16px;padding:28px 24px;text-align:center;
+        box-shadow:0 24px 64px rgba(15,23,42,.22);
+        border:1px solid rgba(255,255,255,.85);
+      }
       .identity-gate-icon{font-size:2rem;margin-bottom:8px}
       .identity-gate-dialog h2{margin:0 0 10px;font-size:1.25rem;color:#0f172a}
       .identity-gate-lead{margin:0 0 16px;color:#64748b;font-size:.95rem;line-height:1.55}

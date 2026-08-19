@@ -184,6 +184,12 @@ App.Shell = {
   },
 
   async _bindCommissionPill() {
+    const user = App.AuthService.getCurrentUser();
+    if (App.AgentOnboarding?.needsVerification?.(user)) {
+      document.querySelector('.commission-pill')?.remove();
+      return;
+    }
+
     const header = document.querySelector('.top-header');
     if (!header || header.querySelector('.commission-pill')) return;
 

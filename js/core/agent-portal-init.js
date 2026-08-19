@@ -23,9 +23,6 @@
 
     if (!App.RoleGuard.enforce('agent', { basePath })) return;
 
-    const canProceed = App.AgentOnboarding.enforce({ basePath });
-    if (!canProceed) return;
-
     if (App.Shell && !window.__shellInitialized) {
       window.__shellInitialized = true;
       await App.Shell.init({
@@ -33,5 +30,7 @@
         profilePath: App.Paths.agentProfile(basePath)
       });
     }
+
+    App.AgentOnboarding.enforce({ basePath });
   });
 })();
