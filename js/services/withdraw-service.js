@@ -13,8 +13,35 @@ App.WithdrawService = {
     return App.API.request(`/agents/${encodeURIComponent(agentId)}/payout-bank`);
   },
 
+  _roundMoney(n) {
+    return Math.round((Number(n) || 0) * 100) / 100;
+  },
+
+  _computeBalance(earned, requests) {
+    const sum = (status) => this._roundMoney(
+      (requests || []).filter((r) => r.status === status).reduce((s, r) => s + (Number(r.amount) || 0), 0)
+    );
+    const pending = sum('pending');
+    const paid = sum('paid');
+    const totalEarned = this._roundMoney(earned);
+    return {
+      earned: totalEarned,
+      pending,
+      paid,
+      available: this._roundMoney(Math.max(0, totalEarned - pending - paid))
+    };
+  },
+
   async getBalance() {
     const agentId = App.Session.getAgentId();
+    if (this._useRealWithdraw()) {
+      const requests = await this.getRequests();
+      if (App.Config.USE_MOCK_API) {
+        const mock = await App.MockAPI.getWithdrawBalance(agentId);
+        return this._computeBalance(mock.earned, requests);
+      }
+      return App.API.request(`/agents/${encodeURIComponent(agentId)}/withdraw-balance`);
+    }
     if (App.Config.USE_MOCK_API) {
       return App.MockAPI.getWithdrawBalance(agentId);
     }
