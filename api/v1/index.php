@@ -204,6 +204,53 @@ try {
     }
   }
 
+  if (preg_match('#^/agents/([^/]+)/team-members$#', $path, $m)) {
+    $user = Auth::requireUser($pdo);
+    $agentId = urldecode($m[1]);
+    if (($user['role'] ?? '') === 'agent' && ($user['id'] ?? '') !== $agentId) {
+      Response::error('Forbidden', 403, 'FORBIDDEN');
+    }
+    if ($method === 'GET') {
+      Response::json(AgentRegistrationRequests::listTeamMembers($pdo, $agentId));
+    }
+  }
+
+  if (preg_match('#^/agents/([^/]+)/agent-registration-requests$#', $path, $m)) {
+    $user = Auth::requireUser($pdo);
+    $agentId = urldecode($m[1]);
+    if (($user['role'] ?? '') === 'agent' && ($user['id'] ?? '') !== $agentId) {
+      Response::error('Forbidden', 403, 'FORBIDDEN');
+    }
+    if ($method === 'GET') {
+      Response::json(AgentRegistrationRequests::listForAgent($pdo, $agentId, [
+        'status' => (string)($_GET['status'] ?? ''),
+      ]));
+    }
+    if ($method === 'POST') {
+      if (($user['role'] ?? '') !== 'agent' && ($user['role'] ?? '') !== 'admin') {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+      Response::json(
+        AgentRegistrationRequests::create($pdo, $agentId, api_json_body(), $user),
+        201
+      );
+    }
+  }
+
+  if ($method === 'GET' && $path === '/admin/agent-registration-requests') {
+    Auth::requireAdmin($pdo);
+    Response::json(AgentRegistrationRequests::listAll($pdo, [
+      'status' => (string)($_GET['status'] ?? ''),
+    ]));
+  }
+
+  if (preg_match('#^/admin/agent-registration-requests/([^/]+)/(approve|reject)$#', $path, $m)) {
+    if ($method === 'POST') {
+      $admin = Auth::requireAdmin($pdo);
+      Response::json(AgentRegistrationRequests::review($pdo, urldecode($m[1]), $m[2], $admin, api_json_body()));
+    }
+  }
+
   if ($method === 'GET' && $path === '/credit-ledger') {
     $user = Auth::requireUser($pdo);
     if (($user['role'] ?? '') !== 'admin' && ($user['role'] ?? '') !== 'agent') {

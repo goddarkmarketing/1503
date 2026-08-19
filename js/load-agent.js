@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for agent pages — keep before app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-agent\.js.*$/, '');
-  const cache = '20260819c';
+  const cache = '20260819d';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'agent-sidebar-nav-template.js',
@@ -21,6 +21,7 @@
     'services/commission-service.js',
     'services/credit-service.js',
     'services/withdraw-service.js',
+    'services/agent-registration-service.js',
     'services/wht50-service.js',
     'utils/wht50-document.js',
     'utils/credit-slip.js',

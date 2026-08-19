@@ -10,7 +10,8 @@ App.API = {
       || !!App.Config.USE_REAL_AGENTS
       || !!App.Config.USE_REAL_ADMIN_USERS
       || !!App.Config.USE_REAL_CREDIT
-      || !!App.Config.USE_REAL_WITHDRAW;
+      || !!App.Config.USE_REAL_WITHDRAW
+      || !!App.Config.USE_REAL_AGENT_REQUESTS;
   },
 
   _headers(options = {}, { json = true } = {}) {

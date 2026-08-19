@@ -900,6 +900,7 @@ App.MockAPI = {
     const pendingPolicies = App.MockData.policies.filter((p) => p.status === 'pending').length;
     const pendingCreditRequests = App.MockData.creditRequests.filter((r) => r.status === 'pending').length;
     const pendingWithdrawRequests = (App.MockData.withdrawRequests || []).filter((r) => r.status === 'pending').length;
+    const pendingAgentRequests = (App.MockData.agentRegistrationRequests || []).filter((r) => r.status === 'pending').length;
     const todayStr = new Date().toISOString().slice(0, 10);
     const expiringPolicies = App.MockData.policies.filter((p) => {
       if (!p.expiresAt) return false;
@@ -916,6 +917,7 @@ App.MockAPI = {
       renew: expiringPolicies,
       'credit-requests': pendingCreditRequests,
       'withdraw-requests': pendingWithdrawRequests,
+      'agent-requests': pendingAgentRequests,
       commission: pendingCommissions
     };
   },
@@ -1104,6 +1106,97 @@ App.MockAPI = {
     };
     list.push(member);
     return { ...member };
+  },
+
+  async getAgentRegistrationRequests(agentId, { status } = {}) {
+    await this._delay();
+    if (!Array.isArray(App.MockData.agentRegistrationRequests)) {
+      App.MockData.agentRegistrationRequests = [];
+    }
+    let list = App.MockData.agentRegistrationRequests.filter((r) => r.requesterAgentId === agentId);
+    if (status) list = list.filter((r) => r.status === status);
+    return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async getAllAgentRegistrationRequests({ status } = {}) {
+    await this._delay();
+    if (!Array.isArray(App.MockData.agentRegistrationRequests)) {
+      App.MockData.agentRegistrationRequests = [];
+    }
+    let list = [...App.MockData.agentRegistrationRequests];
+    if (status) list = list.filter((r) => r.status === status);
+    return list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async createAgentRegistrationRequest(agentId, payload = {}) {
+    await this._delay();
+    if (!Array.isArray(App.MockData.agentRegistrationRequests)) {
+      App.MockData.agentRegistrationRequests = [];
+    }
+    const agent = App.MockData.agents.find((a) => a.id === agentId);
+    if (!agent) throw new Error('ไม่พบนายหน้า');
+    const name = String(payload.name || '').trim();
+    if (!name) throw new Error('กรุณากรอกชื่อ-นามสกุล');
+    const pending = App.MockData.agentRegistrationRequests.some(
+      (r) => r.requesterAgentId === agentId && r.status === 'pending'
+    );
+    if (pending) throw new Error('มีคำขอที่รอแอดมินอยู่แล้ว กรุณารอดำเนินการก่อน');
+    const entry = {
+      id: `AR-${String(App.MockData.agentRegistrationRequests.length + 1).padStart(3, '0')}`,
+      kind: 'request',
+      requesterAgentId: agentId,
+      requesterCode: agent.code,
+      requesterName: agent.name,
+      name,
+      phone: payload.phone || '-',
+      idCard: payload.idCard || '-',
+      birthDate: payload.birthDate || '-',
+      email: payload.email || '-',
+      address: payload.address || '-',
+      status: 'pending',
+      createdAgentId: null,
+      createdAgentCode: null,
+      adminNote: null,
+      createdAt: new Date().toISOString(),
+      reviewedAt: null,
+      reviewedByName: null
+    };
+    App.MockData.agentRegistrationRequests.unshift(entry);
+    this._logAudit('agent_registration_request', 'ขอเพิ่มตัวแทน', `${agent.code} ขอเพิ่ม ${name}`);
+    return { ...entry };
+  },
+
+  async reviewAgentRegistrationRequest(requestId, action, extra = {}) {
+    await this._delay();
+    const req = (App.MockData.agentRegistrationRequests || []).find((r) => r.id === requestId);
+    if (!req) throw new Error('ไม่พบคำขอ');
+    if (req.status !== 'pending') throw new Error('คำขอนี้ดำเนินการแล้ว');
+    if (action === 'reject') {
+      req.status = 'rejected';
+      req.adminNote = extra.adminNote || extra.note || null;
+      req.reviewedAt = new Date().toISOString();
+      req.reviewedByName = this._actor()?.name || 'Admin';
+      return { ...req };
+    }
+    if (action !== 'approve') throw new Error('การดำเนินการไม่ถูกต้อง');
+    const created = await this.createAgent({
+      code: extra.code,
+      name: extra.name || req.name,
+      email: extra.email || req.email,
+      phone: extra.phone || req.phone,
+      password: extra.password || 'demo',
+      initialBalance: extra.initialBalance || 0,
+      creditLimit: extra.creditLimit || 50000,
+      parentId: extra.parentId || req.requesterAgentId,
+      featurePermissions: extra.featurePermissions,
+      commissionRates: extra.commissionRates
+    });
+    req.status = 'approved';
+    req.createdAgentId = created.id;
+    req.createdAgentCode = created.code;
+    req.reviewedAt = new Date().toISOString();
+    req.reviewedByName = this._actor()?.name || 'Admin';
+    return { ...req, createdAgent: created };
   },
 
   async getRenewals(agentId) {

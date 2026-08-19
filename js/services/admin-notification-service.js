@@ -37,6 +37,14 @@ App.AdminNotificationService = {
       href: 'admin/withdraw-requests'
     },
     {
+      id: 'admin-agent-requests',
+      key: 'agent-requests',
+      type: 'agent',
+      title: 'ขอเพิ่มตัวแทน',
+      message: (n) => `มีคำขอเพิ่มตัวแทนรออนุมัติ ${n} รายการ`,
+      href: 'admin/agent-requests'
+    },
+    {
       id: 'admin-commission',
       key: 'commission',
       type: 'commission',
@@ -82,6 +90,14 @@ App.AdminNotificationService = {
         counts['withdraw-requests'] = Array.isArray(pending) ? pending.length : 0;
       } catch {
         counts['withdraw-requests'] = 0;
+      }
+    }
+    if (App.Config.USE_REAL_AGENT_REQUESTS && App.AgentRegistrationService?.getAll) {
+      try {
+        const pending = await App.AgentRegistrationService.getAll({ status: 'pending' });
+        counts['agent-requests'] = Array.isArray(pending) ? pending.length : 0;
+      } catch {
+        counts['agent-requests'] = 0;
       }
     }
     return counts;

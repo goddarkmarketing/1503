@@ -17,13 +17,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
   await loadTeam();
+  await updateAddButtonState();
 });
+
+async function updateAddButtonState() {
+  const btn = document.getElementById('btnAddMember');
+  if (!btn || !App.TeamService?.hasPendingRequest) return;
+  const hasPending = await App.TeamService.hasPendingRequest();
+  btn.disabled = hasPending;
+  btn.title = hasPending ? 'มีคำขอที่รอแอดมินอยู่แล้ว' : '';
+}
 
 async function loadTeam() {
   const tbody = document.getElementById('teamTableBody');
   App.TableUI.showLoading(tbody, 7);
   teamCache = await App.TeamService.getMembers();
   applySearch();
+  await updateAddButtonState();
+}
+
+function memberStatusLabel(m) {
+  if (m.kind === 'request') {
+    return { pending: 'รอแอดมิน', rejected: 'ปฏิเสธ', approved: 'อนุมัติแล้ว' }[m.status] || m.status;
+  }
+  return m.status === 'active' ? 'ใช้งาน' : 'ระงับ';
+}
+
+function memberStatusClass(m) {
+  if (m.kind === 'request') {
+    if (m.status === 'pending') return 'pending';
+    if (m.status === 'rejected') return 'rejected';
+    return m.status;
+  }
+  return m.status;
 }
 
 function applySearch() {
@@ -70,12 +96,14 @@ function renderTeamTable() {
       <td>${escapeHtml(m.phone || '-')}</td>
       <td class="col-money">${formatMoney(m.balance)}</td>
       <td class="col-status">
-        <span class="status-pill ${m.status}">${m.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</span>
+        <span class="status-pill ${memberStatusClass(m)}">${memberStatusLabel(m)}</span>
       </td>
       <td>
-        <button type="button" class="btn-secondary btn-sm btn-edit-member" data-id="${m.id}" title="แก้ไข">
-          <i data-lucide="pencil"></i> Edit
-        </button>
+        ${m.kind === 'request'
+          ? '<span class="admin-hint">รอแอดมิน</span>'
+          : `<button type="button" class="btn-secondary btn-sm btn-edit-member" data-id="${m.id}" title="แก้ไข">
+              <i data-lucide="pencil"></i> Edit
+            </button>`}
       </td>
     </tr>
   `).join('');
@@ -129,6 +157,7 @@ function renderTeamPagination(pg) {
 function openMemberModal(memberId) {
   const isEdit = !!memberId;
   const member = isEdit ? teamCache.find((m) => m.id === memberId) : null;
+  if (isEdit && member?.kind === 'request') return;
 
   document.getElementById('teamMemberModal')?.remove();
 
@@ -138,13 +167,14 @@ function openMemberModal(memberId) {
   overlay.innerHTML = `
     <div class="team-modal" role="dialog" aria-modal="true" aria-labelledby="teamModalTitle">
       <header class="team-modal__header">
-        <h2 class="team-modal__title" id="teamModalTitle">เพิ่มข้อมูลใหม่</h2>
+        <h2 class="team-modal__title" id="teamModalTitle">${isEdit ? 'แก้ไขข้อมูลตัวแทน' : 'ส่งคำขอเพิ่มตัวแทน'}</h2>
         <button type="button" class="team-modal__close" aria-label="ปิด">&times;</button>
       </header>
       <div class="team-modal__tabs">
         <span class="team-modal__tab is-active">ข้อมูลทั่วไป</span>
       </div>
       <div class="team-modal__body">
+        ${isEdit ? '' : '<p class="admin-hint" style="margin:0 0 16px">กรอกข้อมูลเบื้องต้น ระบบจะแจ้งแอดมินเพื่อตั้งรหัส ค่าคอม และสิทธิ์ก่อนเปิดใช้งาน</p>'}
         <form id="teamMemberForm" novalidate>
           <div class="team-form-row">
             <label for="memberName">ชื่อ-นามสกุล</label>
@@ -173,7 +203,7 @@ function openMemberModal(memberId) {
         </form>
       </div>
       <footer class="team-modal__footer">
-        <button type="button" class="btn-primary" id="teamModalSubmit">บันทึก</button>
+        <button type="button" class="btn-primary" id="teamModalSubmit">${isEdit ? 'บันทึก' : 'ส่งคำขอ'}</button>
         <button type="button" class="btn-secondary" id="teamModalCancel">ยกเลิก</button>
       </footer>
     </div>
@@ -209,6 +239,7 @@ function openMemberModal(memberId) {
         await App.TeamService.updateMember(memberId, payload);
       } else {
         await App.TeamService.addMember(payload);
+        alert('ส่งคำขอแล้ว แอดมินจะตั้งค่าบัญชีและแจ้งกลับเมื่อเปิดใช้งานได้');
       }
       close();
       await loadTeam();

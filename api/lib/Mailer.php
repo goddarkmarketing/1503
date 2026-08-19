@@ -10,6 +10,16 @@ final class Mailer
     return $to !== '' ? $to : 'goddarkmarketing@gmail.com';
   }
 
+  public static function agentRequestNotifyTo(): string
+  {
+    $config = Auth::config();
+    $to = trim((string)($config['mail']['agent_request_to'] ?? ''));
+    if ($to !== '') {
+      return $to;
+    }
+    return self::withdrawNotifyTo();
+  }
+
   public static function adminBaseUrl(): string
   {
     $config = Auth::config();
@@ -103,6 +113,84 @@ final class Mailer
       . '</p>'
       . '</td></tr>'
 
+      . '</table>'
+      . '</td></tr></table>'
+      . '</body></html>';
+  }
+
+  /** HTML email for new agent registration request from team leader. */
+  public static function agentRegistrationRequestHtml(array $data): string
+  {
+    $id = self::e((string)($data['id'] ?? ''));
+    $requesterCode = self::e((string)($data['requesterCode'] ?? ''));
+    $requesterName = self::e((string)($data['requesterName'] ?? ''));
+    $name = self::e((string)($data['name'] ?? ''));
+    $phone = self::e((string)($data['phone'] ?? '-'));
+    $email = self::e((string)($data['email'] ?? '-'));
+    $idCard = self::e((string)($data['idCard'] ?? '-'));
+    $birthDate = self::e((string)($data['birthDate'] ?? '-'));
+    $address = self::e(trim((string)($data['address'] ?? '')) !== '' ? (string)$data['address'] : '-');
+    $createdAt = self::formatDateTime((string)($data['createdAt'] ?? ''));
+    $adminUrl = self::e(self::adminBaseUrl() . '/admin/agent-requests');
+
+    $row = static function (string $label, string $value): string {
+      return '<tr>'
+        . '<td style="padding:12px 16px;width:34%;background:#ffffff;border-bottom:1px solid #e8edf2;color:#64748b;font-size:14px;vertical-align:top">'
+        . self::e($label)
+        . '</td>'
+        . '<td style="padding:12px 16px;background:#ffffff;border-bottom:1px solid #e8edf2;color:#0f172a;font-size:14px;vertical-align:top">'
+        . $value
+        . '</td>'
+        . '</tr>';
+    };
+
+    return '<!DOCTYPE html>'
+      . '<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+      . '<body style="margin:0;padding:0;background:#f1f5f9;font-family:\'Segoe UI\',Tahoma,Arial,sans-serif;color:#0f172a">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 12px">'
+      . '<tr><td align="center">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">'
+      . '<tr><td style="background:#1a7d58;padding:22px 24px">'
+      . '<p style="margin:0 0 4px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.85)">Kladee Broker</p>'
+      . '<h1 style="margin:0;font-size:20px;font-weight:700;color:#ffffff;line-height:1.35">คำขอเพิ่มตัวแทนใหม่</h1>'
+      . '<p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.92)">นายหน้าแจ้งข้อมูลตัวแทนใหม่ รอแอดมินตั้งค่าบัญชี คอม และสิทธิ์</p>'
+      . '</td></tr>'
+      . '<tr><td style="padding:20px 24px 8px;text-align:center;background:#f8fafc;border-bottom:1px solid #e8edf2">'
+      . '<p style="margin:0 0 4px;font-size:13px;color:#64748b">ชื่อตัวแทนที่ขอเพิ่ม</p>'
+      . '<p style="margin:0;font-size:28px;font-weight:700;color:#1a7d58;line-height:1.2">' . $name . '</p>'
+      . '</td></tr>'
+      . '<tr><td style="padding:0 0 8px">'
+      . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">'
+      . $row('เลขที่คำขอ', '<span style="font-family:Consolas,Monaco,monospace">' . $id . '</span>')
+      . $row('นายหน้าผู้แจ้ง', $requesterCode . ' &mdash; ' . $requesterName)
+      . ($createdAt !== '' ? $row('วันที่ขอ', $createdAt) : '')
+      . $row('เบอร์โทร', $phone)
+      . $row('อีเมล', $email)
+      . $row('เลขบัตรประชาชน', $idCard)
+      . $row('วันเกิด', $birthDate)
+      . $row('ที่อยู่', nl2br($address))
+      . '</table>'
+      . '</td></tr>'
+      . '<tr><td style="padding:8px 24px 28px;text-align:center">'
+      . '<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">'
+      . '<tr><td style="border-radius:8px;background:#1a7d58">'
+      . '<a href="' . $adminUrl . '" target="_blank" rel="noopener" '
+      . 'style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px">'
+      . 'เปิดหลังบ้าน &mdash; อนุมัติเพิ่มตัวแทน'
+      . '</a>'
+      . '</td></tr>'
+      . '</table>'
+      . '<p style="margin:16px 0 0;font-size:12px;color:#94a3b8;line-height:1.5">'
+      . 'หากปุ่มกดไม่ได้ คัดลอกลิงก์นี้:<br>'
+      . '<a href="' . $adminUrl . '" style="color:#1a7d58;word-break:break-all">' . $adminUrl . '</a>'
+      . '</p>'
+      . '</td></tr>'
+      . '<tr><td style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e8edf2;text-align:center">'
+      . '<p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.5">'
+      . 'อีเมลนี้ส่งอัตโนมัติจากระบบ กล้าดีโบรคเกอร์<br>'
+      . 'กรุณาตั้งรหัสนายหน้า ค่าคอม และสิทธิ์เมนูก่อนเปิดใช้งาน'
+      . '</p>'
+      . '</td></tr>'
       . '</table>'
       . '</td></tr></table>'
       . '</body></html>';
