@@ -32,7 +32,7 @@ function shell(opts) {
   <link rel="stylesheet" href="${base}css/style.css">
   <link rel="stylesheet" href="${base}css/admin.css">
   <link rel="stylesheet" href="${base}css/portal.css">${cssReport}
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="${base}js/vendor/lucide.min.js"></script>
 </head>
 <body data-portal="admin" data-base-path="${base}"${bodyAttrs ? ` ${bodyAttrs}` : ''}>
   <div class="app">

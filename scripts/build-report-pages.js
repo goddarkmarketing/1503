@@ -51,7 +51,7 @@ function shell(main) {
   <link rel="stylesheet" href="../../css/admin.css">
   <link rel="stylesheet" href="../../css/portal.css">
   <link rel="stylesheet" href="../../css/agent-report.css">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../../js/vendor/lucide.min.js"></script>
 </head>
 <body data-base-path="../../" data-report-type="${main.reportType}">
   <div class="app">

@@ -231,7 +231,6 @@ function initRevenueChart() {
         },
         y: {
           beginAtZero: true,
-          max: 70000,
           grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
           ticks: {
             font: { family: 'Better Together', size: 12 },
@@ -261,14 +260,18 @@ async function initAdminDashboard() {
   if (!document.querySelector('.summary-cards')) return;
 
   const load = async (date) => {
-    const data = await App.ReportService.getAdminDashboard(date);
-    const cards = document.querySelectorAll('.stat-card .stat-value');
-    if (cards[0]) cards[0].textContent = App.Shell.formatCurrency(data.summary.prb);
-    if (cards[1]) cards[1].textContent = App.Shell.formatCurrency(data.summary.voluntary);
-    if (cards[2]) cards[2].textContent = App.Shell.formatCurrency(data.summary.total);
+    try {
+      const data = await App.ReportService.getAdminDashboard(date);
+      const cards = document.querySelectorAll('.stat-card .stat-value');
+      if (cards[0]) cards[0].textContent = App.Shell.formatCurrency(data.summary.prb);
+      if (cards[1]) cards[1].textContent = App.Shell.formatCurrency(data.summary.voluntary);
+      if (cards[2]) cards[2].textContent = App.Shell.formatCurrency(data.summary.total);
 
-    chartData.prb = data.charts.prb;
-    chartData.voluntary = data.charts.voluntary;
+      chartData.prb = data?.charts?.prb || { labels: [], values: [] };
+      chartData.voluntary = data?.charts?.voluntary || { labels: [], values: [] };
+    } catch (err) {
+      console.warn('Admin dashboard data failed', err);
+    }
 
     if (!revenueChart) initRevenueChart();
     else {

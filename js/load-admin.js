@@ -1,9 +1,11 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
-  const cache = '20260819e';
+  const cache = '20260819k';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
+    'vendor/lucide.min.js',
+    'vendor/chart.umd.min.js',
     'admin-sidebar-nav-template.js',
     'config/app-config.js',
     'mock/data.js',

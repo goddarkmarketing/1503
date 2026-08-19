@@ -28,7 +28,7 @@ function pageHtml({ product, title }) {
   <link rel="stylesheet" href="../css/portal.css">
   <link rel="stylesheet" href="../css/admin.css">
   <link rel="stylesheet" href="../css/product-key.css">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../js/vendor/lucide.min.js"></script>
 </head>
 <body data-base-path="../" data-product="${product}">
   <div class="app form-page">

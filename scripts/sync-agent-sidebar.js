@@ -80,7 +80,7 @@ function syncFile(relPath) {
   html = html.replace(/(?:\s*<!-- AGENT_SIDEBAR_V3 -->)*\s*<nav class="sidebar-nav" data-agent-sidebar[\s\S]*?<\/nav>/, '\n' + newNav);
 
   html = html.replace(/js\/agent-sidebar-nav-template\.js(?:\?v=[^"']*)?/g, `js/agent-sidebar-nav-template.js?v=${CACHE}`);
-  html = html.replace(/js\/load-agent\.js(?:\?v=[^"']*)?/g, `js/load-agent.js?v=${CACHE}`);
+  html = html.replace(/js\/load-agent\.js(?:\?v=[^"']*)?/g, `js/load-agent.js?v=20260819k
   html = html.replace(/js\/app\.js(?:\?v=[^"']*)?/g, `js/app.js?v=${CACHE}`);
 
   const templateScript = `<script src="${base}js/agent-sidebar-nav-template.js?v=${CACHE}"></script>`;

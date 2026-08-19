@@ -376,7 +376,6 @@ function initRevenueChart() {
         },
         y: {
           beginAtZero: true,
-          max: 65000,
           grid: {
             color: 'rgba(0,0,0,0.05)',
             drawBorder: false
