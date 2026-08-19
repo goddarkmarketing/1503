@@ -302,6 +302,14 @@ App.AgentOnboarding = {
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (step !== 3) {
+        if (validateStep(step)) setStep(Math.min(3, step + 1));
+        return;
+      }
+      if (!this._isFormComplete(overlay)) {
+        this._syncSubmitState(overlay, submitBtn);
+        return;
+      }
       if (!validateStep(1) || !validateStep(2) || !validateStep(3)) return;
       toggleConfirm(true);
     });
@@ -500,7 +508,7 @@ App.AgentOnboarding = {
 
       .identity-gate-dialog{
         width:min(620px,100%);
-        overflow:hidden;
+        overflow:visible;
         background:#fff;border-radius:18px;
         text-align:center;
         box-shadow:0 24px 64px rgba(15,23,42,.22);
@@ -574,14 +582,14 @@ App.AgentOnboarding = {
         color:#b91c1c;font-size:.82rem;
       }
 
-      .identity-gate-form{display:flex;flex-direction:column;gap:12px}
+      .identity-gate-form{display:flex;flex-direction:column;gap:14px}
       .identity-gate-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
       @media(max-width:560px){.identity-gate-row{grid-template-columns:1fr}}
-      [data-ig-step]{display:flex;flex-direction:column;gap:14px;padding-top:4px}
+      [data-ig-step]{display:flex;flex-direction:column;gap:16px;padding-top:8px}
       [data-ig-step][hidden]{display:none !important}
 
       .identity-gate-steps{
-        list-style:none;margin:2px 8px 8px;padding:0;
+        list-style:none;margin:2px 8px 4px;padding:0;
         display:flex;align-items:flex-start;justify-content:space-between;
       }
       .identity-gate-step{
@@ -610,7 +618,7 @@ App.AgentOnboarding = {
         border-color:var(--accent-green);background:var(--accent-green);color:#fff;
       }
 
-      .ig-bank-picker{position:relative}
+      .ig-bank-picker{position:relative;z-index:6}
       .ig-bank-picker__trigger{
         width:100%;min-height:46px;padding:8px 12px;
         border:1px solid var(--border);border-radius:10px;
@@ -630,11 +638,12 @@ App.AgentOnboarding = {
       }
       .ig-bank-picker__chevron{color:#94a3b8;font-size:.85rem}
       .ig-bank-picker__menu{
-        position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;
-        max-height:240px;overflow:auto;
+        position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:8;
+        max-height:220px;overflow:auto;
         background:#fff;border:1px solid var(--border);border-radius:12px;
         box-shadow:0 12px 32px rgba(15,23,42,.14);padding:6px;
       }
+      .ig-bank-picker__menu[hidden]{display:none !important}
       .ig-bank-picker__option{
         width:100%;display:flex;align-items:center;gap:10px;
         padding:8px 10px;border:0;border-radius:10px;background:transparent;
@@ -659,8 +668,9 @@ App.AgentOnboarding = {
       }
       .identity-gate-preview-pdf{margin:8px;font-size:.8rem;color:var(--text-muted)}
 
-      .identity-gate-field label{
-        display:block;margin:0 0 8px;
+      .identity-gate-field{display:flex;flex-direction:column;gap:8px}
+      .identity-gate-field > label:not(.identity-gate-file){
+        display:block;margin:0;
         font-size:.8rem;font-weight:700;color:#334155
       }
 
