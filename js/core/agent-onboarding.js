@@ -167,9 +167,9 @@ App.AgentOnboarding = {
               <label class="identity-gate-file" for="igBank">
                 <input id="igBank" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required hidden>
                 <span class="identity-gate-file-btn">เลือกไฟล์</span>
+                <span class="identity-gate-file-thumb" hidden></span>
                 <span class="identity-gate-file-name">JPG / PNG / PDF</span>
               </label>
-              <div class="identity-gate-preview" id="igBankPreview" hidden></div>
             </div>
           </div>
           <div data-ig-step="3" hidden>
@@ -178,9 +178,9 @@ App.AgentOnboarding = {
               <label class="identity-gate-file" for="igIdCard">
                 <input id="igIdCard" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required hidden>
                 <span class="identity-gate-file-btn">เลือกไฟล์</span>
+                <span class="identity-gate-file-thumb" hidden></span>
                 <span class="identity-gate-file-name">JPG / PNG / PDF</span>
               </label>
-              <div class="identity-gate-preview" id="igIdPreview" hidden></div>
             </div>
             <div class="identity-gate-confirm" id="igConfirm" hidden>
               <p class="identity-gate-confirm-title">ยืนยันการส่งเอกสาร?</p>
@@ -472,23 +472,30 @@ App.AgentOnboarding = {
     root.querySelectorAll('.identity-gate-file input[type=file]').forEach((input) => {
       const wrap = input.closest('.identity-gate-file');
       const nameEl = wrap?.querySelector('.identity-gate-file-name');
-      const preview = wrap?.parentElement?.querySelector('.identity-gate-preview');
+      const thumb = wrap?.querySelector('.identity-gate-file-thumb');
       const placeholder = nameEl?.textContent || 'ยังไม่ได้เลือกไฟล์';
+      let objectUrl = '';
+      const clearThumb = () => {
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = '';
+        }
+        if (!thumb) return;
+        thumb.hidden = true;
+        thumb.innerHTML = '';
+      };
       input.addEventListener('change', () => {
         const file = input.files?.[0];
         if (nameEl) nameEl.textContent = file ? file.name : placeholder;
         wrap?.classList.toggle('has-file', !!file);
-        if (!preview) return;
-        preview.hidden = !file;
-        preview.innerHTML = '';
-        if (!file) return;
+        clearThumb();
+        if (!file || !thumb) return;
+        thumb.hidden = false;
         if (file.type.startsWith('image/')) {
-          const img = document.createElement('img');
-          img.alt = file.name;
-          img.src = URL.createObjectURL(file);
-          preview.appendChild(img);
+          objectUrl = URL.createObjectURL(file);
+          thumb.innerHTML = `<img src="${objectUrl}" alt="">`;
         } else {
-          preview.innerHTML = `<p class="identity-gate-preview-pdf">ไฟล์ PDF: ${this._esc(file.name)}</p>`;
+          thumb.innerHTML = '<span class="identity-gate-file-pdf">PDF</span>';
         }
       });
     });
@@ -658,16 +665,6 @@ App.AgentOnboarding = {
       .ig-bank-picker__option:hover,
       .ig-bank-picker__option.is-selected{background:#f0fdf4}
 
-      .identity-gate-preview{
-        margin-top:8px;border:1px solid var(--border);border-radius:10px;
-        background:#f8fafc;padding:8px;text-align:center;
-      }
-      .identity-gate-preview img{
-        display:block;max-width:100%;max-height:140px;margin:0 auto;
-        object-fit:contain;border-radius:8px;
-      }
-      .identity-gate-preview-pdf{margin:8px;font-size:.8rem;color:var(--text-muted)}
-
       .identity-gate-field{display:flex;flex-direction:column;gap:8px}
       .identity-gate-field > label:not(.identity-gate-file){
         display:block;margin:0;
@@ -701,6 +698,20 @@ App.AgentOnboarding = {
         background:var(--brand-green-gradient);
         color:#fff;font-size:.78rem;font-weight:700;
         white-space:nowrap;flex-shrink:0;
+      }
+
+      .identity-gate-file-thumb{
+        width:36px;height:36px;flex-shrink:0;
+        border-radius:8px;overflow:hidden;background:#fff;
+        border:1px solid var(--border);
+        display:flex;align-items:center;justify-content:center;
+      }
+      .identity-gate-file-thumb[hidden]{display:none !important}
+      .identity-gate-file-thumb img{
+        width:100%;height:100%;object-fit:cover;display:block;
+      }
+      .identity-gate-file-pdf{
+        font-size:.62rem;font-weight:800;color:#b91c1c;letter-spacing:.02em;
       }
 
       .identity-gate-file-name{
