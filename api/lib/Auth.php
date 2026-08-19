@@ -104,7 +104,11 @@ final class Auth
     ];
 
     if ($user['role'] === 'agent') {
-      AgentIdentity::ensureSchema($pdo);
+      try {
+        AgentIdentity::ensureSchema($pdo);
+      } catch (Throwable $e) {
+        // Keep login working even if identity schema is not migrated yet.
+      }
       $stmt = $pdo->prepare('SELECT * FROM agents WHERE user_id = :id LIMIT 1');
       $stmt->execute([':id' => $user['id']]);
       $agent = $stmt->fetch();

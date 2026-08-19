@@ -13,73 +13,83 @@ final class AgentIdentity
 
   public static function ensureSchema(PDO $pdo): void
   {
-    $col = $pdo->query("SHOW COLUMNS FROM agents LIKE 'identity_status'")->fetch();
-    if (!$col) {
-      $pdo->exec(
-        "ALTER TABLE agents
-         ADD COLUMN identity_status ENUM('none','pending','approved','rejected') NOT NULL DEFAULT 'none' AFTER status"
-      );
+    static $ready = false;
+    if ($ready) {
+      return;
     }
 
-    $pdo->exec(
-      'CREATE TABLE IF NOT EXISTS agent_identity_verifications (
-        id VARCHAR(36) NOT NULL,
-        agent_id VARCHAR(36) NOT NULL,
-        registration_request_id VARCHAR(36) NULL,
-        name VARCHAR(190) NOT NULL,
-        email VARCHAR(190) NULL,
-        phone VARCHAR(64) NULL,
-        bank_account_path VARCHAR(255) NULL,
-        bank_account_file_name VARCHAR(255) NULL,
-        bank_account_mime VARCHAR(80) NULL,
-        id_card_path VARCHAR(255) NULL,
-        id_card_file_name VARCHAR(255) NULL,
-        id_card_mime VARCHAR(80) NULL,
-        status ENUM(\'pending\',\'approved\',\'rejected\') NOT NULL DEFAULT \'pending\',
-        admin_note VARCHAR(500) NULL,
-        mismatch_notes TEXT NULL,
-        submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        reviewed_at DATETIME NULL,
-        reviewed_by VARCHAR(36) NULL,
-        reviewed_by_name VARCHAR(120) NULL,
-        PRIMARY KEY (id),
-        KEY idx_aiv_agent (agent_id, submitted_at),
-        KEY idx_aiv_status (status, submitted_at)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
-    );
+    try {
+      $col = $pdo->query("SHOW COLUMNS FROM agents LIKE 'identity_status'")->fetch();
+      if (!$col) {
+        try {
+          $pdo->exec(
+            "ALTER TABLE agents
+             ADD COLUMN identity_status ENUM('none','pending','approved','rejected') NOT NULL DEFAULT 'none' AFTER status"
+          );
+        } catch (Throwable $e) {
+          $pdo->exec(
+            "ALTER TABLE agents
+             ADD COLUMN identity_status ENUM('none','pending','approved','rejected') NOT NULL DEFAULT 'none'"
+          );
+        }
+      }
 
-    self::addColumnIfMissing(
-      $pdo,
-      'agent_identity_verifications',
-      'payout_bank_code',
-      'payout_bank_code VARCHAR(32) NULL AFTER phone'
-    );
-    self::addColumnIfMissing(
-      $pdo,
-      'agent_identity_verifications',
-      'payout_bank_name',
-      'payout_bank_name VARCHAR(190) NULL AFTER payout_bank_code'
-    );
-    self::addColumnIfMissing(
-      $pdo,
-      'agent_identity_verifications',
-      'payout_account_no',
-      'payout_account_no VARCHAR(64) NULL AFTER payout_bank_name'
-    );
-    self::addColumnIfMissing(
-      $pdo,
-      'agent_identity_verifications',
-      'payout_account_name',
-      'payout_account_name VARCHAR(190) NULL AFTER payout_account_no'
-    );
+      $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS agent_identity_verifications (
+          id VARCHAR(36) NOT NULL,
+          agent_id VARCHAR(36) NOT NULL,
+          registration_request_id VARCHAR(36) NULL,
+          name VARCHAR(190) NOT NULL,
+          email VARCHAR(190) NULL,
+          phone VARCHAR(64) NULL,
+          payout_bank_code VARCHAR(32) NULL,
+          payout_bank_name VARCHAR(190) NULL,
+          payout_account_no VARCHAR(64) NULL,
+          payout_account_name VARCHAR(190) NULL,
+          bank_account_path VARCHAR(255) NULL,
+          bank_account_file_name VARCHAR(255) NULL,
+          bank_account_mime VARCHAR(80) NULL,
+          id_card_path VARCHAR(255) NULL,
+          id_card_file_name VARCHAR(255) NULL,
+          id_card_mime VARCHAR(80) NULL,
+          status ENUM(\'pending\',\'approved\',\'rejected\') NOT NULL DEFAULT \'pending\',
+          admin_note VARCHAR(500) NULL,
+          mismatch_notes TEXT NULL,
+          submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          reviewed_at DATETIME NULL,
+          reviewed_by VARCHAR(36) NULL,
+          reviewed_by_name VARCHAR(120) NULL,
+          PRIMARY KEY (id),
+          KEY idx_aiv_agent (agent_id, submitted_at),
+          KEY idx_aiv_status (status, submitted_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+      );
+
+      self::addColumnIfMissing($pdo, 'agent_identity_verifications', 'payout_bank_code', 'payout_bank_code VARCHAR(32) NULL');
+      self::addColumnIfMissing($pdo, 'agent_identity_verifications', 'payout_bank_name', 'payout_bank_name VARCHAR(190) NULL');
+      self::addColumnIfMissing($pdo, 'agent_identity_verifications', 'payout_account_no', 'payout_account_no VARCHAR(64) NULL');
+      self::addColumnIfMissing($pdo, 'agent_identity_verifications', 'payout_account_name', 'payout_account_name VARCHAR(190) NULL');
+      $ready = true;
+    } catch (Throwable $e) {
+      // Schema migration must never block login / API reads.
+    }
   }
 
   private static function addColumnIfMissing(PDO $pdo, string $table, string $column, string $definition): void
   {
-    $stmt = $pdo->prepare("SHOW COLUMNS FROM `$table` LIKE :col");
-    $stmt->execute([':col' => $column]);
-    if (!$stmt->fetch()) {
+    if (!preg_match('/^[A-Za-z0-9_]+$/', $table) || !preg_match('/^[A-Za-z0-9_]+$/', $column)) {
+      return;
+    }
+    // Native PDO prepares cannot run SHOW; interpolate a quoted identifier instead.
+    $like = $pdo->quote($column);
+    $col = $pdo->query("SHOW COLUMNS FROM `$table` LIKE $like")->fetch();
+    if ($col) {
+      return;
+    }
+    try {
       $pdo->exec("ALTER TABLE `$table` ADD COLUMN $definition");
+    } catch (Throwable $e) {
+      // Column may already exist, or the DB user may lack ALTER.
     }
   }
 
