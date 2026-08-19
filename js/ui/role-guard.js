@@ -31,7 +31,13 @@ App.RoleGuard = {
    * @param {string} options.basePath - '' for root pages, '../' for subfolders
    */
   enforce(requiredRole, options = {}) {
-    const base = options.basePath || '';
+    const rawBase = options.basePath || '';
+    // Prevent weird redirects when a page accidentally passes server filesystem paths
+    // as basePath (e.g. "/var/www/vhosts/.../httpdocs/").
+    const isBad =
+      (window.App?.Paths?.isBadBase && window.App.Paths.isBadBase(rawBase)) ||
+      /vhosts|httpdocs|\/var\/www|\\|C:\\/i.test(String(rawBase));
+    const base = isBad ? '' : rawBase;
     const next = encodeURIComponent(this.currentPagePath());
     const loginUrl = `${base}${App.Permissions.loginPath()}?next=${next}`;
 
