@@ -33,21 +33,9 @@ App.AuthService = {
   },
 
   async logout() {
-    const token = App.Session.get()?.token;
+    // Clear client session first; future API calls will no longer include Authorization.
+    // We skip the /auth/logout API call to avoid host-specific 403 noise during navigation.
     App.Session.clear();
-    if (this._useRealAuth() && token) {
-      try {
-        await fetch(`${App.Config.API_BASE_URL}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        });
-      } catch {
-        /* ignore network/session errors on logout */
-      }
-    }
   },
 
   getCurrentUser() {
