@@ -90,8 +90,11 @@ App.AgentOnboarding = {
     overlay.className = 'identity-gate-overlay';
     overlay.innerHTML = isPending ? `
       <div class="identity-gate-dialog identity-gate-dialog--status" role="dialog" aria-modal="true">
-        <div class="identity-gate-check ${justSubmitted ? 'identity-gate-check--pop' : ''}" aria-hidden="true">
-          <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27.2l7.2 7.2L37.2 18"/></svg>
+        <div class="identity-gate-clock ${justSubmitted ? 'identity-gate-clock--spin' : ''}" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
         </div>
         <h2>ขอบคุณที่ยืนยันตัวตน</h2>
         <p class="identity-gate-lead">เราได้รับเอกสารของท่านแล้ว<br>เจ้าหน้าที่จะตรวจสอบข้อมูลภายใน 1 วันทำการ<br>เมื่ออนุมัติแล้ว ระบบจะเปิดใช้งานให้อัตโนมัติ</p>
@@ -102,7 +105,13 @@ App.AgentOnboarding = {
       </div>
     ` : `
       <div class="identity-gate-dialog identity-gate-dialog--wide" role="dialog" aria-modal="true">
-        <div class="identity-gate-icon" aria-hidden="true">🪪</div>
+        <div class="identity-gate-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <circle cx="8.5" cy="12" r="2.5"/>
+            <path d="M14 10h5M14 14h5"/>
+          </svg>
+        </div>
         <h2>ยืนยันตัวตนก่อนใช้งาน</h2>
         <p class="identity-gate-lead">${isRejected
           ? 'คำขอถูกปฏิเสธ กรุณาแก้ไขข้อมูลและส่งใหม่'
@@ -280,30 +289,23 @@ App.AgentOnboarding = {
       .identity-gate-dialog--wide{ text-align:left; }
       .identity-gate-dialog--status{ text-align:center; padding:28px 24px 20px; }
 
-      .identity-gate-check{
-        width:72px;height:72px;margin:4px auto 14px;
+      .identity-gate-clock{
+        width:56px;height:56px;margin:4px auto 14px;
+        border-radius:16px;
+        background:var(--accent-green-soft);
+        color:var(--accent-green);
+        display:flex;align-items:center;justify-content:center;
       }
-      .identity-gate-check svg{width:72px;height:72px;display:block}
-      .identity-gate-check circle{
-        fill:var(--accent-green-soft);stroke:var(--accent-green);stroke-width:2;
+      .identity-gate-clock svg{width:28px;height:28px;display:block}
+      .identity-gate-clock--spin svg{
+        transform-origin:center;
+        animation:igClock .7s ease-out;
       }
-      .identity-gate-check path{
-        fill:none;stroke:var(--accent-green);stroke-width:3.2;
-        stroke-linecap:round;stroke-linejoin:round;
-      }
-      .identity-gate-check--pop{
-        animation:igPop .45s ease-out;
-      }
-      .identity-gate-check--pop path{
-        stroke-dasharray:36;stroke-dashoffset:36;
-        animation:igTick .45s .2s ease-out forwards;
-      }
-      @keyframes igPop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
-      @keyframes igTick{to{stroke-dashoffset:0}}
+      @keyframes igClock{0%{transform:scale(.7) rotate(-20deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
 
       .identity-gate-status-pill{
-        display:inline-flex;align-items:center;justify-content:center;
-        margin:4px auto 16px;padding:8px 14px;
+        display:flex;align-items:center;justify-content:center;
+        width:fit-content;margin:4px auto 16px;padding:8px 14px;
         border-radius:999px;background:var(--accent-green-soft);
         color:var(--accent-green);font-size:.82rem;font-weight:700;
       }
@@ -326,8 +328,8 @@ App.AgentOnboarding = {
         color:var(--accent-green);
         border-radius:12px;
         display:flex;align-items:center;justify-content:center;
-        font-size:1.35rem;
       }
+      .identity-gate-icon svg{width:22px;height:22px;display:block}
 
       .identity-gate-dialog h2{
         margin:0 0 4px;
@@ -409,7 +411,13 @@ App.AgentOnboarding = {
       .identity-gate-actions{
         display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:4px;
       }
-      .identity-gate-actions--single{grid-template-columns:1fr;max-width:240px;margin:0 auto}
+      .identity-gate-actions--single{
+        display:flex;justify-content:center;grid-template-columns:none;
+        max-width:none;margin:12px auto 0;
+      }
+      .identity-gate-actions--single .identity-gate-logout{
+        width:min(260px,100%);margin:0 auto;
+      }
       @media(max-width:560px){.identity-gate-actions{grid-template-columns:1fr}}
 
       .identity-gate-primary{
