@@ -4,9 +4,19 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const basePath = document.body.dataset.basePath || '../';
 
-  if (window.App) {
-    App.RoleGuard.enforce('admin', { basePath });
-    await App.Shell.init({ basePath, hideBalance: true });
+  try {
+    if (window.App?.RoleGuard && !App.RoleGuard.enforce('admin', { basePath })) {
+      return;
+    }
+    if (window.App?.Shell) {
+      await App.Shell.init({ basePath, hideBalance: true });
+    }
+  } catch (err) {
+    console.error('Admin init failed', err);
+    const path = window.location.pathname || '';
+    const login = path.indexOf('/kladeebroker/') === 0 ? '/kladeebroker/login' : '/login';
+    window.location.replace(login);
+    return;
   }
 
   if (typeof window.renderAdminSidebarNav === 'function') {
@@ -35,7 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initLucideIcons() {
-  if (typeof lucide !== 'undefined') lucide.createIcons();
+  if (typeof lucide === 'undefined' || !lucide.createIcons) return;
+  lucide.createIcons({ icons: lucide });
 }
 
 function normalizePath(path) {

@@ -28,6 +28,17 @@ function shell(opts) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('kladeebroker_session')) return;
+        var p = location.pathname || '';
+        var r = p.indexOf('/kladeebroker/') === 0 ? '/kladeebroker/' : '/';
+        var next = encodeURIComponent((p.replace(/^\/+/, '').replace(/\/index\\.html?$/i, '').replace(/\\/$/, '')) || 'admin');
+        location.replace(r + 'login?next=' + next);
+      } catch (e) {}
+    })();
+  </script>
   <title>${opts.title}</title>
   <link rel="stylesheet" href="${base}css/style.css">
   <link rel="stylesheet" href="${base}css/admin.css">

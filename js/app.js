@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function initLucideIcons() {
   if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
+    lucide.createIcons({ icons: lucide });
   }
 }
 

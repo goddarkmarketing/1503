@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('kladeebroker_session')) return;
+        var p = location.pathname || '';
+        var r = p.indexOf('/kladeebroker/') === 0 ? '/kladeebroker/' : '/';
+        var next = encodeURIComponent((p.replace(/^\/+/, '').replace(/\/index\.html?$/i, '').replace(/\/$/, '')) || 'admin');
+        location.replace(r + 'login?next=' + next);
+      } catch (e) {}
+    })();
+  </script>
   <title>ตัวอย่างหนังสือ 50 ทวิ — Admin</title>
   <link rel="stylesheet" href="../css/style.css?v=20260717i">
   <link rel="stylesheet" href="../css/admin.css?v=20260805a">

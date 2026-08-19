@@ -1,10 +1,11 @@
 /** Synchronous core stack loader for agent pages — keep before app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-agent\.js.*$/, '');
-  const cache = '20260819k';
+  const cache = '20260819m';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'vendor/lucide.min.js',
+    'core/lucide-boot.js',
     'vendor/chart.umd.min.js',
     'agent-sidebar-nav-template.js',
     'config/app-config.js',

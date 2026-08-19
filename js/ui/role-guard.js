@@ -25,6 +25,24 @@ App.RoleGuard = {
     return this.normalizePagePath(parts.slice(start).join('/'));
   },
 
+  loginPath() {
+    if (App.Paths?.login) return App.Paths.login();
+    const path = window.location.pathname || '';
+    return path.indexOf('/kladeebroker/') === 0 ? '/kladeebroker/login' : '/login';
+  },
+
+  adminHome() {
+    if (App.Paths?.absolute) return App.Paths.absolute('admin/');
+    const path = window.location.pathname || '';
+    return path.indexOf('/kladeebroker/') === 0 ? '/kladeebroker/admin/' : '/admin/';
+  },
+
+  agentHome() {
+    if (App.Paths?.agentHome) return App.Paths.agentHome();
+    const path = window.location.pathname || '';
+    return path.indexOf('/kladeebroker/') === 0 ? '/kladeebroker/agent/' : '/agent/';
+  },
+
   /**
    * @param {'agent'|'admin'|null} requiredRole - null = any authenticated user
    * @param {object} options
@@ -32,20 +50,22 @@ App.RoleGuard = {
    */
   enforce(requiredRole, options = {}) {
     const next = encodeURIComponent(this.currentPagePath());
-    const loginUrl = `${App.Paths.login()}?next=${next}`;
+    const loginUrl = `${this.loginPath()}?next=${next}`;
 
-    if (!App.AuthService.isAuthenticated()) {
+    if (!App.AuthService?.isAuthenticated?.()) {
+      document.documentElement.style.visibility = 'hidden';
       window.location.replace(loginUrl);
       return false;
     }
 
     const role = App.Session.getRole();
     if (requiredRole && role !== requiredRole) {
-      window.location.replace(role === 'admin' ? App.Paths.absolute('admin/') : App.Paths.agentHome());
+      document.documentElement.style.visibility = 'hidden';
+      window.location.replace(role === 'admin' ? this.adminHome() : this.agentHome());
       return false;
     }
 
-    const basePath = App.Paths.detectBasePath();
+    const basePath = App.Paths?.detectBasePath?.() || options.basePath || '../';
     if (requiredRole === 'agent' && App.AgentFeatures) {
       const permOk = App.AgentFeatures.enforceCurrentPage({ basePath });
       if (!permOk) return false;

@@ -93,7 +93,7 @@ function syncFile(relPath) {
   html = html.replace(/<nav class="sidebar-nav"[\s\S]*?<\/nav>/, newNav);
 
   html = html.replace(/js\/admin-sidebar-nav-template\.js(?:\?v=[^"']*)?/g, `js/admin-sidebar-nav-template.js?v=${CACHE}`);
-  html = html.replace(/js\/load-admin\.js(?:\?v=[^"']*)?/g, `js/load-admin.js?v=20260819k
+  html = html.replace(/js\/load-admin\.js(?:\?v=[^"']*)?/g, `js/load-admin.js?v=${CACHE}`);
   html = html.replace(/js\/admin-app\.js(?:\?v=[^"']*)?/g, `js/admin-app.js?v=${CACHE}`);
 
   const templateScript = `<script src="${base}js/admin-sidebar-nav-template.js?v=${CACHE}"></script>`;
