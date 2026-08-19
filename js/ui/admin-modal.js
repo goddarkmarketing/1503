@@ -23,6 +23,9 @@ App.Modal = {
       if (e.target === overlay) this.close();
     });
     overlay.querySelector('.admin-modal-close')?.addEventListener('click', () => this.close());
+    overlay.querySelectorAll('[data-modal-close]').forEach((btn) => {
+      btn.addEventListener('click', () => this.close());
+    });
 
     document.body.appendChild(overlay);
     document.body.classList.add('modal-open');

@@ -252,23 +252,28 @@ final class AgentIdentity
         ':id' => $agentId,
       ]);
 
-      if ($action === 'approve') {
+      $pdo->commit();
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+
+    if ($action === 'approve') {
+      $userId = (string)($record['user_id'] ?? $agentId);
+      try {
         $pdo->prepare(
           'UPDATE users
-           SET name = :name, email = :email, phone = :phone, updated_at = NOW()
+           SET name = :name, email = :email, phone = :phone
            WHERE id = :id'
         )->execute([
           ':name' => $record['name'],
           ':email' => $record['email'],
           ':phone' => $record['phone'],
-          ':id' => $agentId,
+          ':id' => $userId,
         ]);
+      } catch (Throwable $e) {
+        // Identity status already saved; profile sync is best-effort.
       }
-
-      $pdo->commit();
-    } catch (Throwable $e) {
-      $pdo->rollBack();
-      throw $e;
     }
 
     Auth::audit(
@@ -333,7 +338,7 @@ final class AgentIdentity
   private static function fetchOne(PDO $pdo, string $id): ?array
   {
     $stmt = $pdo->prepare(
-      'SELECT v.*, a.code AS agent_code, u.name AS agent_name, u.username AS agent_username
+      'SELECT v.*, a.code AS agent_code, a.user_id AS user_id, u.name AS agent_name, u.username AS agent_username
        FROM agent_identity_verifications v
        INNER JOIN agents a ON a.id = v.agent_id
        INNER JOIN users u ON u.id = a.user_id

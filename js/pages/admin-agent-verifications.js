@@ -4,6 +4,7 @@
 
   const filter = document.getElementById('identityFilter');
   let cache = [];
+  const blobUrls = [];
 
   function statusLabel(s) {
     return { pending: 'รอตรวจสอบ', approved: 'อนุมัติแล้ว', rejected: 'ปฏิเสธ' }[s] || s;
@@ -17,22 +18,49 @@
       .replace(/"/g, '&quot;');
   }
 
-  async function openDoc(path, title) {
-    const blob = await App.API.requestBlob(path);
-    const url = URL.createObjectURL(blob);
-    const isPdf = blob.type === 'application/pdf';
-    App.Modal.open({
-      title,
-      size: 'wide',
-      body: isPdf
-        ? `<embed src="${url}" type="application/pdf" style="width:100%;height:70vh;border:0">`
-        : `<img src="${url}" alt="${escapeHtml(title)}" style="max-width:100%;height:auto;display:block;margin:0 auto">`
-    });
+  function revokeBlobs() {
+    blobUrls.splice(0).forEach((url) => URL.revokeObjectURL(url));
+  }
+
+  async function fillDocFrame(el, path, title) {
+    if (!el) return;
+    if (!path) {
+      el.innerHTML = '<div class="identity-review-empty">ไม่มีไฟล์แนบ</div>';
+      return;
+    }
+    try {
+      const blob = await App.API.requestBlob(path);
+      const url = URL.createObjectURL(blob);
+      blobUrls.push(url);
+      if (blob.type === 'application/pdf') {
+        el.innerHTML = `<embed src="${url}" type="application/pdf" title="${escapeHtml(title)}">`;
+        return;
+      }
+      el.innerHTML = `<img src="${url}" alt="${escapeHtml(title)}">`;
+    } catch (err) {
+      el.innerHTML = `<div class="identity-review-empty">${escapeHtml(err.message || 'โหลดเอกสารไม่สำเร็จ')}</div>`;
+    }
+  }
+
+  function setBusy(busy) {
+    const approveBtn = document.getElementById('approveIdentityBtn');
+    const rejectBtn = document.getElementById('rejectIdentityBtn');
+    if (approveBtn) {
+      approveBtn.disabled = busy;
+      if (busy) approveBtn.textContent = 'กำลังบันทึก...';
+      else approveBtn.textContent = 'อนุมัติ';
+    }
+    if (rejectBtn) {
+      rejectBtn.disabled = busy;
+      if (busy) rejectBtn.textContent = 'กำลังบันทึก...';
+      else rejectBtn.textContent = 'ปฏิเสธ';
+    }
   }
 
   function openReviewModal(req) {
     const isPending = req.status === 'pending';
-    App.Modal.open({
+    revokeBlobs();
+    const overlay = App.Modal.open({
       title: `ยืนยันตัวตน ${req.agentCode || req.agentId}`,
       size: 'wide',
       body: `
@@ -43,9 +71,19 @@
           <div><dt>วันที่ส่ง</dt><dd>${App.AdminUtils.formatDateTime(req.submittedAt)}</dd></div>
           ${req.adminNote ? `<div><dt>หมายเหตุ</dt><dd>${escapeHtml(req.adminNote)}</dd></div>` : ''}
         </dl>
-        <div class="form-actions" style="margin-top:16px">
-          ${req.hasBankAccountDoc ? `<button type="button" class="btn btn-secondary" id="viewBankDoc">ดูหน้าบัญชีธนาคาร</button>` : ''}
-          ${req.hasIdCardDoc ? `<button type="button" class="btn btn-secondary" id="viewIdDoc">ดูสำเนาบัตร ปชช.</button>` : ''}
+        <div class="identity-review-docs">
+          <figure class="identity-review-doc">
+            <figcaption>สำเนาบัตรประชาชน</figcaption>
+            <div class="identity-review-frame" id="identityIdPreview">
+              <div class="identity-review-empty">กำลังโหลด...</div>
+            </div>
+          </figure>
+          <figure class="identity-review-doc">
+            <figcaption>รูปหน้าบัญชีธนาคาร</figcaption>
+            <div class="identity-review-frame" id="identityBankPreview">
+              <div class="identity-review-empty">กำลังโหลด...</div>
+            </div>
+          </figure>
         </div>
         ${isPending ? `
           <form id="rejectIdentityForm" class="agent-form" style="margin-top:20px">
@@ -63,36 +101,41 @@
       ` : `<button type="button" class="btn btn-secondary" data-modal-close>ปิด</button>`
     });
 
-    document.getElementById('viewBankDoc')?.addEventListener('click', () => {
-      openDoc(req.bankAccountUrl, 'หน้าบัญชีธนาคาร').catch((e) => alert(e.message));
-    });
-    document.getElementById('viewIdDoc')?.addEventListener('click', () => {
-      openDoc(req.idCardUrl, 'สำเนาบัตรประชาชน').catch((e) => alert(e.message));
-    });
+    fillDocFrame(overlay.querySelector('#identityIdPreview'), req.idCardUrl, 'สำเนาบัตรประชาชน');
+    fillDocFrame(overlay.querySelector('#identityBankPreview'), req.bankAccountUrl, 'หน้าบัญชีธนาคาร');
 
-    document.getElementById('approveIdentityBtn')?.addEventListener('click', async () => {
+    overlay.querySelector('#approveIdentityBtn')?.addEventListener('click', async () => {
+      if (!window.confirm(`อนุมัติการยืนยันตัวตนของ ${req.agentCode || req.name}?`)) return;
+      setBusy(true);
       try {
         await App.AgentIdentityService.approve(req.id);
         App.Modal.close();
         await load();
-        App.AdminNotificationService.acknowledge('agent-verifications');
+        App.AdminNotificationService?.acknowledge?.('agent-verifications');
+        alert('อนุมัติแล้ว นายหน้าสามารถใช้งานระบบได้');
       } catch (err) {
+        setBusy(false);
         alert(err.message || 'อนุมัติไม่สำเร็จ');
       }
     });
 
-    document.getElementById('rejectIdentityBtn')?.addEventListener('click', async () => {
-      const note = document.getElementById('rejectNote')?.value?.trim() || '';
+    overlay.querySelector('#rejectIdentityBtn')?.addEventListener('click', async () => {
+      const note = overlay.querySelector('#rejectNote')?.value?.trim() || '';
       if (!note) {
         alert('กรุณาระบุเหตุผลเมื่อปฏิเสธ');
+        overlay.querySelector('#rejectNote')?.focus();
         return;
       }
+      if (!window.confirm('ยืนยันปฏิเสธคำขอนี้?')) return;
+      setBusy(true);
       try {
         await App.AgentIdentityService.reject(req.id, note);
         App.Modal.close();
         await load();
-        App.AdminNotificationService.acknowledge('agent-verifications');
+        App.AdminNotificationService?.acknowledge?.('agent-verifications');
+        alert('ปฏิเสธคำขอแล้ว');
       } catch (err) {
+        setBusy(false);
         alert(err.message || 'ปฏิเสธไม่สำเร็จ');
       }
     });
@@ -118,7 +161,7 @@
 
     tbody.querySelectorAll('.btn-review-identity').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const req = cache.find((r) => r.id === btn.dataset.id);
+        const req = cache.find((r) => String(r.id) === String(btn.dataset.id));
         if (req) openReviewModal(req);
       });
     });
@@ -132,5 +175,5 @@
 
   filter?.addEventListener('change', load);
   load();
-  App.AdminNotificationService.acknowledgeCurrentPage('admin/agent-verifications');
+  App.AdminNotificationService?.acknowledgeCurrentPage?.('admin/agent-verifications');
 })();
