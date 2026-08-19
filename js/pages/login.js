@@ -303,12 +303,16 @@ document.addEventListener('DOMContentLoaded', () => {
       clearLockout();
       saveRemember(username, remember);
       let target = resolveRedirect(user);
+      const sitePrefix = (() => {
+        const p = String(window.location.pathname || '');
+        return p === '/kladeebroker' || p.indexOf('/kladeebroker/') === 0 ? '/kladeebroker' : '';
+      })();
       if (App.AgentOnboarding?.needsVerification?.(user)) {
-        window.location.replace(App.Paths.agentHome());
+        window.location.replace(`${sitePrefix}/agent/`);
         return;
       }
       const rel = target.replace(/^\/+/, '');
-      window.location.replace(App.Paths.absolute(rel));
+      window.location.replace(`${sitePrefix}/${rel}`);
     } catch (err) {
       const fail = registerFailedAttempt();
       errorEl.textContent = fail.locked
