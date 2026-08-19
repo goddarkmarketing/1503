@@ -240,27 +240,8 @@ final class WithdrawRequests
   {
     $to = Mailer::withdrawNotifyTo();
     $code = (string)($created['agentCode'] ?? '');
-    $name = (string)($created['agentName'] ?? '');
-    $amount = number_format((float)($created['amount'] ?? 0), 2);
     $id = (string)($created['id'] ?? '');
-    $bank = htmlspecialchars((string)($created['bankName'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    $accNo = htmlspecialchars((string)($created['accountNo'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    $accName = htmlspecialchars((string)($created['accountName'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    $note = htmlspecialchars((string)($created['note'] ?? '-'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    $adminUrl = 'https://www.kladeebroker.co.th/admin/withdraw-requests';
-
-    $html = '<p>มีคำขอถอนเงินใหม่จากนายหน้า</p>'
-      . '<table cellpadding="6" style="border-collapse:collapse">'
-      . '<tr><td>เลขที่</td><td><strong>' . htmlspecialchars($id, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong></td></tr>'
-      . '<tr><td>นายหน้า</td><td>' . htmlspecialchars($code . ' — ' . $name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</td></tr>'
-      . '<tr><td>จำนวน</td><td><strong>' . $amount . ' บาท</strong></td></tr>'
-      . '<tr><td>ธนาคาร</td><td>' . $bank . '</td></tr>'
-      . '<tr><td>เลขบัญชี</td><td>' . $accNo . '</td></tr>'
-      . '<tr><td>ชื่อบัญชี</td><td>' . $accName . '</td></tr>'
-      . '<tr><td>หมายเหตุ</td><td>' . ($note !== '' ? $note : '-') . '</td></tr>'
-      . '</table>'
-      . '<p><a href="' . $adminUrl . '">เปิดหลังบ้าน — อนุมัติถอนเงิน</a></p>';
-
+    $html = Mailer::withdrawRequestHtml($created);
     return Mailer::send($to, '[Kladee] คำขอถอนเงิน ' . $id . ' จาก ' . $code, $html);
   }
 
