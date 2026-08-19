@@ -118,21 +118,43 @@ App.AgentOnboarding = {
           : 'กรอกข้อมูลให้ตรงกับที่ลงทะเบียน และแนบเอกสารเพื่อให้แอดมินตรวจสอบ'}</p>
         ${rejectNote}
         <form id="identityGateForm" class="identity-gate-form" novalidate>
-          <div class="identity-gate-field">
-            <label for="igName">ชื่อ-นามสกุล *</label>
-            <input id="igName" name="name" type="text" required value="${this._esc(reference?.name || user.name || '')}">
-          </div>
-          <div class="identity-gate-row">
+          <ol class="identity-gate-steps" aria-label="ขั้นตอนยืนยันตัวตน">
+            <li class="identity-gate-step is-active" data-ig-dot="1"><span>1</span>ข้อมูล</li>
+            <li class="identity-gate-step" data-ig-dot="2"><span>2</span>บัญชีรับโอน</li>
+            <li class="identity-gate-step" data-ig-dot="3"><span>3</span>เอกสาร</li>
+          </ol>
+          <div data-ig-step="1">
             <div class="identity-gate-field">
-              <label for="igEmail">อีเมล *</label>
-              <input id="igEmail" name="email" type="email" required value="${this._esc(reference?.email || user.email || '')}">
+              <label for="igName">ชื่อ-นามสกุล *</label>
+              <input id="igName" name="name" type="text" required value="${this._esc(reference?.name || user.name || '')}">
             </div>
-            <div class="identity-gate-field">
-              <label for="igPhone">เบอร์โทร *</label>
-              <input id="igPhone" name="phone" type="tel" required value="${this._esc(reference?.phone || user.phone || '')}">
+            <div class="identity-gate-row">
+              <div class="identity-gate-field">
+                <label for="igEmail">อีเมล *</label>
+                <input id="igEmail" name="email" type="email" required value="${this._esc(reference?.email || user.email || '')}">
+              </div>
+              <div class="identity-gate-field">
+                <label for="igPhone">เบอร์โทร *</label>
+                <input id="igPhone" name="phone" type="tel" required value="${this._esc(reference?.phone || user.phone || '')}">
+              </div>
             </div>
+            ${reference?.name ? `<p class="identity-gate-hint">ข้อมูลต้องตรงกับที่ลงทะเบียน: ${this._esc([reference.name, reference.email, reference.phone].filter(Boolean).join(' · '))}</p>` : ''}
           </div>
-          <div class="identity-gate-row">
+          <div data-ig-step="2" hidden>
+            <div class="identity-gate-field">
+              <label for="igBankCode">ธนาคาร *</label>
+              <select id="igBankCode" name="payoutBankCode" required>${this._bankOptions()}</select>
+            </div>
+            <div class="identity-gate-row">
+              <div class="identity-gate-field">
+                <label for="igAccountNo">เลขที่บัญชี *</label>
+                <input id="igAccountNo" name="payoutAccountNo" type="text" inputmode="numeric" required placeholder="เช่น 1234567890">
+              </div>
+              <div class="identity-gate-field">
+                <label for="igAccountName">ชื่อบัญชี *</label>
+                <input id="igAccountName" name="payoutAccountName" type="text" required value="${this._esc(reference?.name || user.name || '')}">
+              </div>
+            </div>
             <div class="identity-gate-field">
               <label for="igBank">รูปหน้าบัญชีธนาคาร *</label>
               <label class="identity-gate-file" for="igBank">
@@ -140,7 +162,10 @@ App.AgentOnboarding = {
                 <span class="identity-gate-file-btn">เลือกไฟล์</span>
                 <span class="identity-gate-file-name">JPG / PNG / PDF</span>
               </label>
+              <div class="identity-gate-preview" id="igBankPreview" hidden></div>
             </div>
+          </div>
+          <div data-ig-step="3" hidden>
             <div class="identity-gate-field">
               <label for="igIdCard">สำเนาบัตรประชาชน *</label>
               <label class="identity-gate-file" for="igIdCard">
@@ -148,36 +173,111 @@ App.AgentOnboarding = {
                 <span class="identity-gate-file-btn">เลือกไฟล์</span>
                 <span class="identity-gate-file-name">JPG / PNG / PDF</span>
               </label>
+              <div class="identity-gate-preview" id="igIdPreview" hidden></div>
+            </div>
+            <div class="identity-gate-confirm" id="igConfirm" hidden>
+              <p class="identity-gate-confirm-title">ยืนยันการส่งเอกสาร?</p>
+              <p class="identity-gate-confirm-text">กรุณาตรวจสอบว่าข้อมูล บัญชี และไฟล์ถูกต้อง<br>หลังจากส่งแล้ว เจ้าหน้าที่จะตรวจสอบก่อนเปิดใช้งานระบบ</p>
+              <div class="identity-gate-actions">
+                <button type="button" class="identity-gate-primary" id="igConfirmYes">ยืนยันการส่ง</button>
+                <button type="button" class="identity-gate-logout" id="igConfirmNo">กลับไปแก้ไข</button>
+              </div>
             </div>
           </div>
-          ${reference?.name ? `<p class="identity-gate-hint">ข้อมูลต้องตรงกับที่ลงทะเบียน: ${this._esc([reference.name, reference.email, reference.phone].filter(Boolean).join(' · '))}</p>` : ''}
           <div class="identity-gate-actions" id="igActions">
-            <button type="submit" class="identity-gate-primary" id="igSubmit">ส่งคำขอยืนยันตัวตน</button>
-            <button type="button" class="identity-gate-logout" data-action="logout">ออกจากระบบ</button>
+            <button type="button" class="identity-gate-logout" id="igBack" hidden>ย้อนกลับ</button>
+            <button type="button" class="identity-gate-primary" id="igNext">ถัดไป</button>
+            <button type="submit" class="identity-gate-primary" id="igSubmit" hidden>ส่งคำขอยืนยันตัวตน</button>
           </div>
-          <div class="identity-gate-confirm" id="igConfirm" hidden>
-            <p class="identity-gate-confirm-title">ยืนยันการส่งเอกสาร?</p>
-            <p class="identity-gate-confirm-text">กรุณาตรวจสอบว่าข้อมูลและไฟล์ถูกต้อง<br>หลังจากส่งแล้ว เจ้าหน้าที่จะตรวจสอบก่อนเปิดใช้งานระบบ</p>
-            <div class="identity-gate-actions">
-              <button type="button" class="identity-gate-primary" id="igConfirmYes">ยืนยันการส่ง</button>
-              <button type="button" class="identity-gate-logout" id="igConfirmNo">กลับไปแก้ไข</button>
-            </div>
-          </div>
+          <button type="button" class="identity-gate-logout identity-gate-logout--full" data-action="logout">ออกจากระบบ</button>
         </form>
       </div>
     `;
 
-    overlay.querySelector('[data-action="logout"]')?.addEventListener('click', async () => {
-      await App.AuthService.logout();
-      App.Paths.go('login');
+    overlay.querySelectorAll('[data-action="logout"]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.AuthService.logout();
+        App.Paths.go('login');
+      });
     });
 
     this._bindFileInputs(overlay);
 
     const form = overlay.querySelector('#identityGateForm');
+    if (!form) {
+      document.body.appendChild(overlay);
+      document.body.classList.add('identity-gate-open');
+      return;
+    }
+
     const actions = overlay.querySelector('#igActions');
     const confirmBox = overlay.querySelector('#igConfirm');
     const confirmYes = overlay.querySelector('#igConfirmYes');
+    const nextBtn = overlay.querySelector('#igNext');
+    const backBtn = overlay.querySelector('#igBack');
+    const submitBtn = overlay.querySelector('#igSubmit');
+    let step = 1;
+
+    const setStep = (n) => {
+      step = n;
+      overlay.querySelectorAll('[data-ig-step]').forEach((panel) => {
+        panel.hidden = Number(panel.dataset.igStep) !== n;
+      });
+      overlay.querySelectorAll('[data-ig-dot]').forEach((dot) => {
+        const i = Number(dot.dataset.igDot);
+        dot.classList.toggle('is-active', i === n);
+        dot.classList.toggle('is-done', i < n);
+      });
+      if (backBtn) backBtn.hidden = n === 1;
+      if (nextBtn) nextBtn.hidden = n === 3;
+      if (submitBtn) submitBtn.hidden = n !== 3;
+      if (confirmBox) confirmBox.hidden = true;
+      if (actions) actions.hidden = false;
+    };
+
+    const validateStep = (n) => {
+      if (n === 1) {
+        if (!form.name.value.trim() || !form.email.value.trim() || !form.phone.value.trim()) {
+          alert('กรุณากรอกชื่อ อีเมล และเบอร์โทรให้ครบ');
+          return false;
+        }
+        return true;
+      }
+      if (n === 2) {
+        const code = form.payoutBankCode.value.trim();
+        const accNo = form.payoutAccountNo.value.replace(/\D+/g, '');
+        const accName = form.payoutAccountName.value.trim();
+        const bankFile = overlay.querySelector('#igBank')?.files?.[0];
+        if (!code || !accNo || !accName) {
+          alert('กรุณากรอกธนาคาร เลขที่บัญชี และชื่อบัญชี');
+          return false;
+        }
+        if (accNo.length < 8) {
+          alert('เลขที่บัญชีไม่ถูกต้อง');
+          return false;
+        }
+        if (!bankFile) {
+          alert('กรุณาแนบรูปหน้าบัญชีธนาคาร');
+          return false;
+        }
+        form.payoutAccountNo.value = accNo;
+        return true;
+      }
+      if (n === 3) {
+        if (!overlay.querySelector('#igIdCard')?.files?.[0]) {
+          alert('กรุณาแนบสำเนาบัตรประชาชน');
+          return false;
+        }
+        return true;
+      }
+      return true;
+    };
+
+    nextBtn?.addEventListener('click', () => {
+      if (!validateStep(step)) return;
+      setStep(Math.min(3, step + 1));
+    });
+    backBtn?.addEventListener('click', () => setStep(Math.max(1, step - 1)));
 
     const toggleConfirm = (show) => {
       if (actions) actions.hidden = show;
@@ -186,18 +286,9 @@ App.AgentOnboarding = {
 
     overlay.querySelector('#igConfirmNo')?.addEventListener('click', () => toggleConfirm(false));
 
-    form?.addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const bankFile = overlay.querySelector('#igBank')?.files?.[0];
-      const idFile = overlay.querySelector('#igIdCard')?.files?.[0];
-      if (!form.name.value.trim() || !form.email.value.trim() || !form.phone.value.trim()) {
-        alert('กรุณากรอกชื่อ อีเมล และเบอร์โทรให้ครบ');
-        return;
-      }
-      if (!bankFile || !idFile) {
-        alert('กรุณาแนบเอกสารครบทั้ง 2 ไฟล์');
-        return;
-      }
+      if (!validateStep(1) || !validateStep(2) || !validateStep(3)) return;
       toggleConfirm(true);
     });
 
@@ -217,10 +308,15 @@ App.AgentOnboarding = {
           App.CreditSlip.readFile(bankFile),
           App.CreditSlip.readFile(idFile)
         ]);
+        const bank = App.ThaiBanks?.findByCode?.(form.payoutBankCode.value) || null;
         await App.AgentIdentityService.submit(user.id, {
           name: form.name.value.trim(),
           email: form.email.value.trim(),
           phone: form.phone.value.trim(),
+          payoutBankCode: form.payoutBankCode.value.trim(),
+          payoutBankName: bank?.name || form.payoutBankCode.value.trim(),
+          payoutAccountNo: form.payoutAccountNo.value.replace(/\D+/g, ''),
+          payoutAccountName: form.payoutAccountName.value.trim(),
           bankAccount,
           idCard
         });
@@ -233,6 +329,8 @@ App.AgentOnboarding = {
         overlay.querySelector('#igConfirmNo')?.removeAttribute('disabled');
       }
     });
+
+    setStep(1);
 
     document.body.appendChild(overlay);
     document.body.classList.add('identity-gate-open');
@@ -251,15 +349,35 @@ App.AgentOnboarding = {
       .replace(/"/g, '&quot;');
   },
 
+  _bankOptions() {
+    const banks = App.ThaiBanks?.list?.() || [];
+    return '<option value="">เลือกธนาคาร</option>' + banks.map((b) => (
+      `<option value="${this._esc(b.code)}">${this._esc(b.name)}</option>`
+    )).join('');
+  },
+
   _bindFileInputs(root) {
     root.querySelectorAll('.identity-gate-file input[type=file]').forEach((input) => {
       const wrap = input.closest('.identity-gate-file');
       const nameEl = wrap?.querySelector('.identity-gate-file-name');
+      const preview = wrap?.parentElement?.querySelector('.identity-gate-preview');
       const placeholder = nameEl?.textContent || 'ยังไม่ได้เลือกไฟล์';
       input.addEventListener('change', () => {
         const file = input.files?.[0];
         if (nameEl) nameEl.textContent = file ? file.name : placeholder;
         wrap?.classList.toggle('has-file', !!file);
+        if (!preview) return;
+        preview.hidden = !file;
+        preview.innerHTML = '';
+        if (!file) return;
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.alt = file.name;
+          img.src = URL.createObjectURL(file);
+          preview.appendChild(img);
+        } else {
+          preview.innerHTML = `<p class="identity-gate-preview-pdf">ไฟล์ PDF: ${this._esc(file.name)}</p>`;
+        }
       });
     });
   },
@@ -356,12 +474,43 @@ App.AgentOnboarding = {
       .identity-gate-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
       @media(max-width:560px){.identity-gate-row{grid-template-columns:1fr}}
 
+      .identity-gate-steps{
+        list-style:none;margin:0 0 12px;padding:0;
+        display:flex;align-items:flex-start;justify-content:space-between;gap:6px;
+      }
+      .identity-gate-step{
+        flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+        font-size:.72rem;color:var(--text-muted);text-align:center;position:relative;
+      }
+      .identity-gate-step span{
+        width:28px;height:28px;border-radius:50%;
+        display:flex;align-items:center;justify-content:center;
+        border:2px solid var(--border);background:#fff;
+        font-weight:700;font-size:.82rem;color:#64748b;
+      }
+      .identity-gate-step.is-active{color:var(--accent-green);font-weight:700}
+      .identity-gate-step.is-active span,
+      .identity-gate-step.is-done span{
+        border-color:var(--accent-green);background:var(--accent-green);color:#fff;
+      }
+
+      .identity-gate-preview{
+        margin-top:8px;border:1px solid var(--border);border-radius:10px;
+        background:#f8fafc;padding:8px;text-align:center;
+      }
+      .identity-gate-preview img{
+        display:block;max-width:100%;max-height:140px;margin:0 auto;
+        object-fit:contain;border-radius:8px;
+      }
+      .identity-gate-preview-pdf{margin:8px;font-size:.8rem;color:var(--text-muted)}
+
       .identity-gate-field label{
         display:block;margin-bottom:4px;
         font-size:.8rem;font-weight:700;color:#334155
       }
 
-      .identity-gate-field input:not([type=file]){
+      .identity-gate-field input:not([type=file]),
+      .identity-gate-field select{
         width:100%;padding:9px 12px;
         border:1px solid var(--border);border-radius:10px;
         font:inherit;box-sizing:border-box;background:#fff;
@@ -409,8 +558,10 @@ App.AgentOnboarding = {
       }
 
       .identity-gate-actions{
-        display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:4px;
+        display:flex;gap:8px;margin-top:6px;
       }
+      .identity-gate-actions .identity-gate-primary,
+      .identity-gate-actions .identity-gate-logout{flex:1}
       .identity-gate-actions--single{
         display:flex;justify-content:center;grid-template-columns:none;
         max-width:none;margin:12px auto 0;
@@ -438,6 +589,7 @@ App.AgentOnboarding = {
       }
 
       .identity-gate-logout:hover{background:var(--bg-page);color:var(--text-dark)}
+      .identity-gate-logout--full{width:100%;margin-top:4px}
 
       body.identity-gate-open{overflow:hidden}
     `;

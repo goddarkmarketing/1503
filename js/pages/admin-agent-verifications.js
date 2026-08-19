@@ -7,7 +7,7 @@
   const blobUrls = [];
 
   function statusLabel(s) {
-    return { pending: 'รอตรวจสอบ', approved: 'อนุมัติแล้ว', rejected: 'ปฏิเสธ' }[s] || s;
+    return { pending: 'รอตรวจสอบ', approved: 'ยืนยันแล้ว', rejected: 'ปฏิเสธ' }[s] || s;
   }
 
   function escapeHtml(str) {
@@ -69,6 +69,9 @@
           <div><dt>อีเมล</dt><dd>${escapeHtml(req.email || '-')}</dd></div>
           <div><dt>โทรศัพท์</dt><dd>${escapeHtml(req.phone || '-')}</dd></div>
           <div><dt>วันที่ส่ง</dt><dd>${App.AdminUtils.formatDateTime(req.submittedAt)}</dd></div>
+          <div><dt>ธนาคาร</dt><dd>${escapeHtml(req.payoutBankName || req.payoutBankCode || '-')}</dd></div>
+          <div><dt>เลขที่บัญชี</dt><dd>${escapeHtml(req.payoutAccountNo || '-')}</dd></div>
+          <div class="identity-review__note"><dt>ชื่อบัญชี</dt><dd>${escapeHtml(req.payoutAccountName || '-')}</dd></div>
           ${req.adminNote ? `<div class="identity-review__note"><dt>หมายเหตุ</dt><dd>${escapeHtml(req.adminNote)}</dd></div>` : ''}
         </dl>
         <div class="identity-review-docs">
@@ -154,7 +157,7 @@
         <td>${escapeHtml(req.agentCode)}</td>
         <td>${escapeHtml(req.name)}</td>
         <td>${escapeHtml(req.phone || '-')}</td>
-        <td><span class="status-pill status-pill--${req.status}">${statusLabel(req.status)}</span></td>
+        <td><span class="status-pill ${escapeHtml(req.status)} status-pill--${escapeHtml(req.status)}">${statusLabel(req.status)}</span></td>
         <td><button type="button" class="btn-text btn-review-identity" data-id="${escapeHtml(req.id)}">ตรวจสอบ</button></td>
       </tr>
     `).join('');

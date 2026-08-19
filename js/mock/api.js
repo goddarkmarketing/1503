@@ -1261,6 +1261,10 @@ App.MockAPI = {
       name: payload.name,
       email: payload.email,
       phone: payload.phone,
+      payoutBankCode: payload.payoutBankCode || payload.bankCode || '',
+      payoutBankName: payload.payoutBankName || payload.bankName || '',
+      payoutAccountNo: payload.payoutAccountNo || payload.accountNo || '',
+      payoutAccountName: payload.payoutAccountName || payload.accountName || '',
       status: 'pending',
       submittedAt: new Date().toISOString(),
       hasBankAccountDoc: true,
@@ -1292,6 +1296,14 @@ App.MockAPI = {
     req.adminNote = note || null;
     req.reviewedAt = new Date().toISOString();
     App.MockData.agentIdentityStatus[req.agentId] = req.status;
+    if (action === 'approve') {
+      this._writePayoutBank(req.agentId, {
+        bankCode: req.payoutBankCode,
+        bankName: req.payoutBankName,
+        accountNo: req.payoutAccountNo,
+        accountName: req.payoutAccountName
+      });
+    }
     return { ...req };
   },
 

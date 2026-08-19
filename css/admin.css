@@ -550,7 +550,20 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
   color: var(--text-muted);
 }
 
-.status-pill.pending {
+.status-pill.rejected,
+.status-pill--rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-pill.approved,
+.status-pill--approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-pill.pending,
+.status-pill--pending {
   background: #fef3c7;
   color: #b45309;
 }
@@ -558,16 +571,6 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
 .status-pill.paid {
   background: #dcfce7;
   color: #166534;
-}
-
-.status-pill.approved {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status-pill.rejected {
-  background: #fee2e2;
-  color: #b91c1c;
 }
 
 .status-pill.wht50-printed {

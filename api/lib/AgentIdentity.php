@@ -47,6 +47,40 @@ final class AgentIdentity
         KEY idx_aiv_status (status, submitted_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
+
+    self::addColumnIfMissing(
+      $pdo,
+      'agent_identity_verifications',
+      'payout_bank_code',
+      'payout_bank_code VARCHAR(32) NULL AFTER phone'
+    );
+    self::addColumnIfMissing(
+      $pdo,
+      'agent_identity_verifications',
+      'payout_bank_name',
+      'payout_bank_name VARCHAR(190) NULL AFTER payout_bank_code'
+    );
+    self::addColumnIfMissing(
+      $pdo,
+      'agent_identity_verifications',
+      'payout_account_no',
+      'payout_account_no VARCHAR(64) NULL AFTER payout_bank_name'
+    );
+    self::addColumnIfMissing(
+      $pdo,
+      'agent_identity_verifications',
+      'payout_account_name',
+      'payout_account_name VARCHAR(190) NULL AFTER payout_account_no'
+    );
+  }
+
+  private static function addColumnIfMissing(PDO $pdo, string $table, string $column, string $definition): void
+  {
+    $stmt = $pdo->prepare("SHOW COLUMNS FROM `$table` LIKE :col");
+    $stmt->execute([':col' => $column]);
+    if (!$stmt->fetch()) {
+      $pdo->exec("ALTER TABLE `$table` ADD COLUMN $definition");
+    }
   }
 
   public static function getAgentStatus(PDO $pdo, string $agentId): string
@@ -111,6 +145,17 @@ final class AgentIdentity
       Response::error('กรุณากรอกเบอร์โทรศัพท์', 422, 'VALIDATION');
     }
 
+    $payoutBankCode = strtoupper(trim((string)($body['payoutBankCode'] ?? $body['bankCode'] ?? '')));
+    $payoutAccountNo = preg_replace('/\D+/', '', (string)($body['payoutAccountNo'] ?? $body['accountNo'] ?? '')) ?? '';
+    $payoutAccountName = trim((string)($body['payoutAccountName'] ?? $body['accountName'] ?? ''));
+    if ($payoutBankCode === '' || $payoutAccountNo === '' || $payoutAccountName === '') {
+      Response::error('กรุณากรอกธนาคาร เลขที่บัญชี และชื่อบัญชีสำหรับรับโอน', 422, 'VALIDATION');
+    }
+    if (strlen($payoutAccountNo) < 8) {
+      Response::error('เลขที่บัญชีไม่ถูกต้อง', 422, 'VALIDATION');
+    }
+    $payoutBankName = trim((string)($body['payoutBankName'] ?? $body['bankName'] ?? $payoutBankCode));
+
     $bankSlip = self::parseDoc($body, 'bankAccount');
     $idCardSlip = self::parseDoc($body, 'idCard');
     if (!$bankSlip || !$idCardSlip) {
@@ -139,12 +184,14 @@ final class AgentIdentity
       $pdo->prepare(
         'INSERT INTO agent_identity_verifications (
           id, agent_id, registration_request_id, name, email, phone,
+          payout_bank_code, payout_bank_name, payout_account_no, payout_account_name,
           bank_account_path, bank_account_file_name, bank_account_mime,
           id_card_path, id_card_file_name, id_card_mime,
           status, mismatch_notes
         ) VALUES (
           :id, :agent_id, :registration_request_id, :name, :email, :phone,
-          :bank_path, :bank_name, :bank_mime,
+          :payout_bank_code, :payout_bank_name, :payout_account_no, :payout_account_name,
+          :bank_path, :bank_file, :bank_mime,
           :id_path, :id_name, :id_mime,
           \'pending\', :mismatch_notes
         )'
@@ -155,8 +202,12 @@ final class AgentIdentity
         ':name' => $name,
         ':email' => $email,
         ':phone' => $phone,
+        ':payout_bank_code' => $payoutBankCode,
+        ':payout_bank_name' => $payoutBankName,
+        ':payout_account_no' => $payoutAccountNo,
+        ':payout_account_name' => $payoutAccountName,
         ':bank_path' => $bankMeta['path'],
-        ':bank_name' => $bankMeta['fileName'],
+        ':bank_file' => $bankMeta['fileName'],
         ':bank_mime' => $bankMeta['mime'],
         ':id_path' => $idMeta['path'],
         ':id_name' => $idMeta['fileName'],
@@ -532,6 +583,10 @@ final class AgentIdentity
       'name' => $row['name'],
       'email' => $row['email'] ?? '',
       'phone' => $row['phone'] ?? '',
+      'payoutBankCode' => $row['payout_bank_code'] ?? '',
+      'payoutBankName' => $row['payout_bank_name'] ?? '',
+      'payoutAccountNo' => $row['payout_account_no'] ?? '',
+      'payoutAccountName' => $row['payout_account_name'] ?? '',
       'status' => $row['status'],
       'adminNote' => $row['admin_note'] ?? null,
       'mismatchNotes' => $row['mismatch_notes'] ?? null,
