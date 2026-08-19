@@ -29,14 +29,32 @@ App.AgentOnboarding = {
     return defaultPath;
   },
 
-  enforce(options = {}) {
+  async enforce(options = {}) {
     const user = App.AuthService.getCurrentUser();
-    if (!this.needsVerification(user)) {
+    if (!user || user.role !== 'agent') return Promise.resolve(true);
+    if (this.isAllowedPage()) return Promise.resolve(true);
+
+    // Be robust: rely on the latest server status, not only the identityStatus
+    // present in the login payload (which might be stale on some deployments).
+    let identityStatus = user.identityStatus || 'none';
+    let reference = null;
+    let latest = null;
+    try {
+      const data = await App.AgentIdentityService.getStatus(user.id);
+      identityStatus = data?.identityStatus || identityStatus;
+      reference = data?.reference ?? null;
+      latest = data?.latest ?? null;
+    } catch {
+      // Fallback to identityStatus from session payload.
+    }
+
+    if (identityStatus === 'approved') {
       this.hideGateModal();
       return Promise.resolve(true);
     }
-    if (this.isAllowedPage()) return Promise.resolve(true);
-    return this.showGateModal(options).then(() => false);
+
+    return this.showGateModal({ ...options, identityStatus, reference, latest })
+      .then(() => false);
   },
 
   async showGateModal(options = {}) {
@@ -44,17 +62,20 @@ App.AgentOnboarding = {
     const user = App.AuthService.getCurrentUser();
     if (!user) return;
 
-    let status = user.identityStatus || 'none';
-    let reference = null;
-    let latest = null;
+    let status = (options.identityStatus ?? user.identityStatus ?? 'none') || 'none';
+    let reference = options.reference ?? null;
+    let latest = options.latest ?? null;
 
-    try {
-      const data = await App.AgentIdentityService.getStatus(user.id);
-      status = data.identityStatus || status;
-      reference = data.reference;
-      latest = data.latest;
-    } catch {
-      /* use session status */
+    // Only fetch again if the caller didn't provide preloaded status.
+    if (options.identityStatus === undefined) {
+      try {
+        const data = await App.AgentIdentityService.getStatus(user.id);
+        status = data.identityStatus || status;
+        reference = data.reference;
+        latest = data.latest;
+      } catch {
+        /* use session status */
+      }
     }
 
     document.getElementById(this.OVERLAY_ID)?.remove();
