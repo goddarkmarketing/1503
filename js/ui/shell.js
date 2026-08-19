@@ -60,7 +60,7 @@ App.Shell = {
     const profilePath = user.role === 'agent'
       ? (options.profilePath && !App.Paths.isBadBase(options.profilePath)
         ? options.profilePath
-        : App.Paths.agentProfile(base))
+        : App.Paths.agentProfile())
       : '#';
 
     menu.innerHTML = `
@@ -78,7 +78,7 @@ App.Shell = {
 
     menu.querySelector('[data-action="logout"]')?.addEventListener('click', () => {
       App.AuthService.logout();
-      window.location.href = `${base}${App.Permissions.loginPath()}`;
+      App.Paths.go('login');
     });
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -165,7 +165,7 @@ App.Shell = {
     logout.addEventListener('click', (e) => {
       e.preventDefault();
       App.AuthService.logout();
-      window.location.href = `${basePath}${App.Permissions.loginPath()}`;
+      App.Paths.go('login');
     });
   },
 

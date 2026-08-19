@@ -31,15 +31,8 @@ App.RoleGuard = {
    * @param {string} options.basePath - '' for root pages, '../' for subfolders
    */
   enforce(requiredRole, options = {}) {
-    const rawBase = options.basePath || '';
-    // Prevent weird redirects when a page accidentally passes server filesystem paths
-    // as basePath (e.g. "/var/www/vhosts/.../httpdocs/").
-    const isBad =
-      (window.App?.Paths?.isBadBase && window.App.Paths.isBadBase(rawBase)) ||
-      /vhosts|httpdocs|\/var\/www|\\|C:\\/i.test(String(rawBase));
-    const base = isBad ? '' : rawBase;
     const next = encodeURIComponent(this.currentPagePath());
-    const loginUrl = `${base}${App.Permissions.loginPath()}?next=${next}`;
+    const loginUrl = `${App.Paths.login()}?next=${next}`;
 
     if (!App.AuthService.isAuthenticated()) {
       window.location.replace(loginUrl);
@@ -48,12 +41,13 @@ App.RoleGuard = {
 
     const role = App.Session.getRole();
     if (requiredRole && role !== requiredRole) {
-      window.location.replace(`${base}${App.Permissions.homePath(role)}`);
+      window.location.replace(role === 'admin' ? App.Paths.absolute('admin/') : App.Paths.agentHome());
       return false;
     }
 
+    const basePath = App.Paths.detectBasePath();
     if (requiredRole === 'agent' && App.AgentFeatures) {
-      const permOk = App.AgentFeatures.enforceCurrentPage({ basePath: base });
+      const permOk = App.AgentFeatures.enforceCurrentPage({ basePath });
       if (!permOk) return false;
     }
 

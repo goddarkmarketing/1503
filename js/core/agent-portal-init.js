@@ -27,10 +27,10 @@
       window.__shellInitialized = true;
       await App.Shell.init({
         basePath,
-        profilePath: App.Paths.agentProfile(basePath)
+        profilePath: App.Paths.agentProfile()
       });
     }
 
-    App.AgentOnboarding.enforce({ basePath });
+    await App.AgentOnboarding.enforce({ basePath });
   });
 })();

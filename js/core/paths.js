@@ -1,5 +1,5 @@
 /**
- * Web-safe path helpers — never emit server filesystem paths in hrefs.
+ * Web-safe path helpers — always use absolute site paths for navigation.
  */
 window.App = window.App || {};
 
@@ -7,6 +7,20 @@ App.Paths = {
   isBadBase(value) {
     const s = String(value || '');
     return /vhosts|httpdocs|:\\/i.test(s) || /^\/var\//i.test(s);
+  },
+
+  siteRoot() {
+    const path = window.location.pathname || '';
+    if (path === '/kladeebroker' || path.indexOf('/kladeebroker/') === 0) {
+      return '/kladeebroker/';
+    }
+    return '/';
+  },
+
+  /** Absolute URL path from site root, e.g. /login or /kladeebroker/login */
+  absolute(relativePath) {
+    const clean = String(relativePath || '').replace(/^\/+/, '');
+    return `${this.siteRoot()}${clean}`;
   },
 
   normalizeBasePath(raw) {
@@ -40,18 +54,23 @@ App.Paths = {
     return '';
   },
 
-  agentProfile(base) {
-    const b = this.normalizeBasePath(base || this.detectBasePath());
-    return `${b}agent/profile`;
+  go(path) {
+    window.location.href = this.absolute(path);
   },
 
-  verifyIdentity(base) {
-    const b = this.normalizeBasePath(base || this.detectBasePath());
-    return `${b}agent/verify-identity`;
+  agentHome() {
+    return this.absolute('agent/');
   },
 
-  login(base) {
-    const b = this.normalizeBasePath(base || this.detectBasePath());
-    return `${b}login`;
+  agentProfile() {
+    return this.absolute('agent/profile');
+  },
+
+  verifyIdentity() {
+    return this.absolute('agent/verify-identity');
+  },
+
+  login() {
+    return this.absolute('login');
   }
 };

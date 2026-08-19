@@ -304,9 +304,11 @@ document.addEventListener('DOMContentLoaded', () => {
       saveRemember(username, remember);
       let target = resolveRedirect(user);
       if (App.AgentOnboarding?.needsVerification?.(user)) {
-        target = App.AgentOnboarding.VERIFY_PAGE;
+        window.location.replace(App.Paths.agentHome());
+        return;
       }
-      window.location.replace(target);
+      const rel = target.replace(/^\/+/, '');
+      window.location.replace(App.Paths.absolute(rel));
     } catch (err) {
       const fail = registerFailedAttempt();
       errorEl.textContent = fail.locked

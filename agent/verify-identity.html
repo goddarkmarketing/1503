@@ -2,87 +2,11 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="0;url=/agent/">
   <title>ยืนยันตัวตน — KLADEE BROKER</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css">
-  <link rel="stylesheet" href="../css/portal.css">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>window.location.replace('/agent/');</script>
 </head>
-<body data-base-path="../">
-  <div class="app verify-identity-app">
-    <div class="main-wrapper" style="margin-left:0">
-      <header class="top-header">
-        <div class="user-profile">
-          <div class="user-avatar" data-shell="user-initials">AG</div>
-          <span class="user-name" data-shell="user-name">Agent</span>
-        </div>
-        <a href="#" class="btn-text" id="verifyLogout">ออกจากระบบ</a>
-      </header>
-      <main class="main-content">
-        <div class="content-card" style="max-width:720px;margin:0 auto">
-          <h1 class="admin-page-title">ยืนยันตัวตนก่อนใช้งาน</h1>
-          <p class="admin-hint">กรุณากรอกข้อมูลให้ตรงกับที่ลงทะเบียน และแนบเอกสารเพื่อให้แอดมินตรวจสอบ</p>
-
-          <div id="verifyPending" class="verify-status verify-status--pending" hidden>
-            <h2>ส่งคำขอแล้ว — รอแอดมินตรวจสอบ</h2>
-            <p>เมื่อแอดมินอนุมัติแล้ว ระบบจะเปิดใช้งานเมนูทั้งหมดให้คุณโดยอัตโนมัติ</p>
-          </div>
-
-          <div id="verifyRejected" class="verify-status verify-status--rejected" hidden>
-            <h2>คำขอถูกปฏิเสธ</h2>
-            <p id="verifyRejectNote"></p>
-            <p>กรุณาแก้ไขข้อมูลและส่งใหม่อีกครั้ง</p>
-          </div>
-
-          <form id="verifyIdentityForm" class="agent-form" novalidate>
-            <section class="agent-form__section">
-              <div class="agent-form__sectionHead">
-                <h3 class="agent-form__sectionTitle">ข้อมูลส่วนตัว</h3>
-              </div>
-              <div class="agent-form__grid">
-                <div class="form-field full">
-                  <label for="verifyName">ชื่อ-นามสกุล <span class="req">*</span></label>
-                  <input id="verifyName" name="name" required>
-                </div>
-                <div class="form-field">
-                  <label for="verifyEmail">อีเมล <span class="req">*</span></label>
-                  <input id="verifyEmail" name="email" type="email" required>
-                </div>
-                <div class="form-field">
-                  <label for="verifyPhone">เบอร์โทรศัพท์ <span class="req">*</span></label>
-                  <input id="verifyPhone" name="phone" required>
-                </div>
-              </div>
-              <p id="verifyRefHint" class="admin-hint" hidden></p>
-            </section>
-
-            <section class="agent-form__section">
-              <div class="agent-form__sectionHead">
-                <h3 class="agent-form__sectionTitle">เอกสารแนบ</h3>
-              </div>
-              <div class="agent-form__grid">
-                <div class="form-field full">
-                  <label for="verifyBank">รูปหน้าบัญชีธนาคาร <span class="req">*</span></label>
-                  <input id="verifyBank" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required>
-                </div>
-                <div class="form-field full">
-                  <label for="verifyIdCard">สำเนาบัตรประชาชน <span class="req">*</span></label>
-                  <input id="verifyIdCard" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required>
-                </div>
-              </div>
-            </section>
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary" id="verifySubmit">ส่งคำขอยืนยันตัวตน</button>
-            </div>
-          </form>
-        </div>
-      </main>
-    </div>
-  </div>
-
-  <script src="../js/load-agent.js?v=20260819g"></script>
-  <script src="../js/pages/agent-verify-identity.js?v=20260819g"></script>
+<body>
+  <p>กำลังเปลี่ยนเส้นทาง… <a href="/agent/">คลิกที่นี่</a></p>
 </body>
 </html>
