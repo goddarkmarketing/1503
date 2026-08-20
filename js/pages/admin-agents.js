@@ -109,7 +109,7 @@ function parentOptionsHtml(agentId, selectedParentId) {
   `;
 }
 
-function teamSectionHtml(agent) {
+function teamSectionHtml(agent, options = {}) {
   const members = agent
     ? (agentsCache || []).filter((a) => a.parentId === agent.id)
     : [];
@@ -118,7 +118,11 @@ function teamSectionHtml(agent) {
     ? `ตอนนี้เป็นลูกทีมของ ${parent.name} (${parent.code})`
     : 'ตอนนี้เป็นหัวทีม';
   const memberList = members.length
-    ? `<ul class="agent-team-chips">${members.map((m) => `<li>${escapeHtml(m.name)} <em>${escapeHtml(m.code)}</em></li>`).join('')}</ul>`
+    ? options.commissionFromOverview
+      ? `<ul class="agent-team-chips">${members.map((m) => `<li>${escapeHtml(m.name)} <em>${escapeHtml(m.code)}</em></li>`).join('')}</ul>
+         <p class="form-field__hint">ตั้งค่าคอมลูกทีมได้ที่ตารางด้านบน</p>`
+      : `<ul class="agent-team-chips">${members.map((m) => `<li><button type="button" class="agent-team-chip-btn" data-open-team-settings="${m.id}">${escapeHtml(m.name)} <em>${escapeHtml(m.code)}</em></button></li>`).join('')}</ul>
+         <p class="form-field__hint">คลิกชื่อลูกทีมเพื่อตั้งคอมแบ่ง (เช่น ลูกได้ 12 · หัวได้ 3)</p>`
     : '<p class="form-field__hint">ยังไม่มีลูกทีม ถ้าต้องการให้คนอื่นขึ้นกับบัญชีนี้ ให้ไปเปิดบัญชีนั้นแล้วเลือกหัวหน้าเป็นคนนี้</p>';
 
   return `
@@ -522,7 +526,7 @@ function openEditModal(agentId) {
 
         ${teamSectionHtml(agent)}
 
-        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates) : ''}
+        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates, { hasParent: !!agent.parentId }) : ''}
       </form>
     `,
     footer: `
@@ -564,9 +568,32 @@ function openEditModal(agentId) {
   });
 }
 
+function teamCommissionBodyHtml(agent) {
+  if (!App.AgentCommissionRates) return '';
+  const members = (agentsCache || []).filter((a) => a.parentId === agent.id);
+  const isLeader = !agent.parentId;
+
+  if (isLeader) {
+    return `
+      ${App.AgentCommissionRates.renderTeamCommissionOverview(agent, members)}
+      <details class="agent-form__advanced">
+        <summary>ตั้งค่ารายบริษัท / หักภาษี (ขั้นสูง) — หัวทีม</summary>
+        ${App.AgentCommissionRates.renderDetailedCommissionSections(agent.commissionRates)}
+      </details>
+    `;
+  }
+
+  return `
+    ${App.AgentCommissionRates.renderQuickCommissionBlock(agent.commissionRates, { hasParent: true })}
+    ${App.AgentCommissionRates.renderDetailedCommissionSections(agent.commissionRates)}
+  `;
+}
+
 function openTeamSettingsModal(agentId) {
   const agent = agentsCache.find((a) => a.id === agentId);
   if (!agent) return;
+  const members = (agentsCache || []).filter((a) => a.parentId === agent.id);
+  const isLeader = !agent.parentId;
 
   const overlay = App.Modal.open({
     title: `ตั้งค่าทีมและค่าคอม — ${agent.name}`,
@@ -574,9 +601,9 @@ function openTeamSettingsModal(agentId) {
     body: `
       <form id="teamSettingsForm" class="agent-form" novalidate>
         ${App.AgentCommissionRates ? App.AgentCommissionRates.renderAdminOnlyNotice('กำหนดทีม ค่าคอมลูกทีม และคอมแม่ทีมจากยอดขายลูกทีม') : ''}
-        <p class="agent-form__intro">ตั้งให้ <strong>${escapeHtml(agent.name)}</strong> (${escapeHtml(agent.code)}) ขึ้นกับใคร และได้คอมเท่าไหร่ในแต่ละบริษัท — หัวหน้าทีมไม่สามารถแก้ไขส่วนนี้เอง</p>
-        ${teamSectionHtml(agent)}
-        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates) : ''}
+        <p class="agent-form__intro">ตั้งให้ <strong>${escapeHtml(agent.name)}</strong> (${escapeHtml(agent.code)}) — หัวหน้าทีมไม่สามารถแก้ไขส่วนนี้เอง</p>
+        ${teamCommissionBodyHtml(agent)}
+        ${teamSectionHtml(agent, { commissionFromOverview: isLeader })}
       </form>
     `,
     footer: `
@@ -587,19 +614,48 @@ function openTeamSettingsModal(agentId) {
 
   overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
   App.AgentCommissionRates?.bindForm(overlay);
+  overlay.querySelectorAll('[data-open-team-settings]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      App.Modal.close();
+      openTeamSettingsModal(btn.dataset.openTeamSettings);
+    });
+  });
   overlay.querySelector('#confirmTeamSettings')?.addEventListener('click', async () => {
     const form = overlay.querySelector('#teamSettingsForm');
     const btn = overlay.querySelector('#confirmTeamSettings');
     try {
       await App.ButtonUI.withLoading(btn, async () => {
-        App.AgentCommissionRates?.applyQuickRatesFromForm(form);
-        await App.AgentService.updateAgent(agentId, {
-          parentId: form.parentId?.value || null,
-          commissionRates: App.AgentCommissionRates?.readFromForm(form)
-        });
+        const overview = form.querySelector('[data-team-commission-overview]');
+        if (isLeader && overview) {
+          const updates = App.AgentCommissionRates.buildTeamOverviewUpdates(form, agent, members);
+          const leaderUpdate = updates.find((u) => u.id === agent.id);
+          if (leaderUpdate && form.querySelector('[name^="commissionProduct_"]')) {
+            leaderUpdate.commissionRates = App.AgentCommissionRates.mergeLeaderAdvancedRates(
+              leaderUpdate.commissionRates,
+              App.AgentCommissionRates.readFromForm(form)
+            );
+          }
+          for (const update of updates) {
+            await App.AgentService.updateAgent(update.id, {
+              parentId: update.parentId,
+              commissionRates: update.commissionRates
+            });
+          }
+        } else {
+          App.AgentCommissionRates?.applyQuickRatesFromForm(form);
+          await App.AgentService.updateAgent(agentId, {
+            parentId: form.parentId?.value || null,
+            commissionRates: App.AgentCommissionRates?.readFromForm(form)
+          });
+        }
         await renderAgents();
         App.Modal.close();
-        App.AdminUtils.showToast(`บันทึกทีม/คอมของ ${agent.code} แล้ว`);
+        const savedCount = isLeader && overview ? members.length + 1 : 1;
+        App.AdminUtils.showToast(
+          savedCount > 1
+            ? `บันทึกคอมทั้งทีมของ ${agent.code} (${savedCount} คน) แล้ว`
+            : `บันทึกทีม/คอมของ ${agent.code} แล้ว`
+        );
       }, { label: 'กำลังบันทึก...' });
     } catch (err) {
       App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');

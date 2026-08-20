@@ -536,7 +536,17 @@ App.AgentCommissionRates = {
     const quickSection = root.querySelector('[data-team-quick-section]');
 
     const hasParent = !!(parentSelect && String(parentSelect.value || '').trim());
-    if (quickSection) quickSection.hidden = !hasParent;
+    const leaderWrap = root.querySelector('[data-quick-leader-wrap]');
+    const leaderHint = root.querySelector('[data-quick-leader-hint]');
+    const memberHint = root.querySelector('[data-quick-member-hint]');
+    const memberLabel = root.querySelector('[data-quick-member-label]');
+    if (leaderWrap) leaderWrap.hidden = !hasParent;
+    if (leaderHint) leaderHint.hidden = hasParent;
+    if (memberHint) memberHint.hidden = !hasParent;
+    if (memberLabel) {
+      memberLabel.textContent = hasParent ? 'ลูกทีมได้คอม (%)' : 'ค่าคอมของคนนี้ (%)';
+    }
+    if (quickSection) quickSection.hidden = false;
     section.hidden = !hasParent;
     const on = hasParent && !!enableCb?.checked;
     if (grid) grid.hidden = !on;
@@ -597,22 +607,30 @@ App.AgentCommissionRates = {
     return `<p class="admin-only-notice" role="note"><i data-lucide="shield"></i> <strong>ตั้งโดยแอดมินเท่านั้น</strong>${extra}</p>`;
   },
 
-  renderTeamQuickSection(rates) {
+  renderQuickCommissionBlock(rates, options = {}) {
     const normalized = this.normalize(rates);
     const memberRate = this._commonProductRate(normalized.products);
     const leaderRate = normalized.overrideEnabled
       ? this._commonProductRate(normalized.override.products)
       : '';
+    const hasParent = !!options.hasParent;
+    const memberLabel = hasParent ? 'ลูกทีมได้คอม (%)' : 'ค่าคอมของคนนี้ (%)';
+    const memberPlaceholder = hasParent ? 'เช่น 12' : 'เช่น 15';
     return `
-      <section class="agent-form__section agent-commission-rates__quick" data-team-quick-section hidden>
+      <section class="agent-form__section agent-commission-rates__quick" data-team-quick-section>
         <div class="agent-form__sectionHead">
-          <h3 class="agent-form__sectionTitle">ตั้งค่าคอมลูกทีม (แบบง่าย)</h3>
+          <h3 class="agent-form__sectionTitle">ตั้งค่าคอม (แบบง่าย)</h3>
           <span class="agent-form__sectionBadge">แนะนำ</span>
         </div>
-        <p class="agent-form__sectionHint">กรอก % แล้วกด <strong>ใช้ค่านี้</strong> — เช่น ลูกทีมได้ 12 · หัวหน้าได้ 3 ระบบจะใส่ให้ทุกบริษัท (ปรับรายบริษัทได้ด้านล่าง)</p>
+        <p class="agent-form__sectionHint" data-quick-leader-hint ${hasParent ? 'hidden' : ''}>
+          กรอก % ที่หัวทีมได้เมื่อ<strong>ขายเอง</strong> แล้วกดใช้ค่านี้ — ถ้าต้องการแบ่งให้ลูกทีม (เช่น ลูกได้ 12 · หัวได้ 3) ให้ไปกด <strong>ทีม/คอม</strong> ที่บัญชี<strong>ลูกทีม</strong>แต่ละคน
+        </p>
+        <p class="agent-form__sectionHint" data-quick-member-hint ${hasParent ? '' : 'hidden'}>
+          กรอก % แล้วกด <strong>ใช้ค่านี้</strong> — เช่น ลูกทีมได้ 12 · หัวหน้าได้ 3 ระบบจะใส่ให้ทุกบริษัท
+        </p>
         <div class="agent-commission-rates__quickRow">
           <div class="form-field">
-            <label for="quickMemberRate">ลูกทีมได้คอม (%)</label>
+            <label for="quickMemberRate" data-quick-member-label>${memberLabel}</label>
             <input
               type="number"
               id="quickMemberRate"
@@ -621,11 +639,11 @@ App.AgentCommissionRates = {
               max="100"
               step="0.01"
               inputmode="decimal"
-              placeholder="เช่น 12"
+              placeholder="${memberPlaceholder}"
               value="${memberRate !== '' ? memberRate : ''}"
             >
           </div>
-          <div class="form-field">
+          <div class="form-field" data-quick-leader-wrap ${hasParent ? '' : 'hidden'}>
             <label for="quickLeaderRate">หัวหน้าทีมได้จากยอดนี้ (%)</label>
             <input
               type="number"
@@ -644,21 +662,20 @@ App.AgentCommissionRates = {
             <button type="button" class="btn-primary btn-sm" data-quick-apply>ใช้ค่านี้</button>
           </div>
         </div>
+        <p class="agent-form__sectionHint agent-commission-rates__scrollHint">เลื่อนลงด้านล่างได้ หากต้องการตั้งรายบริษัทหรือหักภาษี</p>
       </section>
     `;
   },
 
-  renderFormSection(rates) {
+  renderDetailedCommissionSections(rates) {
     const normalized = this.normalize(rates);
     return `
-      ${this.renderAdminOnlyNotice('หัวหน้าทีมและนายหน้าไม่สามารถตั้งค่าคอมเองได้')}
-      ${this.renderTeamQuickSection(rates)}
       <section class="agent-form__section">
         <div class="agent-form__sectionHead">
-          <h3 class="agent-form__sectionTitle">2. ค่าคอมของนายหน้าคนนี้</h3>
-          <span class="agent-form__sectionBadge">แอดมิน</span>
+          <h3 class="agent-form__sectionTitle">ค่าคอมรายบริษัท (ขั้นสูง)</h3>
+          <span class="agent-form__sectionBadge agent-form__sectionBadge--muted">ไม่บังคับ</span>
         </div>
-        <p class="agent-form__sectionHint">รายละเอียดตามบริษัท — ใช้เมื่อแต่ละบริษัทให้ % ไม่เท่ากัน</p>
+        <p class="agent-form__sectionHint">ใช้เมื่อแต่ละบริษัทให้ % ไม่เท่ากัน หรือต้องตั้งหักภาษี / ออก 50 ทวิ แยกบริษัท</p>
         <ol class="agent-commission-rates__howto">
           <li>ใส่ <strong>% คอม</strong> ที่นายหน้าได้จากเบี้ยสุทธิ</li>
           <li>ถ้าต้องการหักภาษี จากค่าคอม ให้ติ๊ก <strong>หักภาษี</strong> แล้วใส่ %</li>
@@ -668,7 +685,7 @@ App.AgentCommissionRates = {
       </section>
       <section class="agent-form__section agent-commission-rates__override" data-override-section hidden>
         <div class="agent-form__sectionHead">
-          <h3 class="agent-form__sectionTitle">3. คอมหัวหน้าทีม (จากยอดขายลูกทีมคนนี้)</h3>
+          <h3 class="agent-form__sectionTitle">คอมหัวหน้าทีมรายบริษัท (ขั้นสูง)</h3>
         </div>
         <p class="agent-form__sectionHint">เปิดเมื่อหัวหน้าต้องได้ % จากยอดขายของลูกทีม — ตั้งแบบง่ายได้ที่ช่องด้านบน</p>
         <label class="wht50-settings__option" for="overrideEnabled" style="margin-bottom:14px">
@@ -686,6 +703,208 @@ App.AgentCommissionRates = {
           })}
         </div>
       </section>
+    `;
+  },
+
+  renderTeamQuickSection(rates) {
+    return this.renderQuickCommissionBlock(rates);
+  },
+
+  applyUniformRates(baseRates, { memberPercent, leaderPercent } = {}) {
+    const normalized = this.normalize(baseRates);
+    const next = {
+      ...normalized,
+      products: { ...normalized.products },
+      taxWithhold: { ...normalized.taxWithhold },
+      taxWithholdEnabled: { ...normalized.taxWithholdEnabled },
+      override: {
+        products: { ...normalized.override.products },
+        taxWithhold: { ...normalized.override.taxWithhold },
+        taxWithholdEnabled: { ...normalized.override.taxWithholdEnabled }
+      }
+    };
+
+    const memberVal = String(memberPercent ?? '').trim();
+    if (memberVal !== '') {
+      const p = this._parseRate(memberVal, null);
+      if (p != null) {
+        Object.keys(next.products).forEach((key) => {
+          next.products[key] = p;
+        });
+      }
+    }
+
+    if (leaderPercent !== undefined) {
+      const leaderVal = String(leaderPercent ?? '').trim();
+      if (leaderVal !== '') {
+        const leaderNum = Number(leaderVal);
+        if (Number.isFinite(leaderNum)) {
+          next.overrideEnabled = leaderNum > 0;
+          Object.keys(next.override.products).forEach((key) => {
+            next.override.products[key] = leaderNum;
+          });
+        }
+      }
+    }
+
+    return next;
+  },
+
+  renderTeamCommissionOverview(leader, members = []) {
+    const leaderNorm = this.normalize(leader.commissionRates);
+    const leaderSelf = this._commonProductRate(leaderNorm.products);
+
+    const leaderRow = `
+      <tr data-team-member-row="${this._escape(leader.id)}" data-team-role="leader">
+        <td>
+          <strong>${this._escape(leader.name)}</strong>
+          <span class="agent-team-overview__code">${this._escape(leader.code)}</span>
+        </td>
+        <td><span class="agent-form__sectionBadge">หัวทีม</span></td>
+        <td>
+          <input
+            type="number"
+            data-team-self-rate
+            min="0"
+            max="100"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="เช่น 15"
+            value="${leaderSelf !== '' ? leaderSelf : ''}"
+            aria-label="ค่าคอมของ ${this._escape(leader.name)} เมื่อขายเอง"
+          >
+        </td>
+        <td class="agent-team-overview__na" aria-hidden="true">—</td>
+      </tr>
+    `;
+
+    const memberRows = members.map((member) => {
+      const norm = this.normalize(member.commissionRates);
+      const memberRate = this._commonProductRate(norm.products);
+      const leaderRate = norm.overrideEnabled
+        ? this._commonProductRate(norm.override.products)
+        : '';
+      return `
+        <tr data-team-member-row="${this._escape(member.id)}" data-team-role="member">
+          <td>
+            <strong>${this._escape(member.name)}</strong>
+            <span class="agent-team-overview__code">${this._escape(member.code)}</span>
+          </td>
+          <td><span class="agent-form__sectionBadge agent-form__sectionBadge--muted">ลูกทีม</span></td>
+          <td>
+            <input
+              type="number"
+              data-member-rate
+              min="0"
+              max="100"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="เช่น 12"
+              value="${memberRate !== '' ? memberRate : ''}"
+              aria-label="ลูกทีม ${this._escape(member.name)} ได้คอม"
+            >
+          </td>
+          <td>
+            <input
+              type="number"
+              data-leader-rate
+              min="0"
+              max="100"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="เช่น 3"
+              value="${leaderRate !== '' ? leaderRate : ''}"
+              aria-label="หัวทีมได้จากยอดขายของ ${this._escape(member.name)}"
+            >
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const emptyHint = members.length
+      ? ''
+      : '<p class="form-field__hint">ยังไม่มีลูกทีม — ตั้งค่าคอมของหัวทีมได้ที่แถวด้านบน</p>';
+
+    return `
+      <section class="agent-form__section agent-team-commission-overview" data-team-commission-overview>
+        <div class="agent-form__sectionHead">
+          <h3 class="agent-form__sectionTitle">ตั้งค่าคอมทั้งทีม</h3>
+          <span class="agent-form__sectionBadge">แนะนำ</span>
+        </div>
+        <p class="agent-form__sectionHint">
+          กำหนด % ให้หัวทีมและลูกทีมทุกคนในที่เดียว — เช่น หัวทีมขายเองได้ 15 · ลูกทีมได้ 12 · หัวทีมได้จากยอดลูก 3
+        </p>
+        <div class="agent-team-overview__tableWrap">
+          <table class="agent-team-overview__table">
+            <thead>
+              <tr>
+                <th scope="col">ชื่อ</th>
+                <th scope="col">บทบาท</th>
+                <th scope="col">ได้คอม (%)</th>
+                <th scope="col">หัวทีมได้จากยอดนี้ (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${leaderRow}
+              ${memberRows}
+            </tbody>
+          </table>
+        </div>
+        ${emptyHint}
+      </section>
+    `;
+  },
+
+  buildTeamOverviewUpdates(form, leader, members = []) {
+    if (!form || !leader) return [];
+    const updates = [];
+    const leaderRow = form.querySelector(`[data-team-member-row="${leader.id}"]`);
+    if (leaderRow) {
+      const selfRate = leaderRow.querySelector('[data-team-self-rate]')?.value;
+      updates.push({
+        id: leader.id,
+        parentId: form.parentId?.value || null,
+        commissionRates: this.applyUniformRates(leader.commissionRates, { memberPercent: selfRate })
+      });
+    }
+
+    members.forEach((member) => {
+      const row = form.querySelector(`[data-team-member-row="${member.id}"]`);
+      if (!row) return;
+      const memberRate = row.querySelector('[data-member-rate]')?.value;
+      const leaderRate = row.querySelector('[data-leader-rate]')?.value;
+      updates.push({
+        id: member.id,
+        parentId: leader.id,
+        commissionRates: this.applyUniformRates(member.commissionRates, {
+          memberPercent: memberRate,
+          leaderPercent: leaderRate
+        })
+      });
+    });
+
+    return updates;
+  },
+
+  mergeLeaderAdvancedRates(uniformRates, formRates) {
+    if (!formRates) return uniformRates;
+    return {
+      ...uniformRates,
+      taxWithhold: formRates.taxWithhold,
+      taxWithholdEnabled: formRates.taxWithholdEnabled,
+      override: {
+        ...uniformRates.override,
+        taxWithhold: formRates.override?.taxWithhold || uniformRates.override.taxWithhold,
+        taxWithholdEnabled: formRates.override?.taxWithholdEnabled || uniformRates.override.taxWithholdEnabled
+      }
+    };
+  },
+
+  renderFormSection(rates, options = {}) {
+    return `
+      ${this.renderAdminOnlyNotice('หัวหน้าทีมและนายหน้าไม่สามารถตั้งค่าคอมเองได้')}
+      ${this.renderQuickCommissionBlock(rates, options)}
+      ${this.renderDetailedCommissionSections(rates)}
     `;
   },
 
