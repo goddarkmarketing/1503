@@ -784,6 +784,8 @@ body.receipt-modal-open {
 }
 
 .receipt-settings .receipt-doc--preview .receipt-doc__meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
   border: 1px solid #dbe3ea;
   border-radius: 8px;
   overflow: hidden;
@@ -791,12 +793,11 @@ body.receipt-modal-open {
 }
 
 .receipt-settings .receipt-doc--preview .receipt-doc__metaRow {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  border-bottom: 1px solid #e5e7eb;
+  display: contents;
 }
 
-.receipt-settings .receipt-doc--preview .receipt-doc__metaRow:last-child {
+.receipt-settings .receipt-doc--preview .receipt-doc__metaRow:last-child dt,
+.receipt-settings .receipt-doc--preview .receipt-doc__metaRow:last-child dd {
   border-bottom: 0;
 }
 
@@ -804,6 +805,7 @@ body.receipt-modal-open {
   padding: 6px 10px;
   background: #f8fafc;
   border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
   white-space: nowrap;
   font-weight: 650;
   color: #475569;
@@ -812,6 +814,7 @@ body.receipt-modal-open {
 .receipt-settings .receipt-doc--preview .receipt-doc__meta dd {
   padding: 6px 10px;
   background: #fff;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .receipt-settings .receipt-doc--preview .receipt-doc__chips {
