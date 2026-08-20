@@ -85,27 +85,11 @@
     };
   }
 
-  function fitPreview() {
-    const sizer = previewHost?.querySelector('.receipt-settings__previewSizer');
-    const fit = previewHost?.querySelector('.receipt-settings__previewFit');
-    if (!sizer || !fit || !previewHost.clientWidth) return;
-    const paperW = 794;
-    const scale = Math.max(0.4, Math.min(1, (previewHost.clientWidth - 24) / paperW));
-    fit.style.width = `${paperW}px`;
-    fit.style.transform = `scale(${scale})`;
-    fit.style.transformOrigin = 'top left';
-    sizer.style.height = `${Math.ceil(fit.offsetHeight * scale)}px`;
-  }
-
   function renderPreview() {
     if (!previewHost) return;
     try {
       ReceiptDocument.applySettings(readForm());
-      previewHost.innerHTML = `<div class="receipt-settings__previewSizer"><div class="receipt-settings__previewFit">${ReceiptDocument.buildReceiptHtml(sampleData())}</div></div>`;
-      previewHost.querySelectorAll('img').forEach((img) => {
-        if (!img.complete) img.addEventListener('load', fitPreview, { once: true });
-      });
-      requestAnimationFrame(fitPreview);
+      previewHost.innerHTML = ReceiptDocument.buildReceiptHtml(sampleData(), { preview: true });
     } catch (err) {
       console.error('receipt preview failed', err);
       previewHost.innerHTML = '<p class="admin-hint">ไม่สามารถแสดงตัวอย่างได้</p>';
@@ -166,8 +150,11 @@
     }
     const btn = document.getElementById('btnPaperSave');
     const payload = readForm();
-    btn.disabled = true;
-    btn.textContent = 'กำลังบันทึก...';
+    const btnHtml = btn?.innerHTML;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'กำลังบันทึก...';
+    }
     try {
       if (!App.ReceiptService) throw new Error('ระบบตั้งค่ายังไม่พร้อม');
       const saved = await App.ReceiptService.updatePaperSettings(payload);
@@ -177,19 +164,16 @@
     } catch (err) {
       toast(err.message || 'บันทึกไม่สำเร็จ', 'error');
     } finally {
-      btn.disabled = false;
-      btn.textContent = 'บันทึกการตั้งค่า';
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = btnHtml || 'บันทึกการตั้งค่า';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
     }
   });
 
   // Show defaults immediately, then hydrate from saved settings
   fillForm(defaults);
-
-  if (window.ResizeObserver && previewHost) {
-    new ResizeObserver(() => fitPreview()).observe(previewHost);
-  } else {
-    window.addEventListener('resize', fitPreview);
-  }
 
   (async function boot() {
     try {

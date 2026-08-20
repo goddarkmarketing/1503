@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css?v=20260713a">
   <link rel="stylesheet" href="../css/portal.css">
-  <link rel="stylesheet" href="../css/receipt.css?v=20260820k">
+  <link rel="stylesheet" href="../css/receipt.css?v=20260820m">
   <link rel="stylesheet" href="../css/receipt-print.css?v=20260820j">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
@@ -114,7 +114,7 @@
         <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
       </header>
       <main class="main-content">
-        <div class="content-card">
+        <div class="content-card content-card--receipt-settings">
           <div class="admin-toolbar">
             <div>
               <h1 class="admin-page-title">ตั้งค่าใบเสร็จ</h1>
@@ -164,7 +164,7 @@
                     โลโก้
                   </h3>
                 </div>
-                <p class="agent-form__sectionHint">แสดงตรงกลางหัวกระดาษ ใต้ชื่อเอกสาร</p>
+                <p class="agent-form__sectionHint">แสดงด้านซ้ายของหัวกระดาษ</p>
                 <input type="hidden" id="paperLogoUrl" name="logoUrl">
                 <div class="receipt-settings__logoRow">
                   <label class="receipt-settings__dropzone" for="paperLogoFile">
@@ -204,7 +204,7 @@
                     <input id="paperFooterThanks" name="footerThanks" placeholder="ขอบคุณทุกท่านที่มาอุดหนุน">
                   </div>
                   <div class="form-field">
-                    <label for="paperSignLabel">ป้ายลงชื่อ</label>
+                    <label for="paperSignLabel">ท้ายลงชื่อ</label>
                     <input id="paperSignLabel" name="signLabel" placeholder="ผู้รับเงิน">
                   </div>
                 </div>
@@ -228,7 +228,7 @@
             <aside class="receipt-settings__previewPanel">
               <div class="receipt-settings__previewHead">
                 <h3 class="receipt-settings__previewTitle">ตัวอย่างใบเสร็จ</h3>
-                <p class="receipt-settings__previewHint">อัปเดตอัตโนมัติเมื่อแก้ไขฟอร์ม</p>
+                <p class="receipt-settings__previewHint">อัปเดตอัตโนมัติทันทีที่คุณตั้งค่า</p>
               </div>
               <div class="receipt-settings__previewScroll" id="receiptPaperLivePreview"></div>
             </aside>
@@ -242,7 +242,7 @@
   <script src="../js/load-admin.js?v=20260819m"></script>
   <script src="../js/admin-app.js?v=20260819m"></script>
   <script src="../js/utils/baht-text.js?v=20260713c"></script>
-  <script src="../js/utils/receipt-document.js?v=20260820j"></script>
-  <script src="../js/pages/receipt-paper-settings.js?v=20260820k"></script>
+  <script src="../js/utils/receipt-document.js?v=20260820m"></script>
+  <script src="../js/pages/receipt-paper-settings.js?v=20260820m"></script>
 </body>
 </html>

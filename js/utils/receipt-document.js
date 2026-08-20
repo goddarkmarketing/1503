@@ -171,7 +171,100 @@
     return `<img class="receipt-doc__logo" src="${src}" width="88" height="88" alt="${name}">`;
   }
 
-  function buildReceiptHtml(data) {
+  function buildPreviewReceiptHtml(data) {
+    const paper = getShop();
+    const lines = (data.lines || []).filter((l) => l.description || l.total > 0);
+    const lineRows = lines.map((line, i) => {
+      const hasAmount = line.total > 0 || line.description;
+      return `<tr>
+        <td class="c">${hasAmount ? i + 1 : ''}</td>
+        <td class="l">${esc(line.description)}</td>
+        <td class="r">${hasAmount && line.qty !== '' ? formatQty(line.qty) : ''}</td>
+        <td class="r">${hasAmount && line.price !== '' ? formatMoney(line.price) : ''}</td>
+        <td class="r">${hasAmount && line.total !== '' ? formatMoney(line.total) : ''}</td>
+      </tr>`;
+    }).join('');
+    const totalText = global.BahtText ? global.BahtText.toText(data.grandTotal) : '';
+    const money = formatMoney(data.grandTotal);
+
+    return `<article class="receipt-doc receipt-doc--preview">
+  <header class="receipt-doc__head">
+    <div class="receipt-doc__shopBlock">
+      ${troLogoHtml()}
+      <div class="receipt-doc__shop">
+        <p class="receipt-doc__shop-name">${esc(paper.name)}</p>
+        <p>${esc(paper.address)}</p>
+        <p>เลขประจำตัวผู้เสียภาษี ${esc(paper.taxId)}</p>
+        <p>โทร. ${esc(paper.phone)}</p>
+      </div>
+    </div>
+    <div class="receipt-doc__metaWrap">
+      <div class="receipt-doc__badge">${esc(paper.docTitle || DEFAULT_SHOP.docTitle)}</div>
+      <dl class="receipt-doc__meta">
+        <div class="receipt-doc__metaRow"><dt>เลขที่</dt><dd>${esc(data.billNo)}</dd></div>
+        <div class="receipt-doc__metaRow"><dt>วันที่ออกใบเสร็จ</dt><dd>${esc(data.issueDate)}</dd></div>
+        <div class="receipt-doc__metaRow"><dt>วันที่รับเงิน</dt><dd>${esc(data.bookDate)}</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <div class="receipt-doc__chips">
+    <div class="receipt-doc__chip"><span>ทะเบียน</span><strong>${esc(data.plateNo)}</strong></div>
+    <div class="receipt-doc__chip"><span>ยี่ห้อ</span><strong>${esc(data.brand)}</strong></div>
+    <div class="receipt-doc__chip"><span>ชื่อ-สกุล</span><strong>${esc(data.customerName)}</strong></div>
+    <div class="receipt-doc__chip"><span>เบอร์โทร</span><strong>${esc(data.phone)}</strong></div>
+  </div>
+
+  <table class="receipt-doc__sheet">
+    <colgroup>
+      <col class="receipt-doc__col-no">
+      <col class="receipt-doc__col-item">
+      <col class="receipt-doc__col-qty">
+      <col class="receipt-doc__col-price">
+      <col class="receipt-doc__col-total">
+    </colgroup>
+    <thead>
+      <tr class="receipt-doc__items-head">
+        <th class="c">ลำดับ</th>
+        <th class="l">รายการสินค้า / รายละเอียด</th>
+        <th class="r">จำนวน</th>
+        <th class="r">ราคาต่อหน่วย</th>
+        <th class="r">จำนวนเงิน</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${lineRows}
+      <tr class="receipt-doc__total">
+        <td colspan="3"></td>
+        <th class="r">รวมเงิน</th>
+        <td class="r receipt-doc__grand">${money}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="receipt-doc__summary">
+    <div class="receipt-doc__note"><span>หมายเหตุ</span></div>
+    <div class="receipt-doc__grandBox">
+      <span>รวมเงินทั้งสิ้น</span>
+      <strong>${money} บาท</strong>
+      <em>${esc(totalText ? `(${totalText})` : '')}</em>
+    </div>
+  </div>
+
+  <footer class="receipt-doc__foot">
+    <div class="receipt-doc__sign">
+      <span class="receipt-doc__sign-line"></span>
+      <span class="receipt-doc__sign-label">${esc(paper.signLabel || DEFAULT_SHOP.signLabel)}</span>
+    </div>
+    <p class="receipt-doc__thanks">${esc(paper.footerThanks || DEFAULT_SHOP.footerThanks)}</p>
+  </footer>
+</article>`;
+  }
+
+  function buildReceiptHtml(data, options = {}) {
+    if (options && options.preview) {
+      return buildPreviewReceiptHtml(data);
+    }
     const paper = getShop();
     const lines = (data.lines || []).filter((l) => l.description || l.total > 0);
     const minRows = 4;
