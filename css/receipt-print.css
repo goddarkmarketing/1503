@@ -60,15 +60,17 @@
   width: 100%;
   max-width: 794px;
   margin: 0 auto;
-  padding: 10mm 10mm 12mm;
+  padding: 26px 28px 24px;
   background: #fff;
-  color: #111;
+  color: #0f172a;
   font-family: 'Sarabun', 'TH Sarabun New', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.4;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   box-sizing: border-box;
   overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
 }
 .receipt-doc *,
 .receipt-doc *::before,
@@ -86,15 +88,12 @@
 }
 .receipt-doc th,
 .receipt-doc td {
-  border: 1px solid #222;
-  padding: 7px 8px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 9px 8px;
   vertical-align: middle;
   overflow-wrap: anywhere;
-  word-break: break-word;
-}
-.receipt-doc th {
-  font-weight: 650;
-  background: #f7f8fa;
+  word-break: normal;
 }
 .receipt-doc .c { text-align: center; }
 .receipt-doc .l { text-align: left; }
@@ -102,168 +101,223 @@
 
 .receipt-doc__head {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) auto minmax(268px, 0.9fr);
-  gap: 12px 14px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(210px, 0.7fr);
+  gap: 16px 20px;
   align-items: start;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+.receipt-doc__shopBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+.receipt-doc__logoWrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+}
+.receipt-doc__logo {
+  width: 72px;
+  height: 72px;
+  display: block;
+  margin: 0;
+  object-fit: contain;
+  border-radius: 50%;
 }
 .receipt-doc__shop {
   min-width: 0;
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #334155;
 }
 .receipt-doc__shop-name {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
   margin-bottom: 4px !important;
 }
-.receipt-doc__brand {
+.receipt-doc__metaWrap { min-width: 0; }
+.receipt-doc__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #0f5c45;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
   text-align: center;
 }
-.receipt-doc__logo {
-  width: 80px;
-  height: 80px;
-  display: block;
-  margin: 0 auto 6px;
-  object-fit: contain;
-}
-.receipt-doc__doc-title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .receipt-doc__meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
   margin: 0;
   width: 100%;
   min-width: 0;
-  border: 1px solid #222;
-  border-bottom: 0;
-  font-size: 12.5px;
+  border: 1px solid #dbe3ea;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 12px;
 }
-.receipt-doc__metaRow {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  border-bottom: 1px solid #222;
-}
+.receipt-doc__metaRow { display: contents; }
+.receipt-doc__metaRow:last-child dt,
+.receipt-doc__metaRow:last-child dd { border-bottom: 0; }
 .receipt-doc__meta dt {
   margin: 0;
-  padding: 6px 8px;
+  padding: 6px 10px;
   font-weight: 650;
   white-space: nowrap;
-  background: #f7f8fa;
-  border-right: 1px solid #222;
+  background: #f8fafc;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  color: #475569;
 }
 .receipt-doc__meta dd {
   margin: 0;
-  padding: 6px 8px;
+  padding: 6px 10px;
   min-width: 0;
   background: #fff;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-/* Customer info — separate table so columns don't fight the items grid */
-.receipt-doc__customerTable {
-  margin: 0 0 10px;
-  font-size: 12.5px;
+.receipt-doc__chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
 }
-.receipt-doc__customerTable th {
-  width: 11%;
-  text-align: center;
-  white-space: nowrap;
-  font-size: 12px;
-  padding: 6px 4px;
-}
-.receipt-doc__customerTable td {
-  width: 14%;
-  text-align: center;
-  padding: 6px 6px;
+.receipt-doc__chip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #dce7e1;
+  border-radius: 8px;
   background: #fff;
-  overflow-wrap: break-word;
-  word-break: normal;
 }
-.receipt-doc__customerTable th:nth-child(5),
-.receipt-doc__customerTable td:nth-child(6) {
-  width: 12%;
+.receipt-doc__chip span {
+  padding: 7px 8px;
+  background: #e8f3ee;
+  color: #0f5c45;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
-.receipt-doc__customerTable td:nth-child(6) {
-  width: 18%;
+.receipt-doc__chip strong {
+  min-width: 0;
+  padding: 7px 8px;
+  font-size: 12px;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.receipt-doc__sheet {
-  margin-top: 0;
-  font-size: 13px;
-}
+.receipt-doc__sheet { margin-top: 0; font-size: 13px; }
 .receipt-doc__col-no { width: 10%; }
-.receipt-doc__col-item { width: 46%; }
-.receipt-doc__col-qty { width: 12%; }
-.receipt-doc__col-price { width: 16%; }
-.receipt-doc__col-total { width: 16%; }
-
+.receipt-doc__col-item { width: 42%; }
+.receipt-doc__col-qty { width: 14%; }
+.receipt-doc__col-price { width: 17%; }
+.receipt-doc__col-total { width: 17%; }
 .receipt-doc__items-head th {
   text-align: center;
-  font-weight: 650;
+  font-weight: 700;
   font-size: 12px;
-  padding: 8px 6px;
+  padding: 10px 8px;
+  background: #0f5c45;
+  color: #fff;
+  border-bottom: 0;
 }
+.receipt-doc__items-head th:first-child { border-radius: 8px 0 0 0; }
+.receipt-doc__items-head th:last-child { border-radius: 0 8px 0 0; }
 .receipt-doc__sheet tbody td {
-  min-height: 30px;
-  height: 30px;
+  min-height: 36px;
+  height: auto;
   background: #fff;
 }
-.receipt-doc__sheet tbody td.l {
-  padding-left: 10px;
-}
-.receipt-doc__sheet tbody td.r {
-  padding-right: 10px;
-  white-space: nowrap;
-}
+.receipt-doc__sheet tbody td.l { padding-left: 10px; }
+.receipt-doc__sheet tbody td.r { padding-right: 10px; white-space: nowrap; }
 .receipt-doc__total th,
 .receipt-doc__total td {
-  font-weight: 650;
-  background: #f7f8fa;
-}
-.receipt-doc__words {
-  text-align: left !important;
-  font-weight: 400 !important;
-  padding-left: 10px !important;
-  white-space: normal !important;
-  background: #fff !important;
+  font-weight: 700;
+  background: #fff;
+  border-bottom: 0;
 }
 .receipt-doc__grand {
   font-weight: 700 !important;
-  font-size: 14px;
+  font-size: 15px;
+  color: #0f5c45;
   white-space: nowrap !important;
 }
 
+.receipt-doc__summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.7fr);
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+.receipt-doc__note { font-size: 12.5px; color: #64748b; }
+.receipt-doc__grandBox { text-align: right; }
+.receipt-doc__grandBox span { display: block; font-size: 12.5px; color: #475569; }
+.receipt-doc__grandBox strong {
+  display: block;
+  margin: 2px 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+.receipt-doc__grandBox em {
+  display: block;
+  font-style: normal;
+  font-size: 12px;
+  color: #64748b;
+}
+
 .receipt-doc__foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  gap: 16px;
   margin-top: 28px;
-  padding: 0 4px;
+  padding: 0;
   font-size: 13px;
 }
-.receipt-doc__foot-row {
+.receipt-doc__sign {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 .receipt-doc__sign-line {
-  flex: 0 0 140px;
-  width: 140px;
-  border-bottom: 1px dotted #000;
-  height: 18px;
+  width: 160px;
+  flex: none;
+  height: 0;
+  border-bottom: 1px dotted #94a3b8;
 }
 .receipt-doc__sign-label {
   display: block;
-  width: 140px;
-  margin-top: 4px;
+  width: 160px;
+  margin: 0;
   text-align: center;
+  font-size: 12.5px;
+  color: #475569;
 }
 .receipt-doc__thanks {
   margin: 0;
   font-weight: 600;
-  white-space: nowrap;
+  text-align: right;
+  white-space: normal;
 }
 
 @media print {
@@ -300,7 +354,8 @@
     padding: 0 !important;
     background: transparent !important;
   }
-  #receiptDocPrint {
+  #receiptDocPrint,
+  .receipt-doc {
     display: block !important;
     width: 100% !important;
     max-width: none !important;
@@ -308,6 +363,52 @@
     padding: 0 !important;
     box-shadow: none !important;
     overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  .receipt-doc__shop,
+  .receipt-doc__shop-name,
+  .receipt-doc__note,
+  .receipt-doc__grandBox span,
+  .receipt-doc__grandBox em,
+  .receipt-doc__sign-label,
+  .receipt-doc__thanks,
+  .receipt-doc__grand,
+  .receipt-doc__grandBox strong {
+    color: #000 !important;
+  }
+  .receipt-doc__badge,
+  .receipt-doc__items-head th {
+    background: #000 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .receipt-doc__chip span,
+  .receipt-doc__meta dt,
+  .receipt-doc__summary {
+    background: #f2f2f2 !important;
+    color: #000 !important;
+    border-color: #000 !important;
+  }
+  .receipt-doc__chip,
+  .receipt-doc__meta,
+  .receipt-doc__summary,
+  .receipt-doc th,
+  .receipt-doc td {
+    border-color: #000 !important;
+  }
+  .receipt-doc__logoBtn,
+  .receipt-doc__logoTrash {
+    display: none !important;
+  }
+  .receipt-doc__logo {
+    filter: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
   }
 }
 
@@ -315,22 +416,14 @@
   .receipt-print-modal__dialog {
     width: 100%;
   }
-  .receipt-print-modal .receipt-doc__head {
+  .receipt-print-modal .receipt-doc__head,
+  .receipt-print-modal .receipt-doc__chips,
+  .receipt-print-modal .receipt-doc__summary,
+  .receipt-print-modal .receipt-doc__foot {
     grid-template-columns: 1fr;
   }
-  .receipt-print-modal .receipt-doc__brand {
-    order: -1;
-  }
   .receipt-print-modal .receipt-doc {
-    padding: 8mm 5mm;
+    padding: 16px;
     font-size: 12px;
-  }
-  .receipt-print-modal .receipt-doc__sheet,
-  .receipt-print-modal .receipt-doc__customerTable {
-    font-size: 11px;
-  }
-  .receipt-print-modal .receipt-doc th,
-  .receipt-print-modal .receipt-doc td {
-    padding: 5px 4px;
   }
 }

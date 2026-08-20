@@ -171,8 +171,23 @@
     return `<img class="receipt-doc__logo" src="${src}" width="88" height="88" alt="${name}">`;
   }
 
-  function buildPreviewReceiptHtml(data) {
+  function logoMarkup(paper, editable) {
+    const img = troLogoHtml();
+    if (!editable) {
+      return `<div class="receipt-doc__logoWrap">${img}</div>`;
+    }
+    const custom = paper.logoUrl && paper.logoUrl !== DEFAULT_SHOP.logoUrl;
+    return `<div class="receipt-doc__logoWrap">
+        <button type="button" class="receipt-doc__logoBtn" id="receiptLogoPick" title="คลิกเพื่ออัปโหลดโลโก้">${img}</button>
+        <button type="button" class="receipt-doc__logoTrash${custom ? '' : ' is-hidden'}" id="receiptLogoTrash" title="ลบโลโก้">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </div>`;
+  }
+
+  function buildReceiptHtml(data, options = {}) {
     const paper = getShop();
+    const editable = !!(options && options.preview);
     const lines = (data.lines || []).filter((l) => l.description || l.total > 0);
     const lineRows = lines.map((line, i) => {
       const hasAmount = line.total > 0 || line.description;
@@ -187,17 +202,10 @@
     const totalText = global.BahtText ? global.BahtText.toText(data.grandTotal) : '';
     const money = formatMoney(data.grandTotal);
 
-    return `<article class="receipt-doc receipt-doc--preview">
+    return `<article class="receipt-doc${editable ? ' receipt-doc--preview' : ''}" id="receiptDocPrint">
   <header class="receipt-doc__head">
     <div class="receipt-doc__shopBlock">
-      <div class="receipt-doc__logoWrap">
-        <button type="button" class="receipt-doc__logoBtn" id="receiptLogoPick" title="คลิกเพื่ออัปโหลดโลโก้">
-          ${troLogoHtml()}
-        </button>
-        <button type="button" class="receipt-doc__logoTrash${paper.logoUrl && paper.logoUrl !== DEFAULT_SHOP.logoUrl ? '' : ' is-hidden'}" id="receiptLogoTrash" title="ลบโลโก้">
-          <i data-lucide="trash-2"></i>
-        </button>
-      </div>
+      ${logoMarkup(paper, editable)}
       <div class="receipt-doc__shop">
         <p class="receipt-doc__shop-name">${esc(paper.name)}</p>
         <p>${esc(paper.address)}</p>
@@ -268,95 +276,6 @@
 </article>`;
   }
 
-  function buildReceiptHtml(data, options = {}) {
-    if (options && options.preview) {
-      return buildPreviewReceiptHtml(data);
-    }
-    const paper = getShop();
-    const lines = (data.lines || []).filter((l) => l.description || l.total > 0);
-    const minRows = 4;
-    while (lines.length < minRows) lines.push({ description: '', qty: '', price: '', total: '' });
-
-    const lineRows = lines.map((line, i) => {
-      const hasAmount = line.total > 0 || line.description;
-      return `<tr>
-        <td class="c">${hasAmount ? i + 1 : ''}</td>
-        <td class="l">${esc(line.description)}</td>
-        <td class="r">${hasAmount && line.qty !== '' ? formatQty(line.qty) : ''}</td>
-        <td class="r">${hasAmount && line.price !== '' ? formatMoney(line.price) : ''}</td>
-        <td class="r">${hasAmount && line.total !== '' ? formatMoney(line.total) : ''}</td>
-      </tr>`;
-    }).join('');
-
-    const totalText = global.BahtText ? global.BahtText.toText(data.grandTotal) : '';
-
-    return `<article class="receipt-doc" id="receiptDocPrint">
-  <header class="receipt-doc__head">
-    <div class="receipt-doc__shop">
-      <p class="receipt-doc__shop-name">${esc(paper.name)}</p>
-      <p>${esc(paper.address)}</p>
-      <p>เลขประจำตัวผู้เสียภาษี ${esc(paper.taxId)}</p>
-      <p>โทร. ${esc(paper.phone)}</p>
-    </div>
-    <div class="receipt-doc__brand">
-      ${troLogoHtml()}
-      <p class="receipt-doc__doc-title">${esc(paper.docTitle || DEFAULT_SHOP.docTitle)}</p>
-    </div>
-    <dl class="receipt-doc__meta">
-      <div class="receipt-doc__metaRow"><dt>บิลเลขที่</dt><dd>${esc(data.billNo)}</dd></div>
-      <div class="receipt-doc__metaRow"><dt>วันที่ออกใบเสร็จ</dt><dd>${esc(data.issueDate)}</dd></div>
-      <div class="receipt-doc__metaRow"><dt>วันที่รับเล่ม</dt><dd>${esc(data.bookDate)}</dd></div>
-    </dl>
-  </header>
-
-  <table class="receipt-doc__customerTable">
-    <tbody>
-      <tr>
-        <th>ทะเบียน</th><td>${esc(data.plateNo)}</td>
-        <th>ยี่ห้อ</th><td>${esc(data.brand)}</td>
-        <th>ชื่อ-สกุล</th><td>${esc(data.customerName)}</td>
-        <th>เบอร์โทร</th><td>${esc(data.phone)}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <table class="receipt-doc__sheet">
-    <colgroup>
-      <col class="receipt-doc__col-no">
-      <col class="receipt-doc__col-item">
-      <col class="receipt-doc__col-qty">
-      <col class="receipt-doc__col-price">
-      <col class="receipt-doc__col-total">
-    </colgroup>
-    <thead>
-      <tr class="receipt-doc__items-head">
-        <th class="c">ลำดับ</th>
-        <th class="l">รายการสินค้า/รายละเอียด</th>
-        <th class="r">จำนวน</th>
-        <th class="r">ราคา/หน่วย</th>
-        <th class="r">รวมเงิน</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${lineRows}
-      <tr class="receipt-doc__total">
-        <td colspan="2" class="receipt-doc__words">${esc(totalText)}</td>
-        <th class="r" colspan="2">รวมเงิน</th>
-        <td class="r receipt-doc__grand">${formatMoney(data.grandTotal)}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <footer class="receipt-doc__foot">
-    <div class="receipt-doc__foot-row">
-      <span class="receipt-doc__sign-line"></span>
-      <p class="receipt-doc__thanks">${esc(paper.footerThanks || DEFAULT_SHOP.footerThanks)}</p>
-    </div>
-    <span class="receipt-doc__sign-label">${esc(paper.signLabel || DEFAULT_SHOP.signLabel)}</span>
-  </footer>
-</article>`;
-  }
-
   function collectFromForm(form) {
     const tbody = form.querySelector('#receiptLinesBody');
     const lines = [];
@@ -406,11 +325,20 @@
 <style>@page{size:A4;margin:12mm;}body{margin:0;padding:0;font-family:Sarabun,sans-serif;}</style>
 </head><body>${html}</body></html>`);
     doc.close();
-    win.focus();
-    setTimeout(() => {
-      win.print();
-      setTimeout(() => frame.remove(), 800);
-    }, 300);
+    const imgs = Array.from(doc.images || []);
+    const ready = imgs.length
+      ? Promise.all(imgs.map((img) => img.complete ? Promise.resolve() : new Promise((res) => {
+        img.addEventListener('load', res, { once: true });
+        img.addEventListener('error', res, { once: true });
+      })))
+      : Promise.resolve();
+    ready.then(() => {
+      win.focus();
+      setTimeout(() => {
+        win.print();
+        setTimeout(() => frame.remove(), 800);
+      }, 200);
+    });
   }
 
   // warm cache early
