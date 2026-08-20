@@ -85,11 +85,27 @@
     };
   }
 
+  function fitPreview() {
+    const sizer = previewHost?.querySelector('.receipt-settings__previewSizer');
+    const fit = previewHost?.querySelector('.receipt-settings__previewFit');
+    if (!sizer || !fit || !previewHost.clientWidth) return;
+    const paperW = 794;
+    const scale = Math.max(0.4, Math.min(1, (previewHost.clientWidth - 24) / paperW));
+    fit.style.width = `${paperW}px`;
+    fit.style.transform = `scale(${scale})`;
+    fit.style.transformOrigin = 'top left';
+    sizer.style.height = `${Math.ceil(fit.offsetHeight * scale)}px`;
+  }
+
   function renderPreview() {
     if (!previewHost) return;
     try {
       ReceiptDocument.applySettings(readForm());
-      previewHost.innerHTML = ReceiptDocument.buildReceiptHtml(sampleData());
+      previewHost.innerHTML = `<div class="receipt-settings__previewSizer"><div class="receipt-settings__previewFit">${ReceiptDocument.buildReceiptHtml(sampleData())}</div></div>`;
+      previewHost.querySelectorAll('img').forEach((img) => {
+        if (!img.complete) img.addEventListener('load', fitPreview, { once: true });
+      });
+      requestAnimationFrame(fitPreview);
     } catch (err) {
       console.error('receipt preview failed', err);
       previewHost.innerHTML = '<p class="admin-hint">ไม่สามารถแสดงตัวอย่างได้</p>';
@@ -160,6 +176,12 @@
 
   // Show defaults immediately, then hydrate from saved settings
   fillForm(defaults);
+
+  if (window.ResizeObserver && previewHost) {
+    new ResizeObserver(() => fitPreview()).observe(previewHost);
+  } else {
+    window.addEventListener('resize', fitPreview);
+  }
 
   (async function boot() {
     try {

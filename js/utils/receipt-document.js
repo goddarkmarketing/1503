@@ -202,11 +202,11 @@
       ${troLogoHtml()}
       <p class="receipt-doc__doc-title">${esc(paper.docTitle || DEFAULT_SHOP.docTitle)}</p>
     </div>
-    <table class="receipt-doc__meta">
-      <tr><th>บิลเลขที่</th><td>${esc(data.billNo)}</td></tr>
-      <tr><th>วันที่ออกใบเสร็จ</th><td>${esc(data.issueDate)}</td></tr>
-      <tr><th>วันที่รับเล่ม</th><td>${esc(data.bookDate)}</td></tr>
-    </table>
+    <dl class="receipt-doc__meta">
+      <div class="receipt-doc__metaRow"><dt>บิลเลขที่</dt><dd>${esc(data.billNo)}</dd></div>
+      <div class="receipt-doc__metaRow"><dt>วันที่ออกใบเสร็จ</dt><dd>${esc(data.issueDate)}</dd></div>
+      <div class="receipt-doc__metaRow"><dt>วันที่รับเล่ม</dt><dd>${esc(data.bookDate)}</dd></div>
+    </dl>
   </header>
 
   <table class="receipt-doc__customerTable">

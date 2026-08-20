@@ -421,13 +421,16 @@ body.receipt-modal-open {
 /* Admin receipt paper settings */
 .receipt-settings {
   display: grid;
-  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
 .receipt-settings__form {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .receipt-settings__actions {
@@ -459,10 +462,11 @@ body.receipt-modal-open {
   position: sticky;
   top: 16px;
   min-width: 0;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid var(--border, #e2e8f0);
-  border-radius: 14px;
-  background: #f8fafc;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .receipt-settings__previewTitle {
@@ -472,76 +476,28 @@ body.receipt-modal-open {
 }
 
 .receipt-settings__previewScroll {
-  max-height: min(72vh, 760px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 14px;
+  overflow: hidden;
+  padding: 12px;
   background: #dfe6f1;
   border: 1px solid var(--border, #e2e8f0);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-.receipt-settings__previewScroll .receipt-doc {
-  width: 100%;
-  max-width: 100%;
+.receipt-settings__previewSizer {
+  overflow: hidden;
+}
+
+.receipt-settings__previewFit {
+  width: 794px;
+  transform-origin: top left;
+}
+
+.receipt-settings__previewFit .receipt-doc {
+  width: 794px;
+  max-width: 794px;
   margin: 0;
-  padding: 14px 12px 18px;
-  transform: none;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.12);
-  font-size: 12.5px;
+  box-shadow: none;
 }
-
-.receipt-settings__previewScroll .receipt-doc__head {
-  grid-template-columns: minmax(0, 1fr) auto minmax(240px, 1fr);
-  gap: 8px 10px;
-}
-
-.receipt-settings__previewScroll .receipt-doc__meta th,
-.receipt-settings__previewScroll .receipt-doc__meta td {
-  padding: 6px 8px;
-  white-space: nowrap;
-  overflow-wrap: normal;
-  word-break: normal;
-}
-
-.receipt-settings__previewScroll .receipt-doc__logo {
-  width: 64px;
-  height: 64px;
-}
-
-.receipt-settings__previewScroll .receipt-doc__shop-name {
-  font-size: 14px;
-}
-
-.receipt-settings__previewScroll .receipt-doc__doc-title {
-  font-size: 12.5px;
-}
-
-.receipt-settings__previewScroll .receipt-doc__meta,
-.receipt-settings__previewScroll .receipt-doc__customerTable,
-.receipt-settings__previewScroll .receipt-doc__sheet {
-  font-size: 11.5px;
-}
-
-.receipt-settings__previewScroll .receipt-doc th,
-.receipt-settings__previewScroll .receipt-doc td {
-  padding: 6px 5px;
-}
-
-.receipt-settings__previewScroll .receipt-doc__customerTable th {
-  width: 12%;
-  font-size: 11px;
-}
-
-.receipt-settings__previewScroll .receipt-doc__customerTable td {
-  width: 13%;
-}
-
-.receipt-settings__previewScroll .receipt-doc__col-no { width: 11%; }
-.receipt-settings__previewScroll .receipt-doc__col-item { width: 43%; }
-.receipt-settings__previewScroll .receipt-doc__col-qty { width: 13%; }
-.receipt-settings__previewScroll .receipt-doc__col-price { width: 16.5%; }
-.receipt-settings__previewScroll .receipt-doc__col-total { width: 16.5%; }
 
 .receipt-settings__logoPreview img[alt="ไม่พบโลโก้"] {
   opacity: 0.35;
@@ -571,15 +527,6 @@ body.receipt-modal-open {
 
   .receipt-settings__previewPanel {
     position: static;
-  }
-
-  .receipt-settings__previewScroll .receipt-doc {
-    max-width: 100%;
-    padding: 12px 10px 16px;
-  }
-
-  .receipt-settings__previewScroll .receipt-doc__head {
-    grid-template-columns: 1fr;
   }
 }
 
