@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../../css/style.css">
   <link rel="stylesheet" href="../../css/admin.css?v=20260713b">
   <link rel="stylesheet" href="../../css/portal.css">
-  <link rel="stylesheet" href="../../css/receipt.css?v=20260820j">
+  <link rel="stylesheet" href="../../css/receipt.css?v=20260820k">
   <link rel="stylesheet" href="../../css/receipt-print.css?v=20260820j">
   <script src="../../js/vendor/lucide.min.js"></script>
 </head>
@@ -142,10 +142,18 @@
 
           <div class="receipt-settings">
             <form id="receiptPaperForm" class="receipt-settings__form agent-form" novalidate>
+              <p class="agent-form__intro">
+                กำหนด<strong>หัวกระดาษใบเสร็จ</strong>ของบัญชีคุณ — ใช้ตอนออกใบเสร็จให้ลูกค้า
+              </p>
+
               <section class="agent-form__section">
                 <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">ข้อมูลร้าน / หัวกระดาษ</h3>
+                  <h3 class="agent-form__sectionTitle">
+                    <i data-lucide="store" class="receipt-settings__titleIcon"></i>
+                    ข้อมูลร้าน / หัวกระดาษ
+                  </h3>
                 </div>
+                <p class="agent-form__sectionHint">แสดงที่มุมซ้ายบนของใบเสร็จ</p>
                 <div class="agent-form__grid">
                   <div class="form-field full">
                     <label for="paperName">ชื่อร้าน / กิจการ <span class="form-req">*</span></label>
@@ -168,17 +176,26 @@
 
               <section class="agent-form__section">
                 <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">โลโก้</h3>
+                  <h3 class="agent-form__sectionTitle">
+                    <i data-lucide="image" class="receipt-settings__titleIcon"></i>
+                    โลโก้
+                  </h3>
                 </div>
-                <div class="agent-form__grid">
-                  <div class="form-field full">
-                    <label for="paperLogoFile">อัปโหลดโลโก้</label>
-                    <input id="paperLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
-                    <span class="form-field__hint">รองรับ PNG / JPG / WebP / SVG</span>
-                    <input type="hidden" id="paperLogoUrl" name="logoUrl">
-                  </div>
-                  <div class="form-field">
-                    <label>ตัวอย่างโลโก้</label>
+                <p class="agent-form__sectionHint">แสดงตรงกลางหัวกระดาษ ใต้ชื่อเอกสาร</p>
+                <input type="hidden" id="paperLogoUrl" name="logoUrl">
+                <div class="receipt-settings__logoRow">
+                  <label class="receipt-settings__dropzone" for="paperLogoFile">
+                    <input id="paperLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+                    <span class="receipt-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
+                    <span class="receipt-settings__dropzoneTitle">อัปโหลดโลโก้</span>
+                    <span class="receipt-settings__dropzoneMeta">PNG / JPG / WebP / SVG · สูงสุด 1.5MB</span>
+                    <span class="receipt-settings__dropzoneBtn">เลือกไฟล์</span>
+                  </label>
+                  <div class="receipt-settings__logoPreviewCard">
+                    <div class="receipt-settings__logoPreviewHead">
+                      <span>ตัวอย่างโลโก้</span>
+                      <button type="button" class="btn-secondary btn-sm" id="btnClearLogo">ล้าง</button>
+                    </div>
                     <div class="receipt-settings__logoPreview">
                       <img id="paperLogoPreview" alt="ตัวอย่างโลโก้" width="88" height="88">
                     </div>
@@ -188,8 +205,12 @@
 
               <section class="agent-form__section">
                 <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">ข้อความบนใบเสร็จ</h3>
+                  <h3 class="agent-form__sectionTitle">
+                    <i data-lucide="file-text" class="receipt-settings__titleIcon"></i>
+                    ข้อความบนใบเสร็จ
+                  </h3>
                 </div>
+                <p class="agent-form__sectionHint">หัวเอกสาร ข้อความขอบคุณ และป้ายลงชื่อท้ายใบ</p>
                 <div class="agent-form__grid">
                   <div class="form-field full">
                     <label for="paperDocTitle">หัวเอกสาร</label>
@@ -207,14 +228,25 @@
               </section>
 
               <div class="receipt-settings__actions">
-                <button type="button" class="btn-secondary" id="btnPaperReset">คืนค่าเริ่มต้น</button>
-                <button type="button" class="btn-secondary" id="btnPaperPreview">ดูตัวอย่าง</button>
-                <button type="submit" class="btn-primary" id="btnPaperSave">บันทึกการตั้งค่า</button>
+                <button type="button" class="btn-secondary" id="btnPaperReset">
+                  <i data-lucide="rotate-ccw"></i> คืนค่าเริ่มต้น
+                </button>
+                <div class="receipt-settings__actionsRight">
+                  <button type="button" class="btn-secondary" id="btnPaperPreview">
+                    <i data-lucide="eye"></i> ดูตัวอย่าง
+                  </button>
+                  <button type="submit" class="btn-primary" id="btnPaperSave">
+                    <i data-lucide="save"></i> บันทึกการตั้งค่า
+                  </button>
+                </div>
               </div>
             </form>
 
             <aside class="receipt-settings__previewPanel">
-              <h3 class="receipt-settings__previewTitle">ตัวอย่างใบเสร็จ</h3>
+              <div class="receipt-settings__previewHead">
+                <h3 class="receipt-settings__previewTitle">ตัวอย่างใบเสร็จ</h3>
+                <p class="receipt-settings__previewHint">อัปเดตอัตโนมัติเมื่อแก้ไขฟอร์ม</p>
+              </div>
               <div class="receipt-settings__previewScroll" id="receiptPaperLivePreview"></div>
             </aside>
           </div>
@@ -228,6 +260,6 @@
   <script src="../../js/app.js?v=20260816f"></script>
   <script src="../../js/utils/baht-text.js?v=20260713a"></script>
   <script src="../../js/utils/receipt-document.js?v=20260820j"></script>
-  <script src="../../js/pages/receipt-paper-settings.js?v=20260820j"></script>
+  <script src="../../js/pages/receipt-paper-settings.js?v=20260820k"></script>
 </body>
 </html>

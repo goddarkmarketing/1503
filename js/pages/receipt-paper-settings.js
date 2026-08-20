@@ -134,6 +134,14 @@
     reader.readAsDataURL(file);
   });
 
+  document.getElementById('btnClearLogo')?.addEventListener('click', () => {
+    setField('logoUrl', defaults.logoUrl);
+    const fileInput = document.getElementById('paperLogoFile');
+    if (fileInput) fileInput.value = '';
+    updateLogoPreview();
+    renderPreview();
+  });
+
   document.getElementById('btnPaperPreview')?.addEventListener('click', renderPreview);
 
   document.getElementById('btnPaperReset')?.addEventListener('click', async () => {
