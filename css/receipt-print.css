@@ -381,8 +381,8 @@
   }
   .receipt-doc__badge,
   .receipt-doc__items-head th {
-    background: #000 !important;
-    color: #fff !important;
+    background: #e5e7eb !important;
+    color: #111 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

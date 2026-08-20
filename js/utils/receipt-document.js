@@ -313,18 +313,34 @@
       ? new URL(cssLink.getAttribute('href'), window.location.href).href
       : new URL('../../css/receipt-print.css', window.location.href).href;
 
+    const prevTitle = document.title;
+    document.title = '\u00a0';
+
     const frame = document.createElement('iframe');
+    frame.setAttribute('title', ' ');
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
     document.body.appendChild(frame);
     const win = frame.contentWindow;
     const doc = win.document;
     doc.open();
     doc.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+<title>&nbsp;</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="${cssHref}">
-<style>@page{size:A4;margin:12mm;}body{margin:0;padding:0;font-family:Sarabun,sans-serif;}</style>
-</head><body>${html}</body></html>`);
+<style>
+@page{size:A4;margin:12mm;}
+html,body{margin:0;padding:0;background:#fff;font-family:Sarabun,sans-serif;}
+</style>
+</head><body class="receipt-print-sheet">${html}</body></html>`);
     doc.close();
+    try { doc.title = '\u00a0'; } catch { /* ignore */ }
+
+    const restore = () => {
+      document.title = prevTitle;
+    };
+    window.addEventListener('afterprint', restore, { once: true });
+    win.addEventListener?.('afterprint', restore, { once: true });
+
     const imgs = Array.from(doc.images || []);
     const ready = imgs.length
       ? Promise.all(imgs.map((img) => img.complete ? Promise.resolve() : new Promise((res) => {
@@ -336,7 +352,10 @@
       win.focus();
       setTimeout(() => {
         win.print();
-        setTimeout(() => frame.remove(), 800);
+        setTimeout(() => {
+          restore();
+          frame.remove();
+        }, 800);
       }, 200);
     });
   }
