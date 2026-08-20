@@ -81,6 +81,9 @@
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
+  const printModal = document.getElementById('receiptPrintModal');
+  const printPreview = document.getElementById('receiptPrintPreview');
+
   function renderPreview() {
     if (!previewHost) return;
     try {
@@ -91,6 +94,33 @@
       console.error('receipt preview failed', err);
       previewHost.innerHTML = '<p class="admin-hint">ไม่สามารถแสดงตัวอย่างได้</p>';
     }
+  }
+
+  function openPrintPreview() {
+    if (!printModal || !printPreview) {
+      previewHost?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      renderPreview();
+      return;
+    }
+    try {
+      ReceiptDocument.applySettings(readForm());
+      printPreview.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.innerHTML = ReceiptDocument.buildReceiptHtml(sampleData());
+      const doc = wrap.querySelector('#receiptDocPrint');
+      if (doc) printPreview.appendChild(doc);
+      printModal.hidden = false;
+      document.body.classList.add('receipt-modal-open');
+    } catch (err) {
+      console.error('receipt print preview failed', err);
+      toast(err.message || 'ดูตัวอย่างไม่สำเร็จ', 'error');
+    }
+  }
+
+  function closePrintPreview() {
+    if (!printModal) return;
+    printModal.hidden = true;
+    document.body.classList.remove('receipt-modal-open');
   }
 
   form.addEventListener('input', () => {
@@ -113,7 +143,15 @@
     reader.readAsDataURL(file);
   });
 
-  document.getElementById('btnPaperPreview')?.addEventListener('click', renderPreview);
+  document.getElementById('btnPaperPreview')?.addEventListener('click', openPrintPreview);
+  document.getElementById('btnReceiptClose')?.addEventListener('click', closePrintPreview);
+  printModal?.querySelector('.receipt-print-modal__backdrop')?.addEventListener('click', closePrintPreview);
+  document.getElementById('btnReceiptPrint')?.addEventListener('click', () => {
+    const doc = printPreview?.querySelector('#receiptDocPrint');
+    if (doc && window.ReceiptDocument) {
+      ReceiptDocument.printHtml(doc.outerHTML);
+    }
+  });
 
   document.getElementById('btnPaperReset')?.addEventListener('click', async () => {
     if (!confirm('คืนค่าหัวกระดาษใบเสร็จเป็นค่าเริ่มต้น?')) return;
