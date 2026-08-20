@@ -542,6 +542,7 @@ function openEditModal(agentId) {
     }
     try {
       await App.ButtonUI.withLoading(btn, async () => {
+        App.AgentCommissionRates?.applyQuickRatesFromForm(form);
         const payload = {
           name: form.name.value.trim(),
           email: form.email.value.trim(),
@@ -591,6 +592,7 @@ function openTeamSettingsModal(agentId) {
     const btn = overlay.querySelector('#confirmTeamSettings');
     try {
       await App.ButtonUI.withLoading(btn, async () => {
+        App.AgentCommissionRates?.applyQuickRatesFromForm(form);
         await App.AgentService.updateAgent(agentId, {
           parentId: form.parentId?.value || null,
           commissionRates: App.AgentCommissionRates?.readFromForm(form)
@@ -704,7 +706,9 @@ function openAddAgentModal() {
     try {
       await App.ButtonUI.withLoading(btn, async () => {
         const codeEl = overlay.querySelector('#addCode');
-        const buildPayload = () => ({
+        const buildPayload = () => {
+          App.AgentCommissionRates?.applyQuickRatesFromForm(form);
+          return {
           code: String(codeEl?.value || form.code.value || '').trim(),
           name: form.name.value.trim(),
           email: form.email.value.trim(),
@@ -714,7 +718,8 @@ function openAddAgentModal() {
           password: form.password.value || 'demo',
           parentId: form.parentId?.value || null,
           commissionRates: App.AgentCommissionRates?.readFromForm(form)
-        });
+        };
+        };
 
         let created;
         for (let attempt = 0; attempt < 2; attempt++) {

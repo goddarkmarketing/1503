@@ -166,6 +166,7 @@
         const btn = overlay.querySelector('#agentRequestApprove');
         try {
           await App.ButtonUI.withLoading(btn, async () => {
+            App.AgentCommissionRates?.applyQuickRatesFromForm(form);
             const payload = {
               code: form.code.value.trim(),
               name: form.name.value.trim(),

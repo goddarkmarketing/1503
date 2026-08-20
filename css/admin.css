@@ -2022,6 +2022,46 @@ body[data-portal="admin"] .content-card--team {
   margin-top: 4px;
 }
 
+.agent-commission-rates__quick {
+  border-color: #bbf7d0;
+  background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%);
+}
+
+.agent-commission-rates__quickRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.agent-commission-rates__quickRow .form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.agent-commission-rates__quickRow .form-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.agent-commission-rates__quickAction .btn-primary {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .agent-commission-rates__quickRow {
+    grid-template-columns: 1fr;
+  }
+}
+
 .agent-commission-rates__override .wht50-settings__option {
   margin-top: 0;
 }

@@ -489,8 +489,84 @@ App.AgentCommissionRates = {
       });
     });
 
+    this._bindTeamQuickRates(root);
     this._bindOverrideSection(root);
     this._syncTaxEnabledUI(root);
+  },
+
+  _commonProductRate(products) {
+    const vals = Object.values(products || {}).map((v) => Number(v));
+    const valid = vals.filter((v) => Number.isFinite(v));
+    if (!valid.length) return '';
+    const first = valid[0];
+    return valid.every((v) => v === first) ? first : '';
+  },
+
+  _applyQuickRates(root, memberRate, leaderRate) {
+    const memberVal = String(memberRate ?? '').trim();
+    const leaderVal = String(leaderRate ?? '').trim();
+    if (memberVal !== '') {
+      root.querySelectorAll('[name^="commissionProduct_"]').forEach((input) => {
+        input.value = memberVal;
+      });
+    }
+    const enableCb = root.querySelector('[name="overrideEnabled"]');
+    const leaderNum = Number(leaderVal);
+    if (leaderVal !== '' && Number.isFinite(leaderNum) && leaderNum > 0) {
+      if (enableCb) enableCb.checked = true;
+      root.querySelectorAll('[name^="override_commissionProduct_"]').forEach((input) => {
+        input.value = leaderVal;
+      });
+    } else if (enableCb && leaderVal === '0') {
+      enableCb.checked = false;
+      root.querySelectorAll('[name^="override_commissionProduct_"]').forEach((input) => {
+        input.value = '0';
+      });
+    }
+    this._syncOverrideSectionUI(root);
+    this._syncTaxEnabledUI(root);
+  },
+
+  _syncOverrideSectionUI(root) {
+    const section = root.querySelector('[data-override-section]');
+    if (!section) return;
+    const parentSelect = root.querySelector('[name="parentId"]');
+    const enableCb = section.querySelector('[name="overrideEnabled"]');
+    const grid = section.querySelector('[data-override-grid]');
+    const quickSection = root.querySelector('[data-team-quick-section]');
+
+    const hasParent = !!(parentSelect && String(parentSelect.value || '').trim());
+    if (quickSection) quickSection.hidden = !hasParent;
+    section.hidden = !hasParent;
+    const on = hasParent && !!enableCb?.checked;
+    if (grid) grid.hidden = !on;
+  },
+
+  _bindTeamQuickRates(root) {
+    const quickSection = root.querySelector('[data-team-quick-section]');
+    if (!quickSection) return;
+    const parentSelect = root.querySelector('[name="parentId"]');
+    const memberInput = quickSection.querySelector('[data-quick-member-rate]');
+    const leaderInput = quickSection.querySelector('[data-quick-leader-rate]');
+    const applyBtn = quickSection.querySelector('[data-quick-apply]');
+
+    const syncVisibility = () => this._syncOverrideSectionUI(root);
+    parentSelect?.addEventListener('change', syncVisibility);
+
+    applyBtn?.addEventListener('click', () => {
+      this._applyQuickRates(root, memberInput?.value, leaderInput?.value);
+    });
+
+    [memberInput, leaderInput].forEach((input) => {
+      input?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this._applyQuickRates(root, memberInput?.value, leaderInput?.value);
+        }
+      });
+    });
+
+    syncVisibility();
   },
 
   _bindOverrideSection(root) {
@@ -498,14 +574,8 @@ App.AgentCommissionRates = {
     if (!section) return;
     const parentSelect = root.querySelector('[name="parentId"]');
     const enableCb = section.querySelector('[name="overrideEnabled"]');
-    const grid = section.querySelector('[data-override-grid]');
 
-    const sync = () => {
-      const hasParent = !!(parentSelect && String(parentSelect.value || '').trim());
-      section.hidden = !hasParent;
-      const on = hasParent && !!enableCb?.checked;
-      if (grid) grid.hidden = !on;
-    };
+    const sync = () => this._syncOverrideSectionUI(root);
 
     parentSelect?.addEventListener('change', sync);
     enableCb?.addEventListener('change', sync);
@@ -527,43 +597,104 @@ App.AgentCommissionRates = {
     return `<p class="admin-only-notice" role="note"><i data-lucide="shield"></i> <strong>ตั้งโดยแอดมินเท่านั้น</strong>${extra}</p>`;
   },
 
+  renderTeamQuickSection(rates) {
+    const normalized = this.normalize(rates);
+    const memberRate = this._commonProductRate(normalized.products);
+    const leaderRate = normalized.overrideEnabled
+      ? this._commonProductRate(normalized.override.products)
+      : '';
+    return `
+      <section class="agent-form__section agent-commission-rates__quick" data-team-quick-section hidden>
+        <div class="agent-form__sectionHead">
+          <h3 class="agent-form__sectionTitle">ตั้งค่าคอมลูกทีม (แบบง่าย)</h3>
+          <span class="agent-form__sectionBadge">แนะนำ</span>
+        </div>
+        <p class="agent-form__sectionHint">กรอก % แล้วกด <strong>ใช้ค่านี้</strong> — เช่น ลูกทีมได้ 12 · หัวหน้าได้ 3 ระบบจะใส่ให้ทุกบริษัท (ปรับรายบริษัทได้ด้านล่าง)</p>
+        <div class="agent-commission-rates__quickRow">
+          <div class="form-field">
+            <label for="quickMemberRate">ลูกทีมได้คอม (%)</label>
+            <input
+              type="number"
+              id="quickMemberRate"
+              data-quick-member-rate
+              min="0"
+              max="100"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="เช่น 12"
+              value="${memberRate !== '' ? memberRate : ''}"
+            >
+          </div>
+          <div class="form-field">
+            <label for="quickLeaderRate">หัวหน้าทีมได้จากยอดนี้ (%)</label>
+            <input
+              type="number"
+              id="quickLeaderRate"
+              data-quick-leader-rate
+              min="0"
+              max="100"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="เช่น 3"
+              value="${leaderRate !== '' ? leaderRate : ''}"
+            >
+          </div>
+          <div class="form-field agent-commission-rates__quickAction">
+            <label aria-hidden="true">&nbsp;</label>
+            <button type="button" class="btn-primary btn-sm" data-quick-apply>ใช้ค่านี้</button>
+          </div>
+        </div>
+      </section>
+    `;
+  },
+
   renderFormSection(rates) {
     const normalized = this.normalize(rates);
     return `
       ${this.renderAdminOnlyNotice('หัวหน้าทีมและนายหน้าไม่สามารถตั้งค่าคอมเองได้')}
+      ${this.renderTeamQuickSection(rates)}
       <section class="agent-form__section">
         <div class="agent-form__sectionHead">
           <h3 class="agent-form__sectionTitle">2. ค่าคอมของนายหน้าคนนี้</h3>
           <span class="agent-form__sectionBadge">แอดมิน</span>
         </div>
+        <p class="agent-form__sectionHint">รายละเอียดตามบริษัท — ใช้เมื่อแต่ละบริษัทให้ % ไม่เท่ากัน</p>
         <ol class="agent-commission-rates__howto">
-          <li>ใส่ <strong>% คอม</strong> ที่นายหน้าได้จากเบี้ยสุทธิ เช่น ลูกทีมได้ 12</li>
-          <li>ถ้าต้องการหักภาษี จากค่าคอม ให้ติ๊ก <strong>หักภาษี</strong> แล้วใส่ % เช่น หัก 10</li>
+          <li>ใส่ <strong>% คอม</strong> ที่นายหน้าได้จากเบี้ยสุทธิ</li>
+          <li>ถ้าต้องการหักภาษี จากค่าคอม ให้ติ๊ก <strong>หักภาษี</strong> แล้วใส่ %</li>
           <li>ถ้าไม่หักภาษี ระบบจะ <strong>ออกใบ 50 ทวิ</strong> ให้อัตโนมัติ</li>
         </ol>
         ${this.renderRatesGrid(normalized)}
       </section>
       <section class="agent-form__section agent-commission-rates__override" data-override-section hidden>
         <div class="agent-form__sectionHead">
-          <h3 class="agent-form__sectionTitle">3. คอมแม่ทีม (จากยอดขายลูกทีมคนนี้)</h3>
+          <h3 class="agent-form__sectionTitle">3. คอมหัวหน้าทีม (จากยอดขายลูกทีมคนนี้)</h3>
         </div>
-        <p class="agent-form__sectionHint">ใช้เมื่อนายหน้าคนนี้เป็นลูกทีม — คิดแบบเดียวกัน แยกหักภาษี / ออก 50 ทวิ ของแม่ทีมได้เอง</p>
+        <p class="agent-form__sectionHint">เปิดเมื่อหัวหน้าต้องได้ % จากยอดขายของลูกทีม — ตั้งแบบง่ายได้ที่ช่องด้านบน</p>
         <label class="wht50-settings__option" for="overrideEnabled" style="margin-bottom:14px">
           <input id="overrideEnabled" name="overrideEnabled" type="checkbox" ${normalized.overrideEnabled ? 'checked' : ''}>
           <span class="wht50-settings__optionBody">
-            <span class="wht50-settings__optionTitle">เปิดคอมแม่ทีมจากยอดขายของลูกทีมคนนี้</span>
-            <span class="wht50-settings__optionDesc">เช่น ลูกได้ 12 หัก 10 · แม่ได้ 3 หัก 10 — ถ้าปิดหักภาษีของใคร ระบบออก 50 ทวิให้คนนั้น</span>
+            <span class="wht50-settings__optionTitle">เปิดคอมหัวหน้าทีมจากยอดขายของลูกทีมคนนี้</span>
+            <span class="wht50-settings__optionDesc">เช่น ลูกได้ 12 · หัวหน้าได้ 3 — ถ้าปิดหักภาษีของใคร ระบบออก 50 ทวิให้คนนั้น</span>
           </span>
         </label>
         <div data-override-grid ${normalized.overrideEnabled ? '' : 'hidden'}>
           ${this.renderRatesGrid(normalized, {
             prefix: 'override_',
             rateSource: 'override',
-            rateColumnLabel: 'แม่ทีมได้คอม'
+            rateColumnLabel: 'หัวหน้าทีมได้คอม'
           })}
         </div>
       </section>
     `;
+  },
+
+  applyQuickRatesFromForm(form) {
+    if (!form) return;
+    const member = form.querySelector('[data-quick-member-rate]')?.value;
+    const leader = form.querySelector('[data-quick-leader-rate]')?.value;
+    if ((member == null || member === '') && (leader == null || leader === '')) return;
+    this._applyQuickRates(form, member, leader);
   },
 
   _escape(value) {
