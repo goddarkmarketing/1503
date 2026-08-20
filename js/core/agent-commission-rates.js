@@ -522,12 +522,19 @@ App.AgentCommissionRates = {
     };
   },
 
+  renderAdminOnlyNotice(extraText) {
+    const extra = extraText ? ` — ${this._escape(extraText)}` : '';
+    return `<p class="admin-only-notice" role="note"><i data-lucide="shield"></i> <strong>ตั้งโดยแอดมินเท่านั้น</strong>${extra}</p>`;
+  },
+
   renderFormSection(rates) {
     const normalized = this.normalize(rates);
     return `
+      ${this.renderAdminOnlyNotice('หัวหน้าทีมและนายหน้าไม่สามารถตั้งค่าคอมเองได้')}
       <section class="agent-form__section">
         <div class="agent-form__sectionHead">
           <h3 class="agent-form__sectionTitle">2. ค่าคอมของนายหน้าคนนี้</h3>
+          <span class="agent-form__sectionBadge">แอดมิน</span>
         </div>
         <ol class="agent-commission-rates__howto">
           <li>ใส่ <strong>% คอม</strong> ที่นายหน้าได้จากเบี้ยสุทธิ เช่น ลูกทีมได้ 12</li>

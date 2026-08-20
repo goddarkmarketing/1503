@@ -193,6 +193,7 @@
           </p>
         </div>
         <a class="btn-secondary btn-sm" href="agents">จัดการบัญชีนี้</a>
+        <p class="admin-hint" style="margin:12px 0 0">ค่าคอมและโครงสร้างทีม <strong>ตั้งโดยแอดมินเท่านั้น</strong> — ใช้ปุ่ม ทีม/คอม ที่หน้าจัดการนายหน้า</p>
       </header>
 
       <dl class="team-org__metrics">

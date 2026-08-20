@@ -126,6 +126,7 @@ function teamSectionHtml(agent) {
       <div class="agent-form__sectionHead">
         <h3 class="agent-form__sectionTitle">1. ทีม</h3>
         <span class="agent-form__sectionBadge">${escapeHtml(parent ? 'ลูกทีม' : 'หัวทีม')}</span>
+        <span class="agent-form__sectionBadge agent-form__sectionBadge--muted">แอดมิน</span>
       </div>
       <p class="agent-form__sectionHint">${escapeHtml(roleText)}</p>
       <div class="agent-form__grid">
@@ -571,7 +572,8 @@ function openTeamSettingsModal(agentId) {
     size: 'wide',
     body: `
       <form id="teamSettingsForm" class="agent-form" novalidate>
-        <p class="agent-form__intro">ตั้งให้ <strong>${escapeHtml(agent.name)}</strong> (${escapeHtml(agent.code)}) ขึ้นกับใคร และได้คอมเท่าไหร่ในแต่ละบริษัท</p>
+        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderAdminOnlyNotice('กำหนดทีม ค่าคอมลูกทีม และคอมแม่ทีมจากยอดขายลูกทีม') : ''}
+        <p class="agent-form__intro">ตั้งให้ <strong>${escapeHtml(agent.name)}</strong> (${escapeHtml(agent.code)}) ขึ้นกับใคร และได้คอมเท่าไหร่ในแต่ละบริษัท — หัวหน้าทีมไม่สามารถแก้ไขส่วนนี้เอง</p>
         ${teamSectionHtml(agent)}
         ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates) : ''}
       </form>

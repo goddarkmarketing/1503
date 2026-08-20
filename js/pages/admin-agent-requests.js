@@ -64,6 +64,7 @@
       size: 'wide',
       body: isPending ? `
         <form id="approveAgentRequestForm" class="agent-form" novalidate>
+          ${App.AgentCommissionRates ? App.AgentCommissionRates.renderAdminOnlyNotice('หัวหน้าทีมส่งคำขอได้ แต่ค่าคอมและทีมต้องตั้งที่นี่เท่านั้น') : ''}
           <p class="agent-form__intro">ตรวจสอบข้อมูลจากนายหน้า ${escapeHtml(req.requesterCode)} แล้วตั้งค่าบัญชีก่อนเปิดใช้งาน</p>
           <section class="agent-form__section">
             <div class="agent-form__sectionHead">

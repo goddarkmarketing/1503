@@ -174,7 +174,7 @@ function openMemberModal(memberId) {
         <span class="team-modal__tab is-active">ข้อมูลทั่วไป</span>
       </div>
       <div class="team-modal__body">
-        ${isEdit ? '' : '<p class="admin-hint" style="margin:0 0 16px">กรอกข้อมูลเบื้องต้น ระบบจะแจ้งแอดมินเพื่อตั้งรหัส ค่าคอม และสิทธิ์ก่อนเปิดใช้งาน</p>'}
+        ${isEdit ? '' : `<p class="admin-hint" style="margin:0 0 16px"><strong>ตั้งโดยแอดมินเท่านั้น</strong> — กรอกข้อมูลเบื้องต้น ระบบจะแจ้งแอดมินเพื่อตั้งรหัส ค่าคอม โครงสร้างทีม และสิทธิ์ก่อนเปิดใช้งาน</p>`}
         <form id="teamMemberForm" novalidate>
           <div class="team-form-row">
             <label for="memberName">ชื่อ-นามสกุล</label>
