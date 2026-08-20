@@ -190,7 +190,14 @@
     return `<article class="receipt-doc receipt-doc--preview">
   <header class="receipt-doc__head">
     <div class="receipt-doc__shopBlock">
-      ${troLogoHtml()}
+      <div class="receipt-doc__logoWrap">
+        <button type="button" class="receipt-doc__logoBtn" id="receiptLogoPick" title="คลิกเพื่ออัปโหลดโลโก้">
+          ${troLogoHtml()}
+        </button>
+        <button type="button" class="receipt-doc__logoTrash${paper.logoUrl && paper.logoUrl !== DEFAULT_SHOP.logoUrl ? '' : ' is-hidden'}" id="receiptLogoTrash" title="ลบโลโก้">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </div>
       <div class="receipt-doc__shop">
         <p class="receipt-doc__shop-name">${esc(paper.name)}</p>
         <p>${esc(paper.address)}</p>

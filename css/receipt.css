@@ -742,6 +742,28 @@ body.receipt-modal-open {
   min-width: 0;
 }
 
+.receipt-settings .receipt-doc--preview .receipt-doc__logoWrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+}
+
+.receipt-settings .receipt-doc--preview .receipt-doc__logoBtn {
+  display: block;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.receipt-settings .receipt-doc--preview .receipt-doc__logoBtn:hover {
+  box-shadow: 0 0 0 3px rgba(15, 92, 69, 0.18);
+}
+
 .receipt-settings .receipt-doc--preview .receipt-doc__logo {
   width: 72px;
   height: 72px;
@@ -749,6 +771,40 @@ body.receipt-modal-open {
   flex-shrink: 0;
   object-fit: contain;
   border-radius: 50%;
+  pointer-events: none;
+}
+
+.receipt-settings .receipt-doc--preview .receipt-doc__logoTrash {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid #fecaca;
+  border-radius: 50%;
+  background: #fff;
+  color: #b91c1c;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+}
+
+.receipt-settings .receipt-doc--preview .receipt-doc__logoTrash.is-hidden {
+  display: none;
+}
+
+.receipt-settings .receipt-doc--preview .receipt-doc__logoTrash:hover {
+  background: #fef2f2;
+}
+
+.receipt-settings .receipt-doc--preview .receipt-doc__logoTrash i,
+.receipt-settings .receipt-doc--preview .receipt-doc__logoTrash svg {
+  width: 11px;
+  height: 11px;
 }
 
 .receipt-settings .receipt-doc--preview .receipt-doc__shop {

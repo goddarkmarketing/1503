@@ -1,7 +1,7 @@
 (function () {
   const form = document.getElementById('receiptPaperForm');
   const previewHost = document.getElementById('receiptPaperLivePreview');
-  const logoPreview = document.getElementById('paperLogoPreview');
+  const logoFileInput = document.getElementById('paperLogoFile');
   if (!form || !window.ReceiptDocument) return;
 
   const defaults = { ...ReceiptDocument.DEFAULT_SHOP };
@@ -45,25 +45,7 @@
     setField('docTitle', current.docTitle || defaults.docTitle);
     setField('footerThanks', current.footerThanks || defaults.footerThanks);
     setField('signLabel', current.signLabel || defaults.signLabel);
-    updateLogoPreview();
     renderPreview();
-  }
-
-  function updateLogoPreview() {
-    if (!logoPreview) return;
-    const raw = fieldValue('logoUrl') || defaults.logoUrl;
-    const src = ReceiptDocument.resolveAssetUrl(raw);
-    logoPreview.alt = 'ตัวอย่างโลโก้';
-    logoPreview.src = src;
-    logoPreview.onerror = () => {
-      const fallback = ReceiptDocument.resolveAssetUrl(defaults.logoUrl);
-      if (logoPreview.src !== fallback) {
-        logoPreview.src = fallback;
-      } else {
-        logoPreview.removeAttribute('src');
-        logoPreview.alt = 'ไม่พบโลโก้';
-      }
-    };
   }
 
   function sampleData() {
@@ -85,11 +67,26 @@
     };
   }
 
+  function bindPreviewLogo() {
+    previewHost?.querySelector('#receiptLogoPick')?.addEventListener('click', () => {
+      logoFileInput?.click();
+    });
+    previewHost?.querySelector('#receiptLogoTrash')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setField('logoUrl', defaults.logoUrl);
+      if (logoFileInput) logoFileInput.value = '';
+      renderPreview();
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
   function renderPreview() {
     if (!previewHost) return;
     try {
       ReceiptDocument.applySettings(readForm());
       previewHost.innerHTML = ReceiptDocument.buildReceiptHtml(sampleData(), { preview: true });
+      bindPreviewLogo();
     } catch (err) {
       console.error('receipt preview failed', err);
       previewHost.innerHTML = '<p class="admin-hint">ไม่สามารถแสดงตัวอย่างได้</p>';
@@ -97,11 +94,10 @@
   }
 
   form.addEventListener('input', () => {
-    updateLogoPreview();
     renderPreview();
   });
 
-  document.getElementById('paperLogoFile')?.addEventListener('change', (e) => {
+  logoFileInput?.addEventListener('change', (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 1.5 * 1024 * 1024) {
@@ -112,18 +108,9 @@
     const reader = new FileReader();
     reader.onload = () => {
       setField('logoUrl', String(reader.result || ''));
-      updateLogoPreview();
       renderPreview();
     };
     reader.readAsDataURL(file);
-  });
-
-  document.getElementById('btnClearLogo')?.addEventListener('click', () => {
-    setField('logoUrl', defaults.logoUrl);
-    const fileInput = document.getElementById('paperLogoFile');
-    if (fileInput) fileInput.value = '';
-    updateLogoPreview();
-    renderPreview();
   });
 
   document.getElementById('btnPaperPreview')?.addEventListener('click', renderPreview);

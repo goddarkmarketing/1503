@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../../css/style.css">
   <link rel="stylesheet" href="../../css/admin.css?v=20260713b">
   <link rel="stylesheet" href="../../css/portal.css">
-  <link rel="stylesheet" href="../../css/receipt.css?v=20260820n">
+  <link rel="stylesheet" href="../../css/receipt.css?v=20260820o">
   <link rel="stylesheet" href="../../css/receipt-print.css?v=20260820j">
   <script src="../../js/vendor/lucide.min.js"></script>
 </head>
@@ -174,34 +174,8 @@
                 </div>
               </section>
 
-              <section class="agent-form__section">
-                <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">
-                    <i data-lucide="image" class="receipt-settings__titleIcon"></i>
-                    โลโก้
-                  </h3>
-                </div>
-                <p class="agent-form__sectionHint">แสดงด้านซ้ายของหัวกระดาษ</p>
-                <input type="hidden" id="paperLogoUrl" name="logoUrl">
-                <div class="receipt-settings__logoRow">
-                  <label class="receipt-settings__dropzone" for="paperLogoFile">
-                    <input id="paperLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
-                    <span class="receipt-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
-                    <span class="receipt-settings__dropzoneTitle">อัปโหลดโลโก้</span>
-                    <span class="receipt-settings__dropzoneMeta">PNG / JPG / WebP / SVG · สูงสุด 1.5MB</span>
-                    <span class="receipt-settings__dropzoneBtn">เลือกไฟล์</span>
-                  </label>
-                  <div class="receipt-settings__logoPreviewCard">
-                    <div class="receipt-settings__logoPreviewHead">
-                      <span>ตัวอย่างโลโก้</span>
-                      <button type="button" class="btn-secondary btn-sm" id="btnClearLogo">ล้าง</button>
-                    </div>
-                    <div class="receipt-settings__logoPreview">
-                      <img id="paperLogoPreview" alt="ตัวอย่างโลโก้" width="88" height="88">
-                    </div>
-                  </div>
-                </div>
-              </section>
+              <input type="hidden" id="paperLogoUrl" name="logoUrl">
+              <input id="paperLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
 
               <section class="agent-form__section">
                 <div class="agent-form__sectionHead">
@@ -259,7 +233,7 @@
   <script src="../../js/load-agent.js?v=20260820a"></script>
   <script src="../../js/app.js?v=20260816f"></script>
   <script src="../../js/utils/baht-text.js?v=20260713a"></script>
-  <script src="../../js/utils/receipt-document.js?v=20260820m"></script>
-  <script src="../../js/pages/receipt-paper-settings.js?v=20260820m"></script>
+  <script src="../../js/utils/receipt-document.js?v=20260820o"></script>
+  <script src="../../js/pages/receipt-paper-settings.js?v=20260820o"></script>
 </body>
 </html>
