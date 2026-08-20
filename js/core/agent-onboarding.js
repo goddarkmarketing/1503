@@ -24,7 +24,7 @@ App.AgentOnboarding = {
 
   postLoginPath(user, defaultPath) {
     if (this.needsVerification(user)) {
-      return App.Paths.agentHome().replace(window.location.origin, '').replace(/^\//, '') || 'agent/';
+      return 'agent/';
     }
     return defaultPath;
   },

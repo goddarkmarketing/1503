@@ -32,7 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ?? App.Permissions.homePath(user.role);
     }
 
-    let safe = next.replace(/^\/+/, '').replace(/\.\./g, '');
+    let safe = App.Paths?.stripSitePrefix
+      ? App.Paths.stripSitePrefix(next)
+      : next.replace(/^\/+/, '').replace(/\.\./g, '');
     if (!safe || /^https?:/i.test(safe) || safe.indexOf('javascript:') === 0) {
       return App.Permissions.homePath(user.role);
     }
@@ -121,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (App.AuthService.isAuthenticated()) {
     const role = App.Session.getRole();
-    window.location.replace(resolveRedirect({ role }));
+    window.location.replace(App.Paths.portalPath(resolveRedirect({ role })));
     return;
   }
 
@@ -302,17 +304,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const user = await App.AuthService.login(username, password);
       clearLockout();
       saveRemember(username, remember);
-      let target = resolveRedirect(user);
-      const sitePrefix = (() => {
-        const p = String(window.location.pathname || '');
-        return p === '/kladeebroker' || p.indexOf('/kladeebroker/') === 0 ? '/kladeebroker' : '';
-      })();
+      const target = resolveRedirect(user);
       if (App.AgentOnboarding?.needsVerification?.(user)) {
-        window.location.replace(`${sitePrefix}/agent/`);
+        window.location.replace(App.Paths.portalPath('agent/'));
         return;
       }
-      const rel = target.replace(/^\/+/, '');
-      window.location.replace(`${sitePrefix}/${rel}`);
+      window.location.replace(App.Paths.portalPath(target));
     } catch (err) {
       const fail = registerFailedAttempt();
       errorEl.textContent = fail.locked

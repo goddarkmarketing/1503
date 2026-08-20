@@ -17,10 +17,33 @@ App.Paths = {
     return '/';
   },
 
+  siteRootSegment() {
+    const root = this.siteRoot().replace(/^\/+|\/+$/g, '');
+    return root || '';
+  },
+
+  /** Remove duplicated /kladeebroker prefix from a stored or relative path. */
+  stripSitePrefix(path) {
+    let clean = String(path || '').replace(/\\/g, '/').replace(/^\/+/, '');
+    const root = this.siteRootSegment();
+    while (root && (clean === root || clean.startsWith(`${root}/`))) {
+      clean = clean.slice(root.length).replace(/^\/+/, '');
+    }
+    return clean;
+  },
+
   /** Absolute URL path from site root, e.g. /login or /kladeebroker/login */
   absolute(relativePath) {
-    const clean = String(relativePath || '').replace(/^\/+/, '');
+    const clean = this.stripSitePrefix(relativePath);
     return `${this.siteRoot()}${clean}`;
+  },
+
+  /** Normalize portal redirects (login next, post-login) without doubling site prefix. */
+  portalPath(path) {
+    let clean = this.stripSitePrefix(path);
+    clean = clean.replace(/\.html$/i, '').replace(/\/index$/i, '');
+    if (clean === 'agent' || clean === 'admin') clean += '/';
+    return this.absolute(clean);
   },
 
   normalizeBasePath(raw) {

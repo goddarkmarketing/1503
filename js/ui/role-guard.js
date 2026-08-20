@@ -15,14 +15,10 @@ App.RoleGuard = {
   currentPagePath() {
     const parts = window.location.pathname.split('/').filter(Boolean);
     const roots = ['kladeebroker', '1503'];
-    let start = 0;
-    for (let i = 0; i < parts.length; i += 1) {
-      if (roots.includes(parts[i])) {
-        start = i + 1;
-        break;
-      }
+    while (parts.length && roots.includes(parts[0])) {
+      parts.shift();
     }
-    return this.normalizePagePath(parts.slice(start).join('/'));
+    return this.normalizePagePath(parts.join('/'));
   },
 
   loginPath() {
