@@ -5,6 +5,19 @@ DirectoryIndex index.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # Backend maintenance (production domain only — localhost /kladeebroker/ unaffected)
+  # Toggle: remove file .maintenance in site root to reopen portal
+  RewriteCond %{DOCUMENT_ROOT}/.maintenance -f
+  RewriteCond %{HTTP_HOST} ^(www\.)?kladeebroker\.co\.th$ [NC]
+  RewriteCond %{REQUEST_URI} !^/kladeebroker/ [NC]
+  RewriteCond %{REQUEST_URI} ^/(login|reset-password|admin|agent)(/|$) [NC]
+  RewriteCond %{REQUEST_URI} !^/maintenance$ [NC]
+  RewriteCond %{REQUEST_URI} !^/maintenance\.html$ [NC]
+  RewriteCond %{REQUEST_URI} !^/css/maintenance\.css$ [NC]
+  RewriteCond %{REQUEST_URI} !^/images/ [NC]
+  RewriteCond %{REQUEST_URI} !^/favicon [NC]
+  RewriteRule ^ maintenance [R=503,L]
+
   # Keep API and static tooling untouched
   RewriteRule ^(api|node_modules)/ - [L]
 

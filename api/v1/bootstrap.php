@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 header('X-Content-Type-Options: nosniff');
 
+require_once dirname(__DIR__) . '/lib/Maintenance.php';
+Maintenance::respondIfEnabled();
+
 $apiRoot = dirname(__DIR__); // /api (not /api/v1)
 $configPath = $apiRoot . '/config.php';
 $config = is_file($configPath) ? require $configPath : [];
