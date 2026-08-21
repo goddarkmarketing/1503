@@ -7,7 +7,7 @@
 
   if (!$) return;
 
-  var CACHE = '20260630t';
+  var CACHE = '20260821ag';
 
   function getAssetBase() {
     if (document.body.hasAttribute('data-base')) {
