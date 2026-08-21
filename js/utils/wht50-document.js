@@ -10,6 +10,11 @@
     taxId: '1609900051711'
   };
 
+  const DEFAULT_SIGNATURE_FILE = 'payer-signature.png';
+  const DEFAULT_STAMP_FILE = 'company-stamp.png';
+  const DEFAULT_SIGNATURE_PATH = 'assets/wht50/payer-signature.png';
+  const DEFAULT_STAMP_PATH = 'assets/wht50/company-stamp.png';
+
   const SAMPLE_FROM_PDF = {
     docNo: '',
     bookNo: '',
@@ -153,7 +158,7 @@
 
     const signImg = doc.getElementById('payerSignature');
     if (signImg) {
-      signImg.src = resolveAssetUrl(payer.signatureUrl || data.signatureUrl, 'payer-signature.png');
+      signImg.src = resolveAssetUrl(payer.signatureUrl || data.signatureUrl, DEFAULT_SIGNATURE_FILE);
       signImg.alt = 'ลายเซ็นผู้จ่ายเงิน';
       signImg.style.display = '';
     }
@@ -161,12 +166,12 @@
     const stampWrap = doc.getElementById('payerStampWrap');
     const stampImg = doc.getElementById('payerStamp');
     const stampIcon = doc.getElementById('payerStampIcon');
-    const stampUrl = payer.stampUrl || data.stampUrl || '';
-    const showStamp = isCompanyPayer(payer.name) && !!String(stampUrl).trim();
+    const customStamp = String(payer.stampUrl || data.stampUrl || '').trim();
+    const showStamp = isCompanyPayer(payer.name);
     if (stampWrap) stampWrap.classList.toggle('is-visible', showStamp);
     if (stampImg) {
       if (showStamp) {
-        stampImg.src = resolveAssetUrl(stampUrl, '');
+        stampImg.src = resolveAssetUrl(customStamp, DEFAULT_STAMP_FILE);
         stampImg.alt = 'ตรานิติบุคคล';
       } else {
         stampImg.removeAttribute('src');
@@ -265,6 +270,112 @@
     printSample(data);
   }
 
+  function ensureHtml2Pdf() {
+    if (typeof global.html2pdf === 'function') return Promise.resolve(global.html2pdf);
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-html2pdf]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(global.html2pdf));
+        existing.addEventListener('error', () => reject(new Error('โหลดโมดูล PDF ไม่สำเร็จ')));
+        return;
+      }
+      const base = document.body?.dataset?.basePath || '../';
+      const script = document.createElement('script');
+      script.src = `${base}js/vendor/html2pdf.bundle.min.js`;
+      script.dataset.html2pdf = '1';
+      script.onload = () => {
+        if (typeof global.html2pdf === 'function') resolve(global.html2pdf);
+        else reject(new Error('โหลดโมดูล PDF ไม่สำเร็จ'));
+      };
+      script.onerror = () => reject(new Error('โหลดโมดูล PDF ไม่สำเร็จ'));
+      document.head.appendChild(script);
+    });
+  }
+
+  function waitFrameReady(frame) {
+    return new Promise((resolve, reject) => {
+      const done = () => {
+        try {
+          if (!frame.contentDocument) throw new Error('ไม่สามารถอ่านเอกสารได้');
+          resolve(frame.contentDocument);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      if (frame.contentDocument?.readyState === 'complete') {
+        setTimeout(done, 60);
+        return;
+      }
+      frame.addEventListener('load', () => setTimeout(done, 80), { once: true });
+      setTimeout(() => reject(new Error('โหลดแบบฟอร์มหมดเวลา')), 12000);
+    });
+  }
+
+  function absoluteUrl(path) {
+    try {
+      return new URL(path, window.location.href).href;
+    } catch (_) {
+      return path;
+    }
+  }
+
+  function cloneFormForExport(sourceDoc) {
+    const source = sourceDoc.getElementById('documentBody') || sourceDoc.body;
+    if (!source) throw new Error('ไม่พบเนื้อหาเอกสาร');
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm;background:#fff;z-index:-1;';
+    const clone = source.cloneNode(true);
+    clone.querySelectorAll('img').forEach((img) => {
+      const src = img.getAttribute('src');
+      if (!src) return;
+      if (/^(data:|https?:|blob:)/i.test(src)) return;
+      try {
+        img.src = new URL(src, sourceDoc.baseURI || window.location.href).href;
+      } catch (_) { /* keep */ }
+    });
+    wrap.appendChild(clone);
+    document.body.appendChild(wrap);
+    return wrap;
+  }
+
+  async function downloadPdf(data, options = {}) {
+    const payload = data || SAMPLE_FROM_PDF;
+    const filename = String(options.filename || `50ทวิ-${payload.docNo || payload.id || 'document'}.pdf`)
+      .replace(/[\\/:*?"<>|]+/g, '-');
+
+    await ensureHtml2Pdf();
+
+    const frame = document.createElement('iframe');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none';
+    frame.src = sampleFormUrl({ embed: '1' });
+    document.body.appendChild(frame);
+
+    let host = null;
+    try {
+      const doc = await waitFrameReady(frame);
+      fillForm(doc, payload);
+      await new Promise((r) => setTimeout(r, 450));
+      host = cloneFormForExport(doc);
+      const target = host.firstElementChild || host;
+      await global.html2pdf().set({
+        margin: [6, 6, 6, 6],
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      }).from(target).save();
+
+      if (options.markPrinted !== false && payload?.id && App.Wht50Service?.markPrinted) {
+        App.Wht50Service.markPrinted(payload.id).catch(() => {});
+      }
+      return true;
+    } finally {
+      host?.remove();
+      frame.remove();
+    }
+  }
+
   function closePreviewModal() {
     document.getElementById('wht50PreviewOverlay')?.remove();
     document.body.classList.remove('modal-open');
@@ -283,7 +394,8 @@
       <div class="wht50-preview-modal wht50-preview-modal--sample">
         <div class="wht50-preview-modal__header">
           <div>
-            <h2 class="wht50-preview-modal__title">ตัวอย่างหนังสือ 50 ทวิ</h2>
+            <h2 class="wht50-preview-modal__title">หนังสือ 50 ทวิ</h2>
+            <p class="wht50-preview-modal__meta">${esc(payload.docNo || payload.id || '')}</p>
           </div>
           <button type="button" class="wht50-preview-modal__close" aria-label="ปิด">&times;</button>
         </div>
@@ -292,11 +404,23 @@
         </div>
         <div class="wht50-preview-modal__footer">
           <button type="button" class="btn-secondary" data-wht50-close>ปิด</button>
+          <button type="button" class="btn-secondary" data-wht50-pdf>ดาวน์โหลด PDF</button>
           <button type="button" class="btn-primary" data-wht50-print>พิมพ์</button>
         </div>
       </div>`;
 
     const onClose = () => closePreviewModal();
+    const setBusy = (busy, label) => {
+      const pdfBtn = overlay.querySelector('[data-wht50-pdf]');
+      const printBtn = overlay.querySelector('[data-wht50-print]');
+      if (pdfBtn) {
+        pdfBtn.disabled = !!busy;
+        if (busy) pdfBtn.textContent = label || 'กำลังสร้าง PDF...';
+        else pdfBtn.textContent = 'ดาวน์โหลด PDF';
+      }
+      if (printBtn) printBtn.disabled = !!busy;
+    };
+
     overlay.addEventListener('click', (e) => { if (e.target === overlay) onClose(); });
     overlay.querySelector('.wht50-preview-modal__close')?.addEventListener('click', onClose);
     overlay.querySelector('[data-wht50-close]')?.addEventListener('click', onClose);
@@ -304,6 +428,17 @@
       printSample(payload);
       if (payload?.id && App.Wht50Service?.markPrinted) {
         App.Wht50Service.markPrinted(payload.id).catch(() => {});
+      }
+    });
+    overlay.querySelector('[data-wht50-pdf]')?.addEventListener('click', async () => {
+      setBusy(true);
+      try {
+        await downloadPdf(payload);
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'ดาวน์โหลด PDF ไม่สำเร็จ — ลองใช้ปุ่มพิมพ์แล้วเลือก Save as PDF');
+      } finally {
+        setBusy(false);
       }
     });
 
@@ -317,6 +452,10 @@
 
   App.Wht50Document = {
     DEFAULT_PAYER,
+    DEFAULT_SIGNATURE_FILE,
+    DEFAULT_STAMP_FILE,
+    DEFAULT_SIGNATURE_PATH,
+    DEFAULT_STAMP_PATH,
     SAMPLE_FROM_PDF,
     isCompanyPayer,
     sampleFormUrl,
@@ -326,10 +465,12 @@
     printHtml,
     printCopies,
     printSample,
+    downloadPdf,
     openPreview,
     closePreviewModal,
     formatMoney,
     bahtText,
-    formatThaiDate
+    formatThaiDate,
+    absoluteUrl
   };
 })(window);

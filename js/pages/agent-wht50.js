@@ -3,6 +3,7 @@
   if (!tbody) return;
 
   const yearSelect = document.getElementById('wht50Year');
+  const monthSelect = document.getElementById('wht50Month');
   const statusSelect = document.getElementById('wht50PrintStatus');
   const searchInput = document.getElementById('wht50Search');
   const COLS = 7;
@@ -21,16 +22,26 @@
     return { key: 'unprinted', label: 'ยังไม่พิมพ์', pill: 'wht50-unprinted' };
   }
 
+  function issuedParts(doc) {
+    const raw = String(doc.issuedAt || doc.paidAt || '');
+    if (/^\d{4}-\d{2}/.test(raw)) {
+      return {
+        beYear: String(Number(raw.slice(0, 4)) + 543),
+        month: raw.slice(5, 7)
+      };
+    }
+    return { beYear: String(doc.bookNo || ''), month: '' };
+  }
+
   function fillYears(list) {
     if (!yearSelect) return;
     const years = new Set();
     list.forEach((d) => {
-      const raw = String(d.issuedAt || d.paidAt || '');
-      if (/^\d{4}/.test(raw)) years.add(Number(raw.slice(0, 4)) + 543);
-      else if (d.bookNo) years.add(String(d.bookNo));
+      const p = issuedParts(d);
+      if (p.beYear) years.add(p.beYear);
     });
     const nowBe = new Date().getFullYear() + 543;
-    years.add(nowBe);
+    years.add(String(nowBe));
     const sorted = [...years].map(String).sort((a, b) => Number(b) - Number(a));
     const prev = yearSelect.value;
     yearSelect.innerHTML = '<option value="">ทุกปี</option>' + sorted.map((y) => `<option value="${y}">${y}</option>`).join('');
@@ -39,14 +50,13 @@
 
   function matchesFilters(doc) {
     const year = yearSelect?.value || '';
+    const month = monthSelect?.value || '';
     const status = statusSelect?.value || '';
     const q = String(searchInput?.value || '').trim().toLowerCase();
+    const parts = issuedParts(doc);
 
-    if (year) {
-      const issued = String(doc.issuedAt || '');
-      const beYear = issued ? String(Number(issued.slice(0, 4)) + 543) : String(doc.bookNo || '');
-      if (beYear !== year) return false;
-    }
+    if (year && parts.beYear !== year) return false;
+    if (month && parts.month !== month) return false;
     if (status === 'printed' && !doc.printedAt) return false;
     if (status === 'unprinted' && doc.printedAt) return false;
     if (q) {
@@ -63,17 +73,38 @@
     return true;
   }
 
-  function updateStats(list) {
+  function updateStats(allList, filtered) {
     const el = (id) => document.getElementById(id);
-    const printed = list.filter((d) => d.printedAt).length;
-    if (el('statWht50Total')) el('statWht50Total').textContent = String(list.length);
+    const printed = allList.filter((d) => d.printedAt).length;
+    const paid = filtered.reduce((s, d) => s + (Number(d.paidAmount) || 0), 0);
+    if (el('statWht50Total')) el('statWht50Total').textContent = String(allList.length);
     if (el('statWht50Printed')) el('statWht50Printed').textContent = String(printed);
-    if (el('statWht50Unprinted')) el('statWht50Unprinted').textContent = String(list.length - printed);
+    if (el('statWht50Unprinted')) el('statWht50Unprinted').textContent = String(allList.length - printed);
+    if (el('statWht50PaidTotal')) el('statWht50PaidTotal').textContent = formatMoney(paid);
+  }
+
+  async function downloadDoc(id, btn) {
+    const label = btn?.innerHTML;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '...';
+    }
+    try {
+      const doc = await App.Wht50Service.getById(id);
+      await App.Wht50Service.downloadPdf(doc);
+    } catch (err) {
+      alert(err.message || 'ดาวน์โหลด PDF ไม่สำเร็จ');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = label || 'PDF';
+      }
+    }
   }
 
   function renderTable() {
     const filtered = cache.filter(matchesFilters);
-    updateStats(cache);
+    updateStats(cache, filtered);
     const pg = App.TableUI.paginate(filtered, page);
     if (!pg.items.length) {
       App.TableUI.showEmpty(tbody, COLS, 'ยังไม่มีหนังสือ 50 ทวิ');
@@ -93,7 +124,10 @@
           <td class="col-money">${formatMoney(d.taxAmount)}</td>
           <td class="col-center"><span class="status-pill ${print.pill}">${print.label}</span></td>
           <td class="col-center">
-            <button type="button" class="btn-success btn-sm" data-wht50="${d.id}">ดู/พิมพ์</button>
+            <div class="admin-row-actions">
+              <button type="button" class="btn-success btn-sm" data-wht50="${d.id}">ดู/พิมพ์</button>
+              <button type="button" class="btn-secondary btn-sm" data-wht50-pdf="${d.id}">PDF</button>
+            </div>
           </td>
         </tr>`;
     }).join('');
@@ -107,6 +141,9 @@
           alert(err.message || 'เปิดหนังสือ 50 ทวิไม่สำเร็จ');
         }
       });
+    });
+    tbody.querySelectorAll('[data-wht50-pdf]').forEach((btn) => {
+      btn.addEventListener('click', () => downloadDoc(btn.dataset.wht50Pdf, btn));
     });
 
     App.TableUI.renderPagination(document.getElementById('wht50Pagination'), {
@@ -133,6 +170,7 @@
     renderTable();
   });
   yearSelect?.addEventListener('change', () => { page = 1; renderTable(); });
+  monthSelect?.addEventListener('change', () => { page = 1; renderTable(); });
   statusSelect?.addEventListener('change', () => { page = 1; renderTable(); });
   searchInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {

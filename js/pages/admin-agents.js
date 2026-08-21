@@ -1,11 +1,29 @@
 let agentsCache = [];
 let agentsPage = 1;
+let agentsTeamPage = 1;
+const AGENTS_VIEW_KEY = 'kladeebroker_agents_view';
+let agentsView = 'team';
+
+let agentSearchCode = '';
+let agentSearchName = '';
+let agentStatusFilter = '';
+let agentRoleFilter = '';
+let agentFiltersDebounce = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const tbody = document.getElementById('agentsTableBody');
   if (!tbody) return;
 
-  document.getElementById('btnAddAgent')?.addEventListener('click', openAddAgentModal);
+  try {
+    agentsView = localStorage.getItem(AGENTS_VIEW_KEY) || 'team';
+  } catch {
+    agentsView = 'team';
+  }
+
+  document.querySelectorAll('[data-agents-view]').forEach((btn) => {
+    btn.addEventListener('click', () => setAgentsView(btn.dataset.agentsView));
+  });
+
   try {
     await renderAgents();
   } catch (err) {
@@ -17,6 +35,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
     return;
   }
+
+  const scheduleAgentFiltersRender = () => {
+    agentsPage = 1;
+    agentsTeamPage = 1;
+    if (agentFiltersDebounce) clearTimeout(agentFiltersDebounce);
+    agentFiltersDebounce = setTimeout(() => {
+      renderAgentsView();
+    }, 180);
+  };
+
+  const bindAgentFilter = (el, setter) => {
+    if (!el) return;
+    const onChange = () => {
+      setter(el.value);
+      scheduleAgentFiltersRender();
+    };
+    el.addEventListener('input', onChange);
+    el.addEventListener('change', onChange);
+  };
+
+  bindAgentFilter(document.getElementById('agentSearchCode'), (v) => { agentSearchCode = v.trim(); });
+  bindAgentFilter(document.getElementById('agentSearchName'), (v) => { agentSearchName = v.trim(); });
+  bindAgentFilter(document.getElementById('agentStatusFilter'), (v) => { agentStatusFilter = v; });
+  bindAgentFilter(document.getElementById('agentRoleFilter'), (v) => { agentRoleFilter = v; });
+
+  document.getElementById('btnClearAgentFilters')?.addEventListener('click', () => {
+    agentSearchCode = '';
+    agentSearchName = '';
+    agentStatusFilter = '';
+    agentRoleFilter = '';
+    document.getElementById('agentSearchCode').value = '';
+    document.getElementById('agentSearchName').value = '';
+    document.getElementById('agentStatusFilter').value = '';
+    document.getElementById('agentRoleFilter').value = '';
+    agentsPage = 1;
+    agentsTeamPage = 1;
+    renderAgentsView();
+  });
+
   document.getElementById('ledgerAgentFilter')?.addEventListener('change', renderMiniLedger);
   try {
     await renderMiniLedger();
@@ -25,134 +82,226 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-function generateNextAgentCode() {
-  const usedCodes = new Set((agentsCache || []).map((a) => a?.code).filter(Boolean));
-  const codeRe = /^([A-Za-z]+)(\d+)-(\d+)$/;
-
-  let maxGroup = 0;
-  let maxSeq = 0;
-  const prefixCounts = {};
-
-  for (const code of usedCodes) {
-    const m = String(code).match(codeRe);
-    if (!m) continue;
-    const prefix = m[1];
-    const group = Number(m[2]);
-    const seq = Number(m[3]);
-    prefixCounts[prefix] = (prefixCounts[prefix] || 0) + 1;
-    if (Number.isFinite(group)) maxGroup = Math.max(maxGroup, group);
-    if (Number.isFinite(seq)) maxSeq = Math.max(maxSeq, seq);
-  }
-
-  // Prefer the most common prefix in existing data (e.g. 'Ag' over 'Ck').
-  const prefix = Object.entries(prefixCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Ag';
-  const nextGroup = (maxGroup || 0) + 1;
-  const baseSeq = (maxSeq || 0) + 1;
-  const pad3 = (n) => String(n).padStart(3, '0');
-
-  for (let i = 0; i < 100; i++) {
-    const candidateSeq = baseSeq + i;
-    const candidate = `${prefix}${nextGroup}-${pad3(candidateSeq)}`;
-    if (!usedCodes.has(candidate)) return candidate;
-  }
-
-  // Fallback (should be rare): keep the same format but use a time-based seq.
-  const fallbackSeq = baseSeq + (Date.now() % 1000);
-  return `${prefix}${nextGroup}-${pad3(fallbackSeq)}`;
-}
-
 async function renderAgents() {
   const tbody = document.getElementById('agentsTableBody');
-  App.TableUI.showLoading(tbody, 8);
+  const grid = document.getElementById('agentsTeamGrid');
+  if (agentsView === 'team' && grid) {
+    grid.innerHTML = '<p class="admin-hint agents-team-empty">กำลังโหลด...</p>';
+  } else if (tbody) {
+    App.TableUI.showLoading(tbody, 8);
+  }
   agentsCache = await App.AgentService.getAgents();
-  renderAgentsTable();
+  renderAgentsView();
   populateAgentFilter();
+}
+
+function setAgentsView(view) {
+  if (view !== 'team' && view !== 'table') return;
+  agentsView = view;
+  try {
+    localStorage.setItem(AGENTS_VIEW_KEY, view);
+  } catch {
+    /* ignore */
+  }
+  renderAgentsView();
+}
+
+function renderAgentsView() {
+  const teamView = document.getElementById('agentsTeamView');
+  const tableView = document.getElementById('agentsTableView');
+
+  document.querySelectorAll('[data-agents-view]').forEach((btn) => {
+    const active = btn.dataset.agentsView === agentsView;
+    btn.classList.toggle('is-active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+
+  if (teamView) teamView.hidden = agentsView !== 'team';
+  if (tableView) tableView.hidden = agentsView !== 'table';
+
+  if (agentsView === 'team') {
+    renderAgentsTeamCards();
+  } else {
+    renderAgentsTable();
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function getTeamLeaders() {
+  return (agentsCache || [])
+    .filter((a) => !a.parentId)
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'th'));
+}
+
+function teamMemberLimit() {
+  return Number(App.Config?.TEAM_MEMBER_LIMIT) || 2;
+}
+
+function teamMemberCountLabel(count) {
+  return `${count}/${teamMemberLimit()}`;
+}
+
+function matchAgentByFilters(agent) {
+  const a = agent || {};
+  const code = String(a.code || '').toLowerCase();
+  const name = String(a.name || '').toLowerCase();
+
+  if (agentSearchCode) {
+    if (!code.includes(agentSearchCode.toLowerCase())) return false;
+  }
+  if (agentSearchName) {
+    if (!name.includes(agentSearchName.toLowerCase())) return false;
+  }
+  if (agentStatusFilter) {
+    if (String(a.status || '') !== String(agentStatusFilter)) return false;
+  }
+  if (agentRoleFilter) {
+    const isLeader = !a.parentId;
+    if (agentRoleFilter === 'leader' && !isLeader) return false;
+    if (agentRoleFilter === 'member' && isLeader) return false;
+  }
+  return true;
+}
+
+function getTeamMembers(leaderId) {
+  return (agentsCache || [])
+    .filter((a) => a.parentId === leaderId)
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'th'));
+}
+
+function agentPageHref(agentId, view) {
+  return `agent?id=${encodeURIComponent(agentId)}&view=${encodeURIComponent(view)}`;
+}
+
+function agentActionsHtml(agentId, status) {
+  const agent = findAgent(agentId);
+  return `
+    <div class="btn-group agent-team-card__actions">
+      <a class="btn-secondary btn-sm" href="${agentPageHref(agentId, 'perms')}">สิทธิ์</a>
+      <a class="btn-secondary btn-sm" href="${agentPageHref(agentId, 'edit')}">แก้ไข</a>
+      <button type="button" class="btn-sm ${status === 'active' ? 'btn-danger' : 'btn-success-outline'} btn-toggle" data-id="${agentId}" data-status="${status}">
+        ${status === 'active' ? 'ระงับ' : 'เปิดใช้'}
+      </button>
+    </div>
+  `;
+}
+
+function bindAgentActions(root) {
+  if (!root) return;
+  root.querySelectorAll('.btn-adjust').forEach((btn) => {
+    btn.addEventListener('click', () => openAdjustModal(btn.dataset.id));
+  });
+  root.querySelectorAll('.btn-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => toggleStatus(btn.dataset.id, btn.dataset.status, btn));
+  });
+}
+
+function renderAgentsTeamCards() {
+  const grid = document.getElementById('agentsTeamGrid');
+  const pagination = document.getElementById('agentsTeamPagination');
+  if (!grid) return;
+
+  const leaders = getTeamLeaders().filter((leader) => {
+    const leaderMatch = matchAgentByFilters(leader);
+    const membersMatch = getTeamMembers(leader.id).some((m) => matchAgentByFilters(m));
+    return leaderMatch || membersMatch;
+  });
+  const pg = App.TableUI.paginate(leaders, agentsTeamPage, 12);
+
+  if (!pg.items.length) {
+    grid.innerHTML = '<p class="admin-hint agents-team-empty">ยังไม่มีนายหน้าในระบบ</p>';
+    if (pagination) pagination.innerHTML = '';
+    return;
+  }
+
+  grid.innerHTML = pg.items.map((leader) => {
+    const members = getTeamMembers(leader.id).filter((m) => matchAgentByFilters(m));
+    const membersHtml = members.length
+      ? members.map((m) => `
+          <li class="agent-team-card__member">
+            <span class="agent-team-card__memberIcon" aria-hidden="true"><i data-lucide="user"></i></span>
+            <span class="agent-team-card__memberName">${escapeHtml(m.name)}</span>
+            <span class="agent-team-card__memberCode">${escapeHtml(m.code)}</span>
+            <span class="status-pill ${m.status}">${m.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</span>
+          </li>
+        `).join('')
+      : '<li class="agent-team-card__member agent-team-card__member--empty">ยังไม่มีลูกทีม</li>';
+
+    return `
+      <article class="agent-team-card" data-agent-id="${leader.id}">
+        <header class="agent-team-card__head">
+          <span class="agent-team-card__icon" aria-hidden="true"><i data-lucide="users-round"></i></span>
+          <div class="agent-team-card__leader">
+            <span class="agent-team-card__role">หัวทีม</span>
+            <h3 class="agent-team-card__name">${escapeHtml(leader.name)}</h3>
+            <p class="agent-team-card__code">${escapeHtml(leader.code)}</p>
+          </div>
+          <span class="status-pill ${leader.status}">${leader.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</span>
+        </header>
+        <dl class="agent-team-card__stats">
+          <div class="agent-team-card__stat agent-team-card__stat--members">
+            <dt>ลูกทีม</dt>
+            <dd>${teamMemberCountLabel(members.length)}</dd>
+          </div>
+          <div class="agent-team-card__stat agent-team-card__stat--balance">
+            <dt>วงเงินคงเหลือ</dt>
+            <dd>${App.Shell.formatCurrency(leader.balance)}</dd>
+          </div>
+        </dl>
+        <div class="agent-team-card__membersWrap">
+          <p class="agent-team-card__membersTitle">ลูกทีม (${teamMemberCountLabel(members.length)})</p>
+          <ul class="agent-team-card__members">${membersHtml}</ul>
+        </div>
+        ${agentActionsHtml(leader.id, leader.status)}
+      </article>
+    `;
+  }).join('');
+
+  bindAgentActions(grid);
+
+  if (pagination) {
+    App.TableUI.renderPagination(pagination, {
+      ...pg,
+      onChange: (p) => {
+        agentsTeamPage = p;
+        renderAgentsTeamCards();
+      }
+    });
+  }
 }
 
 function findAgent(id) {
   return (agentsCache || []).find((a) => a.id === id) || null;
 }
 
-function parentLabel(agent) {
-  if (!agent?.parentId) return 'หัวทีม';
+function teamCellHtml(agent) {
+  const isLeader = !agent?.parentId;
+  if (isLeader) {
+    return `
+      <div class="admin-agent-cell admin-agent-cell--team">
+        <span class="admin-agent-cell__code">หัวทีม</span>
+        <span class="admin-agent-cell__name">สมาชิก ${teamMemberCountLabel(memberCount(agent.id))}</span>
+      </div>
+    `;
+  }
   const parent = findAgent(agent.parentId);
-  return parent ? `${parent.code}` : '-';
+  return `
+    <div class="admin-agent-cell admin-agent-cell--team">
+      <span class="admin-agent-cell__code">${parent ? parent.code : '-'}</span>
+      <span class="admin-agent-cell__name">ลูกทีม</span>
+    </div>
+  `;
 }
 
 function memberCount(agentId) {
   return (agentsCache || []).filter((a) => a.parentId === agentId).length;
 }
 
-function parentOptionsHtml(agentId, selectedParentId) {
-  const blocked = new Set([agentId]);
-  const collectDescendants = (id) => {
-    (agentsCache || []).forEach((a) => {
-      if (a.parentId === id && !blocked.has(a.id)) {
-        blocked.add(a.id);
-        collectDescendants(a.id);
-      }
-    });
-  };
-  if (agentId) collectDescendants(agentId);
-
-  const options = (agentsCache || [])
-    .filter((a) => !blocked.has(a.id) && a.status !== 'inactive')
-    .map((a) => {
-      const selected = a.id === selectedParentId ? ' selected' : '';
-      return `<option value="${a.id}"${selected}>${escapeHtml(a.code)} — ${escapeHtml(a.name)}</option>`;
-    })
-    .join('');
-
-  return `
-    <option value="">ไม่ขึ้นกับใคร — เป็นหัวทีม</option>
-    ${options}
-  `;
-}
-
-function teamSectionHtml(agent, options = {}) {
-  const members = agent
-    ? (agentsCache || []).filter((a) => a.parentId === agent.id)
-    : [];
-  const parent = agent?.parentId ? findAgent(agent.parentId) : null;
-  const roleText = parent
-    ? `ตอนนี้เป็นลูกทีมของ ${parent.name} (${parent.code})`
-    : 'ตอนนี้เป็นหัวทีม';
-  const memberList = members.length
-    ? options.commissionFromOverview
-      ? `<ul class="agent-team-chips">${members.map((m) => `<li>${escapeHtml(m.name)} <em>${escapeHtml(m.code)}</em></li>`).join('')}</ul>
-         <p class="form-field__hint">ตั้งค่าคอมลูกทีมได้ที่ตารางด้านบน</p>`
-      : `<ul class="agent-team-chips">${members.map((m) => `<li><button type="button" class="agent-team-chip-btn" data-open-team-settings="${m.id}">${escapeHtml(m.name)} <em>${escapeHtml(m.code)}</em></button></li>`).join('')}</ul>
-         <p class="form-field__hint">คลิกชื่อลูกทีมเพื่อตั้งคอมแบ่ง (เช่น ลูกได้ 12 · หัวได้ 3)</p>`
-    : '<p class="form-field__hint">ยังไม่มีลูกทีม ถ้าต้องการให้คนอื่นขึ้นกับบัญชีนี้ ให้ไปเปิดบัญชีนั้นแล้วเลือกหัวหน้าเป็นคนนี้</p>';
-
-  return `
-    <section class="agent-form__section">
-      <div class="agent-form__sectionHead">
-        <h3 class="agent-form__sectionTitle">1. ทีม</h3>
-        <span class="agent-form__sectionBadge">${escapeHtml(parent ? 'ลูกทีม' : 'หัวทีม')}</span>
-        <span class="agent-form__sectionBadge agent-form__sectionBadge--muted">แอดมิน</span>
-      </div>
-      <p class="agent-form__sectionHint">${escapeHtml(roleText)}</p>
-      <div class="agent-form__grid">
-        <div class="form-field full">
-          <label for="teamParentId">ขึ้นกับหัวหน้าคนไหน?</label>
-          <select id="teamParentId" name="parentId">
-            ${parentOptionsHtml(agent?.id, agent?.parentId || '')}
-          </select>
-          <span class="form-field__hint">ไม่เลือก = นายหน้าคนนี้เป็นหัวทีมเอง</span>
-        </div>
-        <div class="form-field full">
-          <label>ลูกทีมที่ขึ้นกับคนนี้ (${members.length})</label>
-          ${memberList}
-        </div>
-      </div>
-    </section>
-  `;
-}
-
 function renderAgentsTable() {
   const tbody = document.getElementById('agentsTableBody');
-  const pg = App.TableUI.paginate(agentsCache, agentsPage);
+  const filteredAgents = (agentsCache || []).filter((a) => matchAgentByFilters(a));
+  const pg = App.TableUI.paginate(filteredAgents, agentsPage);
 
   if (!pg.items.length) {
     App.TableUI.showEmpty(tbody, 8);
@@ -162,47 +311,20 @@ function renderAgentsTable() {
 
   tbody.innerHTML = pg.items.map((a) => `
     <tr data-agent-id="${a.id}">
-      <td>${a.code}</td>
-      <td title="${a.name}">${a.name}</td>
-      <td>
-        <div class="admin-agent-cell">
-          <span class="admin-agent-cell__code">${parentLabel(a)}</span>
-          <span class="admin-agent-cell__name">ลูกทีม ${memberCount(a.id)} คน</span>
-        </div>
-      </td>
-      <td>${a.phone || '-'}</td>
-      <td class="agent-balance">${App.Shell.formatCurrency(a.balance)}</td>
-      <td class="agent-credit">${App.AdminUtils.creditLimitGauge(a.balance, a.creditLimit)}</td>
-      <td><span class="status-pill ${a.status}">${a.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</span></td>
-      <td>
-        <div class="btn-group">
-          <button type="button" class="btn-secondary btn-sm btn-team" data-id="${a.id}">ทีม/คอม</button>
-          <button type="button" class="btn-secondary btn-sm btn-perms" data-id="${a.id}">สิทธิ์</button>
-          <button type="button" class="btn-secondary btn-sm btn-adjust" data-id="${a.id}">ปรับวงเงิน</button>
-          <button type="button" class="btn-secondary btn-sm btn-edit" data-id="${a.id}">แก้ไข</button>
-          <button type="button" class="btn-sm ${a.status === 'active' ? 'btn-danger' : 'btn-success-outline'} btn-toggle" data-id="${a.id}" data-status="${a.status}">
-            ${a.status === 'active' ? 'ระงับ' : 'เปิดใช้'}
-          </button>
-        </div>
+      <td class="col-code">${a.code}</td>
+      <td class="col-name" title="${a.name}">${a.name}</td>
+      <td class="col-team">${teamCellHtml(a)}</td>
+      <td class="col-phone">${a.phone || '-'}</td>
+      <td class="col-balance agent-balance">${App.Shell.formatCurrency(a.balance)}</td>
+      <td class="col-credit agent-credit">${App.AdminUtils.creditLimitGauge(a.balance, a.creditLimit)}</td>
+      <td class="col-status"><span class="status-pill ${a.status}">${a.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</span></td>
+      <td class="col-actions">
+        ${agentActionsHtml(a.id, a.status)}
       </td>
     </tr>
   `).join('');
 
-  tbody.querySelectorAll('.btn-team').forEach((btn) => {
-    btn.addEventListener('click', () => openTeamSettingsModal(btn.dataset.id));
-  });
-  tbody.querySelectorAll('.btn-perms').forEach((btn) => {
-    btn.addEventListener('click', () => openPermissionsModal(btn.dataset.id));
-  });
-  tbody.querySelectorAll('.btn-adjust').forEach((btn) => {
-    btn.addEventListener('click', () => openAdjustModal(btn.dataset.id));
-  });
-  tbody.querySelectorAll('.btn-edit').forEach((btn) => {
-    btn.addEventListener('click', () => openEditModal(btn.dataset.id));
-  });
-  tbody.querySelectorAll('.btn-toggle').forEach((btn) => {
-    btn.addEventListener('click', () => toggleStatus(btn.dataset.id, btn.dataset.status, btn));
-  });
+  bindAgentActions(tbody);
 
   App.TableUI.renderPagination(document.getElementById('agentsPagination'), {
     ...pg,
@@ -374,433 +496,6 @@ function openAdjustModal(agentId) {
       }, { label: 'กำลังบันทึก...' });
     } catch (err) {
       App.AdminUtils.showToast(err.message || 'ปรับวงเงินไม่สำเร็จ', 'error');
-    }
-  });
-}
-
-function openPermissionsModal(agentId) {
-  const agent = agentsCache.find((a) => a.id === agentId);
-  if (!agent) {
-    alert('ไม่พบข้อมูลนายหน้า');
-    return;
-  }
-  if (!App.AgentFeatures) {
-    alert('ระบบสิทธิ์ยังไม่พร้อม กรุณารีเฟรชหน้า (Ctrl+F5)');
-    return;
-  }
-
-  const overlay = App.Modal.open({
-    title: `กำหนดสิทธิ์ฟังก์ชัน — ${agent.code}`,
-    size: 'wide',
-    body: `
-      <form id="agentPermForm" novalidate>
-        ${App.AgentFeatures.renderPermissionsTable(agent.featurePermissions)}
-      </form>
-    `,
-    footer: `
-      <button type="button" class="btn-secondary" data-dismiss>ยกเลิก</button>
-      <button type="button" class="btn-primary" id="confirmPerms">บันทึกสิทธิ์</button>
-    `
-  });
-
-  const form = overlay.querySelector('#agentPermForm');
-  if (!form) {
-    alert('ไม่สามารถเปิดฟอร์มสิทธิ์ได้');
-    App.Modal.close();
-    return;
-  }
-
-  form.addEventListener('submit', (e) => e.preventDefault());
-
-  try {
-    App.AgentFeatures.bindPermissionsForm(form);
-  } catch (err) {
-    console.error(err);
-  }
-
-  overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
-
-  overlay.addEventListener('click', async (e) => {
-    const saveBtn = e.target.closest('#confirmPerms');
-    if (!saveBtn) return;
-    e.preventDefault();
-
-    if (saveBtn.classList.contains('is-loading') || saveBtn.disabled) return;
-
-    try {
-      await App.ButtonUI.withLoading(saveBtn, async () => {
-        const featurePermissions = App.AgentFeatures.readPermissionsFromForm(form);
-        const noneEnabled = App.AgentFeatures.countEnabled(featurePermissions) === 0;
-
-        const updated = await App.AgentService.updateAgent(agentId, { featurePermissions });
-        const idx = agentsCache.findIndex((a) => a.id === agentId);
-        if (idx >= 0) agentsCache[idx] = { ...agentsCache[idx], ...updated };
-
-        let statusEl = form.querySelector('.agent-perm__status');
-        if (!statusEl) {
-          statusEl = document.createElement('div');
-          statusEl.className = 'agent-perm__status agent-perm__status--success';
-          form.prepend(statusEl);
-        }
-        statusEl.textContent = noneEnabled
-          ? 'บันทึกแล้ว — นายหน้าจะเข้าระบบไม่ได้จนกว่าจะเปิดสิทธิ์อย่างน้อย 1 รายการ'
-          : 'บันทึกสิทธิ์เรียบร้อยแล้ว';
-
-        await new Promise((resolve) => window.setTimeout(resolve, 500));
-        App.Modal.close();
-        renderAgentsTable();
-        App.AdminUtils.showToast(
-          noneEnabled
-            ? `บันทึกสิทธิ์ของ ${agent.code} แล้ว (ปิดทุกฟังก์ชัน — นายหน้าเข้าระบบไม่ได้)`
-            : `บันทึกสิทธิ์ของ ${agent.code} เรียบร้อยแล้ว`
-        );
-      }, { label: 'กำลังบันทึก...', minMs: 350 });
-    } catch (err) {
-      console.error(err);
-      App.AdminUtils.showToast(err?.message || 'บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง', 'error');
-    }
-  });
-}
-
-function openEditModal(agentId) {
-  const agent = agentsCache.find((a) => a.id === agentId);
-  if (!agent) return;
-
-  const overlay = App.Modal.open({
-    title: `แก้ไขนายหน้า — ${agent.code}`,
-    size: 'wide',
-    body: `
-      <form id="editAgentForm" class="agent-form" novalidate>
-        <p class="agent-form__intro">อัปเดตข้อมูลติดต่อและวงเงินสูงสุดของบัญชี <strong>${agent.code}</strong></p>
-
-        <section class="agent-form__section">
-          <div class="agent-form__sectionHead">
-            <h3 class="agent-form__sectionTitle">ข้อมูลติดต่อ</h3>
-          </div>
-          <div class="agent-form__grid">
-            <div class="form-field full">
-              <label for="editName">ชื่อ-นามสกุล <span class="form-req" aria-hidden="true">*</span></label>
-              <input id="editName" name="name" value="${escapeHtml(agent.name)}" required autocomplete="name" placeholder="ชื่อจริง นามสกุล">
-            </div>
-            <div class="form-field">
-              <label for="editEmail">อีเมล</label>
-              <input id="editEmail" name="email" type="email" value="${escapeHtml(agent.email || '')}" autocomplete="email" placeholder="name@example.com">
-            </div>
-            <div class="form-field">
-              <label for="editPhone">โทรศัพท์</label>
-              <input id="editPhone" name="phone" value="${escapeHtml(agent.phone || '')}" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx">
-            </div>
-          </div>
-        </section>
-
-        <section class="agent-form__section">
-          <div class="agent-form__sectionHead">
-            <h3 class="agent-form__sectionTitle">วงเงิน</h3>
-          </div>
-          <div class="agent-form__grid">
-            <div class="form-field">
-              <label for="editCreditLimit">วงเงินสูงสุด (บาท)</label>
-              <input id="editCreditLimit" name="creditLimit" type="number" min="0" step="0.01" value="${agent.creditLimit || 0}">
-              <span class="form-field__hint">Credit Limit ของบัญชีนี้</span>
-            </div>
-            <div class="form-field">
-              <label>วงเงินคงเหลือ</label>
-              <div class="agent-form__readonly">${App.Shell.formatCurrency(agent.balance)}</div>
-              <span class="form-field__hint">ปรับได้จากปุ่ม “ปรับวงเงิน”</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="agent-form__section">
-          <div class="agent-form__sectionHead">
-            <h3 class="agent-form__sectionTitle">รหัสผ่าน</h3>
-          </div>
-          <div class="agent-form__grid">
-            <div class="form-field">
-              <label for="editPassword">ตั้งรหัสผ่านใหม่</label>
-              <input id="editPassword" name="password" type="text" autocomplete="new-password" spellcheck="false" placeholder="เว้นว่างหากไม่เปลี่ยน">
-              <span class="form-field__hint">แอดมินเป็นผู้ตั้งรหัสผ่านทั้งหมด นายหน้าเปลี่ยนเองไม่ได้</span>
-            </div>
-          </div>
-        </section>
-
-        ${teamSectionHtml(agent)}
-
-        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection(agent.commissionRates, { hasParent: !!agent.parentId }) : ''}
-      </form>
-    `,
-    footer: `
-      <button type="button" class="btn-secondary" data-dismiss>ยกเลิก</button>
-      <button type="button" class="btn-primary" id="confirmEdit">บันทึกการแก้ไข</button>
-    `
-  });
-
-  overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
-  App.AgentCommissionRates?.bindForm(overlay);
-  overlay.querySelector('#confirmEdit')?.addEventListener('click', async () => {
-    const form = overlay.querySelector('#editAgentForm');
-    const btn = overlay.querySelector('#confirmEdit');
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-    try {
-      await App.ButtonUI.withLoading(btn, async () => {
-        App.AgentCommissionRates?.applyQuickRatesFromForm(form);
-        const payload = {
-          name: form.name.value.trim(),
-          email: form.email.value.trim(),
-          phone: form.phone.value.trim(),
-          creditLimit: parseFloat(form.creditLimit.value) || 0,
-          parentId: form.parentId?.value || null,
-          commissionRates: App.AgentCommissionRates?.readFromForm(form)
-        };
-        const nextPassword = String(form.password?.value || '').trim();
-        if (nextPassword) payload.password = nextPassword;
-        await App.AgentService.updateAgent(agentId, payload);
-        await renderAgents();
-        App.Modal.close();
-        App.AdminUtils.showToast(`อัปเดต ${agent.code} เรียบร้อยแล้ว`);
-      }, { label: 'กำลังบันทึก...' });
-    } catch (err) {
-      App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');
-    }
-  });
-}
-
-function teamCommissionBodyHtml(agent) {
-  if (!App.AgentCommissionRates) return '';
-  const members = (agentsCache || []).filter((a) => a.parentId === agent.id);
-  const isLeader = !agent.parentId;
-
-  if (isLeader) {
-    return `
-      ${App.AgentCommissionRates.renderTeamCommissionOverview(agent, members)}
-      <details class="agent-form__advanced">
-        <summary>ตั้งค่ารายบริษัท / หักภาษี (ขั้นสูง) — หัวทีม</summary>
-        ${App.AgentCommissionRates.renderDetailedCommissionSections(agent.commissionRates)}
-      </details>
-    `;
-  }
-
-  return `
-    ${App.AgentCommissionRates.renderQuickCommissionBlock(agent.commissionRates, { hasParent: true })}
-    ${App.AgentCommissionRates.renderDetailedCommissionSections(agent.commissionRates)}
-  `;
-}
-
-function openTeamSettingsModal(agentId) {
-  const agent = agentsCache.find((a) => a.id === agentId);
-  if (!agent) return;
-  const members = (agentsCache || []).filter((a) => a.parentId === agent.id);
-  const isLeader = !agent.parentId;
-
-  const overlay = App.Modal.open({
-    title: `ตั้งค่าทีมและค่าคอม — ${agent.name}`,
-    size: 'wide',
-    body: `
-      <form id="teamSettingsForm" class="agent-form" novalidate>
-        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderAdminOnlyNotice('กำหนดทีม ค่าคอมลูกทีม และคอมแม่ทีมจากยอดขายลูกทีม') : ''}
-        <p class="agent-form__intro">ตั้งให้ <strong>${escapeHtml(agent.name)}</strong> (${escapeHtml(agent.code)}) — หัวหน้าทีมไม่สามารถแก้ไขส่วนนี้เอง</p>
-        ${teamCommissionBodyHtml(agent)}
-        ${teamSectionHtml(agent, { commissionFromOverview: isLeader })}
-      </form>
-    `,
-    footer: `
-      <button type="button" class="btn-secondary" data-dismiss>ยกเลิก</button>
-      <button type="button" class="btn-primary" id="confirmTeamSettings">บันทึก</button>
-    `
-  });
-
-  overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
-  App.AgentCommissionRates?.bindForm(overlay);
-  overlay.querySelectorAll('[data-open-team-settings]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      App.Modal.close();
-      openTeamSettingsModal(btn.dataset.openTeamSettings);
-    });
-  });
-  overlay.querySelector('#confirmTeamSettings')?.addEventListener('click', async () => {
-    const form = overlay.querySelector('#teamSettingsForm');
-    const btn = overlay.querySelector('#confirmTeamSettings');
-    try {
-      await App.ButtonUI.withLoading(btn, async () => {
-        const overview = form.querySelector('[data-team-commission-overview]');
-        if (isLeader && overview) {
-          const updates = App.AgentCommissionRates.buildTeamOverviewUpdates(form, agent, members);
-          const leaderUpdate = updates.find((u) => u.id === agent.id);
-          if (leaderUpdate && form.querySelector('[name^="commissionProduct_"]')) {
-            leaderUpdate.commissionRates = App.AgentCommissionRates.mergeLeaderAdvancedRates(
-              leaderUpdate.commissionRates,
-              App.AgentCommissionRates.readFromForm(form)
-            );
-          }
-          for (const update of updates) {
-            await App.AgentService.updateAgent(update.id, {
-              parentId: update.parentId,
-              commissionRates: update.commissionRates
-            });
-          }
-        } else {
-          App.AgentCommissionRates?.applyQuickRatesFromForm(form);
-          await App.AgentService.updateAgent(agentId, {
-            parentId: form.parentId?.value || null,
-            commissionRates: App.AgentCommissionRates?.readFromForm(form)
-          });
-        }
-        await renderAgents();
-        App.Modal.close();
-        const savedCount = isLeader && overview ? members.length + 1 : 1;
-        App.AdminUtils.showToast(
-          savedCount > 1
-            ? `บันทึกคอมทั้งทีมของ ${agent.code} (${savedCount} คน) แล้ว`
-            : `บันทึกทีม/คอมของ ${agent.code} แล้ว`
-        );
-      }, { label: 'กำลังบันทึก...' });
-    } catch (err) {
-      App.AdminUtils.showToast(err.message || 'บันทึกไม่สำเร็จ', 'error');
-    }
-  });
-}
-
-function openAddAgentModal() {
-  const overlay = App.Modal.open({
-    title: 'เพิ่มนายหน้าใหม่',
-    size: 'wide',
-    body: `
-      <form id="addAgentForm" class="agent-form" novalidate>
-        <p class="agent-form__intro">สร้างบัญชีสำหรับเข้าใช้งานพอร์ทัลนายหน้า รหัสนายหน้าจะใช้เป็นชื่อผู้ใช้เข้าสู่ระบบ</p>
-
-        <section class="agent-form__section">
-          <div class="agent-form__sectionHead">
-            <h3 class="agent-form__sectionTitle">ข้อมูลบัญชี</h3>
-            <span class="agent-form__sectionBadge">จำเป็น</span>
-          </div>
-          <div class="agent-form__grid">
-            <div class="form-field">
-              <label for="addCode">รหัสนายหน้า <span class="form-req" aria-hidden="true">*</span></label>
-              <input id="addCode" name="code" required autocomplete="off" placeholder="เช่น Ag4-301" spellcheck="false">
-              <span class="form-field__hint">ระบบจะสร้างรหัสให้โดยอัตโนมัติ ใช้เป็น Username เข้าสู่ระบบ</span>
-            </div>
-            <div class="form-field">
-              <label for="addPassword">รหัสผ่านเริ่มต้น <span class="form-req" aria-hidden="true">*</span></label>
-              <input id="addPassword" name="password" required value="demo" autocomplete="new-password" spellcheck="false">
-              <span class="form-field__hint">แอดมินเป็นผู้ตั้งรหัสผ่าน — นายหน้าเปลี่ยนเองไม่ได้</span>
-            </div>
-            <div class="form-field full">
-              <label for="addName">ชื่อ-นามสกุล <span class="form-req" aria-hidden="true">*</span></label>
-              <input id="addName" name="name" required autocomplete="name" placeholder="ชื่อจริง นามสกุล">
-            </div>
-          </div>
-        </section>
-
-        <section class="agent-form__section">
-          <div class="agent-form__sectionHead">
-            <h3 class="agent-form__sectionTitle">ข้อมูลติดต่อ</h3>
-            <span class="agent-form__sectionBadge agent-form__sectionBadge--muted">ไม่บังคับ</span>
-          </div>
-          <div class="agent-form__grid">
-            <div class="form-field">
-              <label for="addEmail">อีเมล</label>
-              <input id="addEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com">
-            </div>
-            <div class="form-field">
-              <label for="addPhone">โทรศัพท์</label>
-              <input id="addPhone" name="phone" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx">
-            </div>
-          </div>
-        </section>
-
-        <section class="agent-form__section">
-          <div class="agent-form__sectionHead">
-            <h3 class="agent-form__sectionTitle">วงเงิน</h3>
-          </div>
-          <div class="agent-form__grid">
-            <div class="form-field">
-              <label for="addInitialBalance">วงเงินเริ่มต้น (บาท)</label>
-              <input id="addInitialBalance" name="initialBalance" type="number" min="0" step="0.01" value="0">
-              <span class="form-field__hint">ยอดคงเหลือตอนเปิดบัญชี</span>
-            </div>
-            <div class="form-field">
-              <label for="addCreditLimit">วงเงินสูงสุด (บาท)</label>
-              <input id="addCreditLimit" name="creditLimit" type="number" min="0" step="0.01" value="50000">
-              <span class="form-field__hint">Credit Limit ของบัญชีนี้</span>
-            </div>
-          </div>
-        </section>
-
-        ${teamSectionHtml(null)}
-
-        ${App.AgentCommissionRates ? App.AgentCommissionRates.renderFormSection() : ''}
-      </form>
-    `,
-    footer: `
-      <button type="button" class="btn-secondary" data-dismiss>ยกเลิก</button>
-      <button type="button" class="btn-primary" id="confirmAdd">สร้างบัญชี</button>
-    `
-  });
-
-  overlay.querySelector('[data-dismiss]')?.addEventListener('click', () => App.Modal.close());
-  const codeInput = overlay.querySelector('#addCode');
-  if (codeInput) {
-    // Ensure a unique code every time the modal opens.
-    codeInput.value = generateNextAgentCode();
-    codeInput.readOnly = true;
-    codeInput.setAttribute('aria-readonly', 'true');
-    codeInput.focus();
-  }
-  App.AgentCommissionRates?.bindForm(overlay);
-
-  overlay.querySelector('#confirmAdd')?.addEventListener('click', async () => {
-    const form = overlay.querySelector('#addAgentForm');
-    const btn = overlay.querySelector('#confirmAdd');
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    try {
-      await App.ButtonUI.withLoading(btn, async () => {
-        const codeEl = overlay.querySelector('#addCode');
-        const buildPayload = () => {
-          App.AgentCommissionRates?.applyQuickRatesFromForm(form);
-          return {
-          code: String(codeEl?.value || form.code.value || '').trim(),
-          name: form.name.value.trim(),
-          email: form.email.value.trim(),
-          phone: form.phone.value.trim(),
-          initialBalance: parseFloat(form.initialBalance.value) || 0,
-          creditLimit: parseFloat(form.creditLimit.value) || 50000,
-          password: form.password.value || 'demo',
-          parentId: form.parentId?.value || null,
-          commissionRates: App.AgentCommissionRates?.readFromForm(form)
-        };
-        };
-
-        let created;
-        for (let attempt = 0; attempt < 2; attempt++) {
-          try {
-            created = await App.AgentService.createAgent(buildPayload());
-            break;
-          } catch (err) {
-            const msg = err?.message || '';
-            if (msg.includes('รหัสนายหน้านี้มีอยู่แล้ว') && codeEl && attempt === 0) {
-              // Try again with a different code (very unlikely, but safe for parallel admin usage).
-              codeEl.value = generateNextAgentCode();
-              continue;
-            }
-            throw err;
-          }
-        }
-
-        await renderAgents();
-        await renderMiniLedger();
-        App.Modal.close();
-        App.AdminUtils.showToast(`สร้างบัญชี ${created?.code || form.code.value.trim()} เรียบร้อยแล้ว`);
-      }, { label: 'กำลังสร้าง...' });
-    } catch (err) {
-      const msg = err?.message || '';
-      App.AdminUtils.showToast(msg || 'สร้างบัญชีไม่สำเร็จ', 'error');
     }
   });
 }

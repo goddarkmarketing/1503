@@ -51,5 +51,14 @@ App.TeamService = {
     if (!this._useRealAgentRequests()) return false;
     const list = await App.AgentRegistrationService.getRequests({ status: 'pending' });
     return list.length > 0;
+  },
+
+  teamMemberLimit() {
+    return Number(App.Config?.TEAM_MEMBER_LIMIT) || 2;
+  },
+
+  isTeamFull(members) {
+    const count = (members || []).filter((m) => m.kind !== 'request').length;
+    return count >= this.teamMemberLimit();
   }
 };

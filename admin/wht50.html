@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('kladeebroker_session')) return;
+        var p = location.pathname || '';
+        var r = p.indexOf('/kladeebroker/') === 0 ? '/kladeebroker/' : '/';
+        var next = encodeURIComponent((p.replace(/^\/+/, '').replace(/\/index\.html?$/i, '').replace(/\/$/, '')) || 'admin');
+        location.replace(r + 'login?next=' + next);
+      } catch (e) {}
+    })();
+  </script>
+  <title>สรุปยอด 50 ทวิ — Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css?v=20260821a">
+  <link rel="stylesheet" href="../css/portal.css">
+  <link rel="stylesheet" href="../css/wht50-print.css?v=20260821f">
+  <script src="../js/vendor/lucide.min.js"></script>
+</head>
+<body data-portal="admin" data-base-path="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
+          <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
+        </a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+      </div>
+      <!-- ADMIN_SIDEBAR_V1 -->
+      <nav class="sidebar-nav" data-admin-sidebar></nav>
+      <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+      </header>
+      <main class="main-content">
+        <div class="content-card">
+          <div class="admin-toolbar">
+            <div>
+              <h1 class="admin-page-title">สรุปยอด 50 ทวิ</h1>
+              <p class="admin-hint">ดูยอดจ่ายย้อนหลังตามเดือน/ปี · เปิดดู พิมพ์ และดาวน์โหลด PDF ได้ตลอด</p>
+            </div>
+            <div class="admin-toolbar__actions">
+              <a href="wht50-settings" class="btn-secondary btn-sm"><i data-lucide="settings"></i> ตั้งค่า 50 ทวิ</a>
+              <button type="button" class="btn-secondary btn-sm" id="btnWht50ExportSummary"><i data-lucide="file-down"></i> ส่งออกสรุป PDF</button>
+            </div>
+          </div>
+
+          <div class="wht50-summary-stats" id="wht50SummaryStats">
+            <div class="wht50-summary-stat">
+              <span class="wht50-summary-stat__label">จำนวนเอกสาร</span>
+              <strong class="wht50-summary-stat__value" id="statWht50Count">0</strong>
+            </div>
+            <div class="wht50-summary-stat">
+              <span class="wht50-summary-stat__label">ยอดจ่ายรวม</span>
+              <strong class="wht50-summary-stat__value" id="statWht50Paid">0.00</strong>
+            </div>
+            <div class="wht50-summary-stat">
+              <span class="wht50-summary-stat__label">ภาษีหัก ณ ที่จ่าย</span>
+              <strong class="wht50-summary-stat__value" id="statWht50Tax">0.00</strong>
+            </div>
+            <div class="wht50-summary-stat">
+              <span class="wht50-summary-stat__label">ยังไม่พิมพ์</span>
+              <strong class="wht50-summary-stat__value" id="statWht50Unprinted">0</strong>
+            </div>
+          </div>
+
+          <div class="admin-filter-bar admin-filter-bar--wrap">
+            <div class="form-field">
+              <label for="wht50Year">ปี (พ.ศ.)</label>
+              <select id="wht50Year" class="admin-select"></select>
+            </div>
+            <div class="form-field">
+              <label for="wht50Month">เดือน</label>
+              <select id="wht50Month" class="admin-select">
+                <option value="">ทุกเดือน</option>
+                <option value="01">มกราคม</option>
+                <option value="02">กุมภาพันธ์</option>
+                <option value="03">มีนาคม</option>
+                <option value="04">เมษายน</option>
+                <option value="05">พฤษภาคม</option>
+                <option value="06">มิถุนายน</option>
+                <option value="07">กรกฎาคม</option>
+                <option value="08">สิงหาคม</option>
+                <option value="09">กันยายน</option>
+                <option value="10">ตุลาคม</option>
+                <option value="11">พฤศจิกายน</option>
+                <option value="12">ธันวาคม</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="wht50PrintStatus">สถานะพิมพ์</label>
+              <select id="wht50PrintStatus" class="admin-select">
+                <option value="">ทั้งหมด</option>
+                <option value="unprinted">ยังไม่พิมพ์</option>
+                <option value="printed">พิมพ์แล้ว</option>
+              </select>
+            </div>
+            <div class="form-field form-field--search">
+              <label for="wht50Search">ค้นหา</label>
+              <input type="search" id="wht50Search" placeholder="เลขที่ / นายหน้า / กรมธรรม์">
+            </div>
+            <div class="form-field form-field--action">
+              <label aria-hidden="true">&nbsp;</label>
+              <button type="button" class="btn-primary" id="btnWht50Search"><i data-lucide="search"></i> ค้นหา</button>
+            </div>
+          </div>
+
+          <div class="data-table-wrap">
+            <table class="data-table" id="wht50SummaryTable">
+              <thead>
+                <tr>
+                  <th>เลขที่</th>
+                  <th>นายหน้า</th>
+                  <th>เลขกรมธรรม์</th>
+                  <th class="col-center">วันที่ออก</th>
+                  <th class="col-money">จำนวนเงินที่จ่าย</th>
+                  <th class="col-money">ภาษี</th>
+                  <th class="col-center">สถานะ</th>
+                  <th class="col-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="wht50TableBody"></tbody>
+            </table>
+          </div>
+          <div class="team-pagination" id="wht50Pagination"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/admin-sidebar-nav-template.js?v=20260821e"></script>
+  <script src="../js/load-admin.js?v=20260821e"></script>
+  <script src="../js/admin-app.js?v=20260821e"></script>
+  <script src="../js/pages/admin-wht50.js?v=20260821d"></script>
+</body>
+</html>

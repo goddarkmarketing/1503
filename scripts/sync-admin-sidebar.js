@@ -22,6 +22,7 @@ const PAGES = [
   'admin/credit-ledger.html',
   'admin/credit-bank-accounts.html',
   'admin/commission.html',
+  'admin/wht50.html',
   'admin/reports/daily-policies.html',
   'admin/reports/daily-summary.html',
   'admin/reports/monthly.html',

@@ -11,7 +11,10 @@
     logoUrl: 'assets/logos/tro-kladee.png',
     docTitle: 'ต้นฉบับใบเสร็จรับเงิน',
     footerThanks: 'ขอบคุณทุกท่านที่มาอุดหนุน',
-    signLabel: 'ผู้รับเงิน'
+    signLabel: 'ผู้รับเงิน',
+    signEnabled: true,
+    signMode: 'image',
+    signImageUrl: 'assets/wht50/payer-signature.png'
   };
 
   let shop = { ...DEFAULT_SHOP };
@@ -266,14 +269,39 @@
     </div>
   </div>
 
-  <footer class="receipt-doc__foot">
-    <div class="receipt-doc__sign">
-      <span class="receipt-doc__sign-line"></span>
-      <span class="receipt-doc__sign-label">${esc(paper.signLabel || DEFAULT_SHOP.signLabel)}</span>
-    </div>
+  <footer class="receipt-doc__foot${(paper.signEnabled === false || paper.signEnabled === 0 || paper.signEnabled === '0') ? ' receipt-doc__foot--no-sign' : ''}">
+    ${buildSignHtml(paper)}
     <p class="receipt-doc__thanks">${esc(paper.footerThanks || DEFAULT_SHOP.footerThanks)}</p>
   </footer>
 </article>`;
+  }
+
+  function buildSignHtml(paper) {
+    const enabled = paper.signEnabled !== false && paper.signEnabled !== 0 && paper.signEnabled !== '0';
+    if (!enabled) return '';
+
+    const label = esc(paper.signLabel || DEFAULT_SHOP.signLabel);
+    const mode = String(paper.signMode || DEFAULT_SHOP.signMode || 'hand') === 'image' ? 'image' : 'hand';
+    const imageUrl = String(paper.signImageUrl || DEFAULT_SHOP.signImageUrl || '').trim();
+    const showImage = mode === 'image' && imageUrl;
+
+    if (showImage) {
+      const src = esc(resolveAssetUrl(imageUrl));
+      return `
+    <div class="receipt-doc__sign receipt-doc__sign--image">
+      <div class="receipt-doc__sign-imageWrap">
+        <img class="receipt-doc__sign-image" src="${src}" alt="ลายเซ็นผู้รับเงิน">
+      </div>
+      <span class="receipt-doc__sign-line"></span>
+      <span class="receipt-doc__sign-label">${label}</span>
+    </div>`;
+    }
+
+    return `
+    <div class="receipt-doc__sign receipt-doc__sign--hand">
+      <span class="receipt-doc__sign-line"></span>
+      <span class="receipt-doc__sign-label">${label}</span>
+    </div>`;
   }
 
   function collectFromForm(form) {

@@ -22,7 +22,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function updateAddButtonState() {
   const btn = document.getElementById('btnAddMember');
-  if (!btn || !App.TeamService?.hasPendingRequest) return;
+  if (!btn) return;
+  const full = App.TeamService?.isTeamFull?.(teamCache);
+  if (full) {
+    btn.disabled = true;
+    btn.title = `มีลูกทีมครบ ${App.TeamService.teamMemberLimit()} คนแล้ว`;
+    return;
+  }
+  if (!App.TeamService?.hasPendingRequest) return;
   const hasPending = await App.TeamService.hasPendingRequest();
   btn.disabled = hasPending;
   btn.title = hasPending ? 'มีคำขอที่รอแอดมินอยู่แล้ว' : '';

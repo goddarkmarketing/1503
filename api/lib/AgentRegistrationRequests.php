@@ -119,6 +119,8 @@ final class AgentRegistrationRequests
       Response::error('มีคำขอเพิ่มตัวแทนที่รอแอดมินอยู่แล้ว กรุณารอดำเนินการก่อน', 422, 'VALIDATION');
     }
 
+    Agents::assertParentHasSlot($pdo, $requesterAgentId);
+
     $id = 'AR-' . strtoupper(bin2hex(random_bytes(4)));
     $phone = self::clean((string)($body['phone'] ?? ''), 64);
     $idCard = self::clean((string)($body['idCard'] ?? $body['id_card'] ?? ''), 32);

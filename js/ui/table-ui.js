@@ -82,7 +82,18 @@ App.AdminUtils = {
   },
   formatThaiDate(iso) {
     if (!iso) return '-';
-    const [y, m, d] = iso.split('-');
+    let raw = iso;
+    if (iso instanceof Date) {
+      if (Number.isNaN(iso.getTime())) return '-';
+      raw = iso.toISOString().slice(0, 10);
+    } else {
+      raw = String(iso).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(raw)) raw = raw.slice(0, 10);
+      else return raw;
+    }
+    const parts = raw.split('-');
+    if (parts.length < 3) return raw;
+    const [y, m, d] = parts;
     return `${d}/${m}/${y}`;
   },
   policyStatusLabel(status) {

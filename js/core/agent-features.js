@@ -4,6 +4,21 @@
 window.App = window.App || {};
 
 App.AgentFeatures = {
+  INSURERS: {
+    ergo: { name: 'เออร์โกประกันภัย', logo: 'assets/logos/ergo.png' },
+    axa: { name: 'AXA', logo: 'images/partners/axa.jpg' },
+    bki: { name: 'BKI กรุงเทพ', logo: 'images/partners/bangkok-insurance.jpg' },
+    chubb: { name: 'CHUBB', logo: 'images/partners/chubb.jpg' },
+    indara: { name: 'อินทรประกันภัย', logo: 'assets/logos/indara.png' }
+  },
+
+  PRODUCT_GROUPS: [
+    { id: 'compulsory', label: 'พ.ร.บ.' },
+    { id: 'voluntary', label: '2+ / 3+' },
+    { id: 'pa', label: 'ประกันอุบัติเหตุ' },
+    { id: 'travel', label: 'ประกันเดินทาง' }
+  ],
+
   zones: [
     {
       id: 'main',
@@ -218,56 +233,143 @@ App.AgentFeatures = {
     shell?.classList.toggle('sidebar--no-nav', !anyVisible);
   },
 
-  renderPermissionsTable(permissions) {
-    const perms = this.permissionsForAdminForm(permissions);
-    const rows = this.zones.map((zone) => {
-      const zoneAllChecked = zone.items.every((item) => perms[item.key]);
-      const zoneRows = zone.items.map((item, index) => `
-        <tr data-feature-row data-feature-zone="${zone.id}">
-          <td class="agent-perm__zone">${index === 0 ? zone.label : ''}</td>
-          <td class="agent-perm__label">${item.label}</td>
-          <td class="agent-perm__check">
-            <label class="agent-perm__checkbox">
-              <input type="checkbox" data-feature-key="${item.key}" data-feature-zone="${zone.id}" ${perms[item.key] ? 'checked' : ''}>
-              <span>อนุญาต</span>
-            </label>
-          </td>
-        </tr>
-      `).join('');
+  _escape(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  },
 
-      return `
-        <tr class="agent-perm__zoneHead" data-zone-head="${zone.id}">
-          <td colspan="2">
-            <button type="button" class="agent-perm__zoneToggle" data-zone-toggle="${zone.id}">เลือกทั้งหมด — ${zone.label}</button>
-          </td>
-          <td class="agent-perm__check">
-            <label class="agent-perm__checkbox agent-perm__checkbox--zone">
-              <input type="checkbox" data-zone-all="${zone.id}"${zoneAllChecked ? ' checked' : ''}>
-              <span>ทั้งกลุ่ม</span>
-            </label>
-          </td>
-        </tr>
-        ${zoneRows}
-      `;
-    }).join('');
+  _logoUrl(path) {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    const base = document.body?.dataset?.basePath || '';
+    return `${base}${path}`;
+  },
 
+  _parseProductItem(item) {
+    const m = String(item.key).match(/^(compulsory|voluntary|pa|travel)-([a-z]+)$/i);
+    if (!m) return { ...item, kind: 'action' };
+    const insurer = this.INSURERS[m[2].toLowerCase()] || { name: item.label, logo: '' };
+    return {
+      ...item,
+      kind: 'insurer',
+      product: m[1].toLowerCase(),
+      insurerCode: m[2].toLowerCase(),
+      insurerName: insurer.name,
+      logo: insurer.logo
+    };
+  },
+
+  _checkControl(item, checked, extraAttrs = '') {
     return `
-      <p class="admin-hint" style="margin-top:0">เลือกฟังก์ชันที่นายหน้ารายนี้สามารถใช้งานได้ในระบบ</p>
-      <div class="agent-perm__tableWrap">
-        <table class="agent-perm__table">
-          <thead>
-            <tr>
-              <th>กลุ่ม</th>
-              <th>ฟังก์ชัน</th>
-              <th>สิทธิ์</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
+      <label class="agent-perm__tick">
+        <input type="checkbox" data-feature-key="${this._escape(item.key)}" data-feature-zone="${this._escape(item.zone || '')}" ${checked ? 'checked' : ''} ${extraAttrs}>
+        <span></span>
+      </label>
     `;
   },
 
+  renderPermissionsTable(permissions) {
+    const perms = this.permissionsForAdminForm(permissions);
+    const productsZone = this.zones.find((z) => z.id === 'products');
+    const otherZones = this.zones.filter((z) => z.id !== 'products');
+    const productItems = (productsZone?.items || []).map((item) => this._parseProductItem({ ...item, zone: 'products' }));
+    const insurerItems = productItems.filter((item) => item.kind === 'insurer');
+    const productExtras = productItems.filter((item) => item.kind !== 'insurer');
+    const insurerCodes = Object.keys(this.INSURERS);
+
+    const insurerHeads = insurerCodes.map((code) => {
+      const ins = this.INSURERS[code];
+      const logoSrc = this._logoUrl(ins.logo);
+      return `
+        <th>
+          <button type="button" class="agent-perm__headBtn" data-insurer-all="${code}" title="เปิด/ปิดทั้งบริษัท">
+            ${logoSrc ? `<img src="${this._escape(logoSrc)}" alt="" width="40" height="40" loading="lazy">` : ''}
+            <span>${this._escape(ins.name)}</span>
+          </button>
+        </th>
+      `;
+    }).join('');
+
+    const productRows = this.PRODUCT_GROUPS.map((group) => {
+      const rowItems = insurerItems.filter((item) => item.product === group.id);
+      const cells = insurerCodes.map((code) => {
+        const item = rowItems.find((entry) => entry.insurerCode === code);
+        if (!item) return '<td class="agent-perm__na"></td>';
+        return `<td>${this._checkControl(item, !!perms[item.key], `data-insurer-code="${code}" data-product-code="${group.id}"`)}</td>`;
+      }).join('');
+      return `
+        <tr>
+          <th>
+            <button type="button" class="agent-perm__rowBtn" data-product-all="${group.id}" title="เปิด/ปิดทั้งแถว">${this._escape(group.label)}</button>
+          </th>
+          ${cells}
+        </tr>
+      `;
+    }).join('');
+
+    const extraRows = productExtras.map((item) => `
+      <tr>
+        <th>${this._escape(item.label)}</th>
+        <td colspan="${insurerCodes.length}">${this._checkControl(item, !!perms[item.key])}</td>
+      </tr>
+    `).join('');
+
+    const otherRows = otherZones.map((zone) => {
+      const items = zone.items.map((item) => ({ ...item, zone: zone.id }));
+      return items.map((item, index) => `
+        <tr>
+          ${index === 0 ? `<th class="agent-perm__group" rowspan="${items.length}">
+            <button type="button" class="agent-perm__rowBtn" data-zone-all="${zone.id}" title="เปิด/ปิดทั้งกลุ่ม">${this._escape(zone.label)}</button>
+          </th>` : ''}
+          <td class="agent-perm__label">${this._escape(item.label)}</td>
+          <td class="agent-perm__tickCell">${this._checkControl(item, !!perms[item.key])}</td>
+        </tr>
+      `).join('');
+    }).join('');
+
+    return `
+      <div class="agent-perm">
+        <div class="agent-perm__toolbar">
+          <p class="admin-hint" style="margin:0">ติ๊กช่องที่ต้องการให้ใช้ได้ · คลิกชื่อบริษัทหรือประเภทเพื่อเลือกทั้งคอลัมน์/แถว</p>
+          <div class="agent-perm__toolbarActions">
+            <button type="button" class="btn-secondary btn-sm" data-perm-all="on">อนุญาตทั้งหมด</button>
+            <button type="button" class="btn-secondary btn-sm" data-perm-all="off">ปิดทั้งหมด</button>
+          </div>
+        </div>
+        <div class="agent-perm__tableWrap">
+          <table class="agent-perm__table agent-perm__table--matrix">
+            <thead>
+              <tr>
+                <th class="agent-perm__corner">
+                  <button type="button" class="agent-perm__rowBtn" data-zone-all="products">ออกกรมธรรม์</button>
+                </th>
+                ${insurerHeads}
+              </tr>
+            </thead>
+            <tbody>
+              ${productRows}
+              ${extraRows}
+            </tbody>
+          </table>
+        </div>
+        <div class="agent-perm__tableWrap">
+          <table class="agent-perm__table agent-perm__table--list">
+            <thead>
+              <tr>
+                <th>กลุ่ม</th>
+                <th>ฟังก์ชัน</th>
+                <th>สิทธิ์</th>
+              </tr>
+            </thead>
+            <tbody>${otherRows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
   readPermissionsFromForm(root) {
     const perms = {};
     this.allItems().forEach((item) => {
@@ -282,41 +384,41 @@ App.AgentFeatures = {
 
   bindPermissionsForm(root) {
     if (!root) return;
-    const syncZoneAll = (zoneId) => {
-      const boxes = [...root.querySelectorAll(`[data-feature-key][data-feature-zone="${zoneId}"]`)];
-      const zoneAll = root.querySelector(`[data-zone-all="${zoneId}"]`);
-      if (!zoneAll || !boxes.length) return;
-      const checkedCount = boxes.filter((box) => box.checked).length;
-      zoneAll.indeterminate = checkedCount > 0 && checkedCount < boxes.length;
-      zoneAll.checked = checkedCount === boxes.length;
+
+    const setBoxes = (boxes, on) => {
+      boxes.forEach((box) => {
+        box.checked = on;
+      });
     };
 
-    root.querySelectorAll('[data-zone-all]').forEach((zoneAll) => {
-      zoneAll.addEventListener('change', () => {
-        const zoneId = zoneAll.dataset.zoneAll;
-        root.querySelectorAll(`[data-feature-key][data-feature-zone="${zoneId}"]`).forEach((box) => {
-          box.checked = zoneAll.checked;
-        });
-        zoneAll.indeterminate = false;
-      });
-    });
+    const toggleBoxes = (selector) => {
+      const boxes = [...root.querySelectorAll(selector)];
+      if (!boxes.length) return;
+      setBoxes(boxes, !boxes.every((box) => box.checked));
+    };
 
-    root.querySelectorAll('[data-zone-toggle]').forEach((btn) => {
+    root.querySelectorAll('[data-zone-all]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const zoneId = btn.dataset.zoneToggle;
-        const boxes = [...root.querySelectorAll(`[data-feature-key][data-feature-zone="${zoneId}"]`)];
-        const allChecked = boxes.every((box) => box.checked);
-        boxes.forEach((box) => {
-          box.checked = !allChecked;
-        });
-        syncZoneAll(zoneId);
+        toggleBoxes(`[data-feature-key][data-feature-zone="${btn.dataset.zoneAll}"]`);
       });
     });
 
-    root.querySelectorAll('[data-feature-key]').forEach((box) => {
-      box.addEventListener('change', () => syncZoneAll(box.dataset.featureZone));
+    root.querySelectorAll('[data-insurer-all]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        toggleBoxes(`[data-feature-key][data-insurer-code="${btn.dataset.insurerAll}"]`);
+      });
     });
 
-    this.zones.forEach((zone) => syncZoneAll(zone.id));
+    root.querySelectorAll('[data-product-all]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        toggleBoxes(`[data-feature-key][data-product-code="${btn.dataset.productAll}"]`);
+      });
+    });
+
+    root.querySelectorAll('[data-perm-all]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setBoxes([...root.querySelectorAll('[data-feature-key]')], btn.dataset.permAll === 'on');
+      });
+    });
   }
 };

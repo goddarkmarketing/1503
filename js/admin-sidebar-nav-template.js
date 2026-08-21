@@ -9,6 +9,7 @@ window.ADMIN_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   <p class="nav-group__title">นายหน้า &amp; ทีม</p>
   <ul class="nav-group__list">
     <li class="nav-item"><a href="{{BASE}}admin/agents" class="nav-link" data-nav="agents"><i data-lucide="users"></i><span class="nav-link-text">จัดการนายหน้า</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}admin/agent-commission-credit" class="nav-link" data-nav="agent-commission-credit"><i data-lucide="sliders-horizontal"></i><span class="nav-link-text">ตั้งค่าคอม/ปรับวงเงิน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/agent-requests" class="nav-link" data-nav="agent-requests"><i data-lucide="user-plus"></i><span class="nav-link-text">อนุมัติเพิ่มตัวแทน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/agent-verifications" class="nav-link" data-nav="agent-verifications"><i data-lucide="badge-check"></i><span class="nav-link-text">ยืนยันตัวตน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/team" class="nav-link" data-nav="team"><i data-lucide="users-round"></i><span class="nav-link-text">โครงสร้างทีม</span></a></li>
@@ -67,12 +68,18 @@ window.ADMIN_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
     <li class="nav-item"><a href="{{BASE}}admin/insurers" class="nav-link" data-nav="insurers"><i data-lucide="building-2"></i><span class="nav-link-text">บริษัทประกัน</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/products" class="nav-link" data-nav="products"><i data-lucide="settings"></i><span class="nav-link-text">ตั้งค่าผลิตภัณฑ์</span></a></li>
     <li class="nav-item"><a href="{{BASE}}admin/receipt-settings" class="nav-link" data-nav="receipt-settings"><i data-lucide="file-pen"></i><span class="nav-link-text">ตั้งค่าใบเสร็จ</span></a></li>
-    <li class="nav-item"><a href="{{BASE}}admin/wht50-settings" class="nav-link" data-nav="wht50-settings"><i data-lucide="file-signature"></i><span class="nav-link-text">ตั้งค่า 50 ทวิ</span></a></li>
+    <li class="nav-item has-submenu" data-nav-group="wht50">
+      <a href="#" class="nav-link"><i data-lucide="file-signature"></i><span class="nav-link-text">ตั้งค่า 50 ทวิ</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
+      <ul class="nav-submenu">
+        <li><a href="{{BASE}}admin/wht50-settings" class="nav-sub-link" data-nav="wht50-settings"><i data-lucide="settings-2" class="nav-sub-icon"></i><span>ตั้งค่าเอกสาร</span></a></li>
+        <li><a href="{{BASE}}admin/wht50" class="nav-sub-link" data-nav="wht50"><i data-lucide="file-badge" class="nav-sub-icon"></i><span>สรุปยอด 50 ทวิ</span></a></li>
+      </ul>
+    </li>
     <li class="nav-item"><a href="{{BASE}}admin/audit-log" class="nav-link" data-nav="audit"><i data-lucide="scroll-text"></i><span class="nav-link-text">บันทึกระบบ</span></a></li>
   </ul>
 </div>`;
 
-window.ADMIN_SIDEBAR_NAV_VERSION = '20260819e';
+window.ADMIN_SIDEBAR_NAV_VERSION = '20260821e';
 
 window.renderAdminSidebarNav = function renderAdminSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-admin-sidebar]');

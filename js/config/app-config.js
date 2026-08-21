@@ -46,6 +46,7 @@ App.Config = {
   LOGIN_LOCKOUT_KEY: 'kladeebroker_login_lockout',
   LOGIN_MAX_ATTEMPTS: 5,
   LOGIN_LOCKOUT_MS: 15 * 60 * 1000, // 15 minutes
+  TEAM_MEMBER_LIMIT: 2,
   // Payer (ผู้มีหน้าที่หักภาษี) on Form 50 ทวิ
   COMPANY: {
     name: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',

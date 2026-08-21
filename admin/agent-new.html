@@ -14,9 +14,9 @@
       } catch (e) {}
     })();
   </script>
-  <title>โครงสร้างทีม — Admin</title>
+  <title>เพิ่มนายหน้า — Admin</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css?v=20260820n">
+  <link rel="stylesheet" href="../css/admin.css?v=20260820am">
   <link rel="stylesheet" href="../css/portal.css">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
@@ -24,13 +24,13 @@
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-              <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
-                <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
-              </a>
-              <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
-            </div>
+        <a href="../admin/index.html" class="sidebar-brand" aria-label="กล้าดีโบรคเกอร์">
+          <img src="../images/logo-kladee.png" alt="กล้าดีโบรคเกอร์" class="sidebar-brand__img" width="140" height="40">
+        </a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+      </div>
       <!-- ADMIN_SIDEBAR_V1 -->
-<nav class="sidebar-nav" data-admin-sidebar>
+      <nav class="sidebar-nav" data-admin-sidebar>
         <div class="nav-group" data-nav-zone="main">
           <p class="nav-group__title">หลัก</p>
           <ul class="nav-group__list">
@@ -107,42 +107,22 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-wrapper">
       <header class="top-header">
-        <button class="header-icon-btn" id="mobileMenuBtn" aria-label="เปิดเมนู" style="display:none"><i data-lucide="menu"></i></button>
         <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
-        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
+        <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name">Admin</span></div>
       </header>
       <main class="main-content">
-        <div class="content-card content-card--team">
-          <div class="admin-toolbar">
-            <div class="admin-toolbar__head">
-              <h1 class="admin-page-title">โครงสร้างทีม</h1>
-              <p class="admin-hint">เลือกทีมเพื่อดูสมาชิก ยอดขาย และสัดส่วนของทั้งองค์กร — ค่าคอมและการแบ่ง % กับหัวหน้าทีม <strong>ตั้งโดยแอดมินเท่านั้น</strong> ที่หน้าจัดการนายหน้า</p>
-            </div>
-            <div class="admin-toolbar-filters">
-              <label class="admin-toolbar-filters__field">
-                <span class="admin-toolbar-filters__label">ค้นหา</span>
-                <input type="search" id="teamSearch" class="team-org-search" placeholder="หัวหน้า รหัส หรือลูกทีม" autocomplete="off">
-              </label>
-              <label class="admin-toolbar-filters__field">
-                <span class="admin-toolbar-filters__label">เรียงตาม</span>
-                <select id="teamSort" class="admin-select">
-                  <option value="premium">ยอดขายสูงสุด</option>
-                  <option value="members">สมาชิกมากสุด</option>
-                  <option value="policies">กรมธรรม์มากสุด</option>
-                  <option value="name">ชื่อหัวหน้า</option>
-                </select>
-              </label>
-              <a href="agents" class="btn-secondary btn-sm"><i data-lucide="settings"></i> ตั้งค่าทีม / คอม</a>
-            </div>
+        <div class="content-card">
+          <div id="agentNewPageRoot">
+            <p class="admin-hint">กำลังโหลด...</p>
           </div>
-          <div id="teamHierarchyRoot"></div>
         </div>
       </main>
     </div>
   </div>
-  <script src="../js/admin-sidebar-nav-template.js?v=20260816k"></script>
-  <script src="../js/load-admin.js?v=20260819m"></script>
-  <script src="../js/admin-app.js?v=20260819m"></script>
-  <script src="../js/pages/admin-team.js?v=20260820i"></script>
+  <script src="../js/admin-sidebar-nav-template.js?v=20260820ae"></script>
+  <script src="../js/searchable-select.js?v=20260820a"></script>
+  <script src="../js/load-admin.js?v=20260820s"></script>
+  <script src="../js/admin-app.js?v=20260820r"></script>
+  <script src="../js/pages/admin-agent-new.js?v=20260820b"></script>
 </body>
 </html>

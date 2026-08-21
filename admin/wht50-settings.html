@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css?v=20260816a">
   <link rel="stylesheet" href="../css/portal.css">
-  <link rel="stylesheet" href="../css/wht50-print.css?v=20260811c">
+  <link rel="stylesheet" href="../css/wht50-print.css?v=20260821c">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
 <body data-portal="admin" data-base-path="../">
@@ -167,9 +167,9 @@
                     <i data-lucide="stamp" class="wht50-settings__titleIcon"></i>
                     ตราประทับนิติบุคคล
                   </h3>
-                  <span class="agent-form__sectionBadge agent-form__sectionBadge--muted" id="stampStatusBadge">ยังไม่อัปโหลด</span>
+                  <span class="agent-form__sectionBadge agent-form__sectionBadge--muted" id="stampStatusBadge">ค่าเริ่มต้น</span>
                 </div>
-                <p class="agent-form__sectionHint">ใช้เฉพาะเมื่อชื่อผู้จ่ายเงินเป็นบริษัท / ห้าง / นิติบุคคล — ถ้าออกชื่อบุคคล ระบบจะแสดงเฉพาะลายเซ็น</p>
+                <p class="agent-form__sectionHint">ใช้เมื่อชื่อผู้จ่ายเงินเป็นบริษัท / ห้าง / นิติบุคคล — มีตราเริ่มต้นของกล้าดีโบรกเกอร์ และอัปโหลดแทนได้</p>
 
                 <div class="wht50-settings__signRow">
                   <label class="wht50-settings__dropzone" for="payerStampFile">
@@ -187,8 +187,8 @@
                       <button type="button" class="btn-secondary btn-sm" id="btnClearStamp">ล้าง</button>
                     </div>
                     <div class="wht50-settings__signaturePreview wht50-settings__signaturePreview--stamp">
-                      <img id="payerStampPreview" alt="ตัวอย่างตราประทับ" hidden>
-                      <span class="wht50-settings__previewEmpty" id="payerStampEmpty">ยังไม่มีรูปตรา</span>
+                      <img id="payerStampPreview" alt="ตัวอย่างตราประทับ" src="../assets/wht50/company-stamp.png?v=20260821b">
+                      <span class="wht50-settings__previewEmpty" id="payerStampEmpty" hidden>ยังไม่มีรูปตรา</span>
                     </div>
                   </div>
                 </div>
@@ -276,9 +276,9 @@
     </div>
   </div>
 
-  <script src="../js/admin-sidebar-nav-template.js?v=20260816k"></script>
-  <script src="../js/load-admin.js?v=20260819m"></script>
+  <script src="../js/admin-sidebar-nav-template.js?v=20260821e"></script>
+  <script src="../js/load-admin.js?v=20260821e"></script>
   <script src="../js/admin-app.js?v=20260819m"></script>
-  <script src="../js/pages/admin-wht50-settings.js?v=20260816a"></script>
+  <script src="../js/pages/admin-wht50-settings.js?v=20260821b"></script>
 </body>
 </html>

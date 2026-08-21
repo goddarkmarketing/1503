@@ -58,8 +58,14 @@ function markAdminNavActive(navRoot) {
   let activeLink = null;
   let activeScore = -1;
 
+  const agentDetail = /\/admin\/agent(?:\.html)?$/.test(current);
+  if (agentDetail) {
+    activeLink = navRoot.querySelector('[data-nav="agents"]');
+  }
+
   navRoot.querySelectorAll('a[href]').forEach((link) => {
     link.classList.remove('active');
+    if (agentDetail) return;
     const href = link.getAttribute('href');
     if (!href || href === '#') return;
 

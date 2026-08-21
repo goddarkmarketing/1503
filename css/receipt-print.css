@@ -305,6 +305,29 @@
   height: 0;
   border-bottom: 1px dotted #94a3b8;
 }
+.receipt-doc__sign-imageWrap {
+  width: 160px;
+  min-height: 48px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.receipt-doc__sign--image {
+  gap: 0;
+}
+.receipt-doc__sign--image .receipt-doc__sign-imageWrap {
+  margin-bottom: -2px;
+}
+.receipt-doc__sign--image .receipt-doc__sign-line {
+  margin-bottom: 6px;
+}
+.receipt-doc__sign-image {
+  max-width: 150px;
+  max-height: 56px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
 .receipt-doc__sign-label {
   display: block;
   width: 160px;
@@ -312,6 +335,12 @@
   text-align: center;
   font-size: 12.5px;
   color: #475569;
+}
+.receipt-doc__foot--no-sign {
+  grid-template-columns: 1fr;
+}
+.receipt-doc__foot--no-sign .receipt-doc__thanks {
+  text-align: right;
 }
 .receipt-doc__thanks {
   margin: 0;

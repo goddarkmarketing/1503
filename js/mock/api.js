@@ -122,6 +122,19 @@ App.MockAPI = {
     App.MockData.teamMembers = map;
   },
 
+  _teamMemberLimit() {
+    return Number(App.Config?.TEAM_MEMBER_LIMIT) || 2;
+  },
+
+  _assertParentHasSlot(parentId, exceptAgentId) {
+    const taken = App.MockData.agents.filter(
+      (a) => a.parentId === parentId && a.id !== exceptAgentId
+    ).length;
+    if (taken >= this._teamMemberLimit()) {
+      throw new Error(`หัวทีมนี้มีลูกทีมครบ ${this._teamMemberLimit()} คนแล้ว`);
+    }
+  },
+
   _setAgentParent(agentId, parentId) {
     const agent = App.MockData.agents.find((a) => a.id === agentId);
     if (!agent) throw new Error('Agent not found');
@@ -133,6 +146,7 @@ App.MockAPI = {
     if (nextParent && this._wouldCreateTeamCycle(agentId, nextParent)) {
       throw new Error('ไม่สามารถตั้งหัวหน้าทีมแบบวนลูปได้');
     }
+    if (nextParent) this._assertParentHasSlot(nextParent, agentId);
     agent.parentId = nextParent;
     this._rebuildTeamMembersFromParents();
     this._persistAgentTeam();
@@ -1088,6 +1102,7 @@ App.MockAPI = {
 
   async addTeamMember(agentId, data) {
     await this._delay();
+    this._assertParentHasSlot(agentId);
     if (!App.MockData.teamMembers[agentId]) {
       App.MockData.teamMembers[agentId] = [];
     }

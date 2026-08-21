@@ -18,8 +18,8 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css?v=20260713a">
   <link rel="stylesheet" href="../css/portal.css">
-  <link rel="stylesheet" href="../css/receipt.css?v=20260820o">
-  <link rel="stylesheet" href="../css/receipt-print.css?v=20260820q">
+  <link rel="stylesheet" href="../css/receipt.css?v=20260821e">
+  <link rel="stylesheet" href="../css/receipt-print.css?v=20260821b">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
 <body data-portal="admin" data-base-path="../">
@@ -120,11 +120,23 @@
               <h1 class="admin-page-title">ตั้งค่าใบเสร็จ</h1>
               <p class="admin-hint">กำหนดโลโก้ ที่อยู่ และข้อความบนกระดาษใบเสร็จ (ค่ากลางระบบ) — นายหน้าสามารถตั้งค่าของตัวเองแยกได้</p>
             </div>
-            <a href="receipt/issue" class="btn-secondary btn-sm"><i data-lucide="printer"></i> ไปหน้าออกใบเสร็จ</a>
+            <div class="receipt-settings__toolbarActions">
+              <button type="button" class="btn-secondary btn-sm" id="btnPaperReset">
+                <i data-lucide="rotate-ccw"></i> คืนค่าเริ่มต้น
+              </button>
+              <button type="button" class="btn-secondary btn-sm" id="btnPaperPreview">
+                <i data-lucide="eye"></i> ดูตัวอย่าง
+              </button>
+              <button type="submit" class="btn-primary btn-sm" id="btnPaperSave" form="receiptPaperForm">
+                <i data-lucide="save"></i> บันทึกการตั้งค่า
+              </button>
+              <a href="receipt/issue" class="btn-secondary btn-sm"><i data-lucide="printer"></i> ไปหน้าออกใบเสร็จ</a>
+            </div>
           </div>
 
           <div class="receipt-settings">
-            <form id="receiptPaperForm" class="receipt-settings__form agent-form" novalidate>
+            <form id="receiptPaperForm" class="agent-form" novalidate>
+            <div class="receipt-settings__form">
               <p class="agent-form__intro">
                 ค่าที่บันทึกจะใช้เป็น<strong>หัวกระดาษใบเสร็จ</strong>ของระบบ — นายหน้าสามารถตั้งค่าแยกของตัวเองได้ที่เมนูใบเสร็จ
               </p>
@@ -184,28 +196,77 @@
                 </div>
               </section>
 
-              <div class="receipt-settings__actions">
-                <button type="button" class="btn-secondary" id="btnPaperReset">
-                  <i data-lucide="rotate-ccw"></i> คืนค่าเริ่มต้น
-                </button>
-                <div class="receipt-settings__actionsRight">
-                  <button type="button" class="btn-secondary" id="btnPaperPreview">
-                    <i data-lucide="eye"></i> ดูตัวอย่าง
-                  </button>
-                  <button type="submit" class="btn-primary" id="btnPaperSave">
-                    <i data-lucide="save"></i> บันทึกการตั้งค่า
-                  </button>
-                </div>
-              </div>
-            </form>
+            </div>
 
-            <aside class="receipt-settings__previewPanel">
-              <div class="receipt-settings__previewHead">
-                <h3 class="receipt-settings__previewTitle">ตัวอย่างใบเสร็จ</h3>
-                <p class="receipt-settings__previewHint">อัปเดตอัตโนมัติทันทีที่คุณตั้งค่า</p>
-              </div>
-              <div class="receipt-settings__previewScroll" id="receiptPaperLivePreview"></div>
-            </aside>
+            <div class="receipt-settings__side">
+              <aside class="receipt-settings__previewPanel">
+                <div class="receipt-settings__previewHead">
+                  <h3 class="receipt-settings__previewTitle">ตัวอย่างใบเสร็จ</h3>
+                  <p class="receipt-settings__previewHint">อัปเดตอัตโนมัติทันทีที่คุณตั้งค่า</p>
+                </div>
+                <div class="receipt-settings__previewScroll" id="receiptPaperLivePreview"></div>
+              </aside>
+            </div>
+
+              <section class="agent-form__section receipt-settings__signSection" id="receiptSignSection">
+                <div class="receipt-settings__signHeader">
+                  <div class="receipt-settings__signIntro">
+                    <div class="agent-form__sectionHead">
+                      <h3 class="agent-form__sectionTitle">
+                        <i data-lucide="pen-line" class="receipt-settings__titleIcon"></i>
+                        ลายเซ็นผู้รับเงิน
+                      </h3>
+                    </div>
+                    <p class="agent-form__sectionHint">เลือกว่าจะใส่ลายเซ็นล่วงหน้า หรือเว้นว่างให้เซ็นตอนพิมพ์</p>
+                  </div>
+                </div>
+
+                <div class="receipt-settings__signFields" id="receiptSignFields">
+                  <div class="receipt-settings__modeBlock">
+                    <span class="receipt-settings__modeLabel">รูปแบบลายเซ็น</span>
+                    <div class="receipt-settings__modeOptions" role="radiogroup" aria-label="รูปแบบลายเซ็น">
+                      <label class="receipt-settings__modeOption">
+                        <input type="radio" name="signMode" value="hand">
+                        <span class="receipt-settings__modeOptionBody">
+                          <strong>เว้นว่างให้เซ็นตอนพิมพ์</strong>
+                          <em>มีเส้นจุดไว้เซ็นด้วยมือหลังพิมพ์</em>
+                        </span>
+                      </label>
+                      <label class="receipt-settings__modeOption">
+                        <input type="radio" name="signMode" value="image" checked>
+                        <span class="receipt-settings__modeOptionBody">
+                          <strong>ใส่ลายเซ็นล่วงหน้า</strong>
+                          <em>อัปโหลดรูปลายเซ็นให้ติดบนใบเสร็จอัตโนมัติ</em>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="receipt-settings__signUpload" id="receiptSignUpload" hidden>
+                    <span class="receipt-settings__modeLabel">ไฟล์ลายเซ็น</span>
+                    <input type="hidden" id="paperSignImageUrl" name="signImageUrl">
+                    <input id="paperSignFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                    <div class="receipt-settings__signUploadRow">
+                      <button type="button" class="receipt-settings__dropzone receipt-settings__dropzone--sign" id="btnSignUpload">
+                        <span class="receipt-settings__dropzoneIcon" aria-hidden="true"><i data-lucide="upload"></i></span>
+                        <span class="receipt-settings__dropzoneTitle">อัปโหลดลายเซ็น</span>
+                        <span class="receipt-settings__dropzoneMeta">PNG / JPG / WEBP · พื้นหลังโปร่งใสแนะนำ · สูงสุด 1MB</span>
+                        <span class="receipt-settings__dropzoneBtn">เลือกไฟล์</span>
+                      </button>
+                      <div class="receipt-settings__signPreviewCard">
+                        <div class="receipt-settings__signPreviewHead">
+                          <span>ตัวอย่างลายเซ็น</span>
+                          <button type="button" class="btn-text" id="btnSignClear" hidden>ลบไฟล์</button>
+                        </div>
+                        <div class="receipt-settings__signPreview" id="receiptSignPreview">
+                          <span class="receipt-settings__signPreviewEmpty">ยังไม่มีไฟล์</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+          </form>
           </div>
         </div>
       </main>
@@ -227,7 +288,7 @@
   <script src="../js/load-admin.js?v=20260819m"></script>
   <script src="../js/admin-app.js?v=20260819m"></script>
   <script src="../js/utils/baht-text.js?v=20260713c"></script>
-  <script src="../js/utils/receipt-document.js?v=20260820q"></script>
-  <script src="../js/pages/receipt-paper-settings.js?v=20260820p"></script>
+  <script src="../js/utils/receipt-document.js?v=20260821b"></script>
+  <script src="../js/pages/receipt-paper-settings.js?v=20260821c"></script>
 </body>
 </html>

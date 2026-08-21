@@ -6,6 +6,7 @@ class SearchableSelect {
     this.select = select;
     this.placeholder = options.placeholder || 'เลือก...';
     this.onChange = options.onChange || null;
+    this.includeEmpty = !!options.includeEmpty;
     this.isOpen = false;
     this.highlightIndex = -1;
 
@@ -112,7 +113,7 @@ class SearchableSelect {
 
   renderDropdown(query = '') {
     const q = query.trim().toLowerCase();
-    const options = [...this.select.options].filter(o => o.value !== '');
+    const options = [...this.select.options].filter((o) => this.includeEmpty || o.value !== '');
     const filtered = q
       ? options.filter(o => o.textContent.toLowerCase().includes(q))
       : options;
@@ -152,12 +153,12 @@ class SearchableSelect {
   }
 
   pickItem(li) {
-    const value = li.dataset.value;
+    const value = li.dataset.value ?? '';
     const opt = [...this.select.options].find(o => o.value === value);
     if (!opt) return;
 
     this.select.value = value;
-    this.input.value = opt.textContent;
+    this.input.value = value ? opt.textContent : '';
     this.close();
     this.select.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -178,7 +179,10 @@ class SearchableSelect {
       this.select.value = '';
       return;
     }
-    const match = [...this.select.options].find(o => o.value && o.textContent === text);
+    const match = [...this.select.options].find((o) => {
+      if (!this.includeEmpty && !o.value) return false;
+      return o.textContent === text;
+    });
     if (match) {
       this.select.value = match.value;
     } else {

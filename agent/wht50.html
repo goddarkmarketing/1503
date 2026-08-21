@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../css/portal.css">
   <link rel="stylesheet" href="../css/agent-report.css">
   <link rel="stylesheet" href="../css/agent-finance.css?v=20260717f">
-  <link rel="stylesheet" href="../css/wht50-print.css?v=20260811c">
+  <link rel="stylesheet" href="../css/wht50-print.css?v=20260821c">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
 <body data-base-path="../">
@@ -153,11 +153,33 @@
                   <div class="finance-stat__label">พิมพ์แล้ว</div>
                   <div class="finance-stat__value finance-stat__value--paid" id="statWht50Printed">0</div>
                 </div>
+                <div class="finance-stat">
+                  <div class="finance-stat__label">ยอดจ่ายรวม</div>
+                  <div class="finance-stat__value" id="statWht50PaidTotal">0.00</div>
+                </div>
               </div>
               <div class="finance-toolbar">
                 <div class="finance-toolbar__field">
                   <label for="wht50Year">ปีที่ออก</label>
                   <select id="wht50Year"></select>
+                </div>
+                <div class="finance-toolbar__field">
+                  <label for="wht50Month">เดือน</label>
+                  <select id="wht50Month">
+                    <option value="">ทุกเดือน</option>
+                    <option value="01">มกราคม</option>
+                    <option value="02">กุมภาพันธ์</option>
+                    <option value="03">มีนาคม</option>
+                    <option value="04">เมษายน</option>
+                    <option value="05">พฤษภาคม</option>
+                    <option value="06">มิถุนายน</option>
+                    <option value="07">กรกฎาคม</option>
+                    <option value="08">สิงหาคม</option>
+                    <option value="09">กันยายน</option>
+                    <option value="10">ตุลาคม</option>
+                    <option value="11">พฤศจิกายน</option>
+                    <option value="12">ธันวาคม</option>
+                  </select>
                 </div>
                 <div class="finance-toolbar__field">
                   <label for="wht50PrintStatus">สถานะพิมพ์</label>
@@ -200,8 +222,8 @@
     </div>
   </div>
   <script src="../js/agent-sidebar-nav-template.js?v=20260816k"></script>
-  <script src="../js/load-agent.js?v=20260820a"></script>
+  <script src="../js/load-agent.js?v=20260821c"></script>
   <script src="../js/app.js?v=20260816f"></script>
-  <script src="../js/pages/agent-wht50.js?v=20260811d"></script>
+  <script src="../js/pages/agent-wht50.js?v=20260821c"></script>
 </body>
 </html>

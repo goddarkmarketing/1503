@@ -2,6 +2,7 @@
   const form = document.getElementById('receiptPaperForm');
   const previewHost = document.getElementById('receiptPaperLivePreview');
   const logoFileInput = document.getElementById('paperLogoFile');
+  const signFileInput = document.getElementById('paperSignFile');
   if (!form || !window.ReceiptDocument) return;
 
   const defaults = { ...ReceiptDocument.DEFAULT_SHOP };
@@ -14,12 +15,29 @@
 
   function fieldValue(name) {
     const el = field(name);
-    return el && 'value' in el ? String(el.value || '').trim() : '';
+    if (!el) return '';
+    if (typeof el.length === 'number' && el[0]?.type === 'radio') {
+      return String(el.value || '').trim();
+    }
+    return 'value' in el ? String(el.value || '').trim() : '';
   }
 
   function setField(name, value) {
     const el = field(name);
-    if (el && 'value' in el) el.value = value ?? '';
+    if (!el) return;
+    if (typeof el.length === 'number' && el[0]?.type === 'radio') {
+      const str = String(value ?? '');
+      [...el].forEach((radio) => {
+        radio.checked = radio.value === str;
+      });
+      return;
+    }
+    if ('value' in el) el.value = value ?? '';
+  }
+
+  function currentSignMode() {
+    const mode = fieldValue('signMode') || 'hand';
+    return mode === 'image' ? 'image' : 'hand';
   }
 
   function readForm() {
@@ -31,12 +49,31 @@
       logoUrl: fieldValue('logoUrl') || defaults.logoUrl,
       docTitle: fieldValue('docTitle') || defaults.docTitle,
       footerThanks: fieldValue('footerThanks') || defaults.footerThanks,
-      signLabel: fieldValue('signLabel') || defaults.signLabel
+      signLabel: fieldValue('signLabel') || defaults.signLabel,
+      signEnabled: true,
+      signMode: currentSignMode(),
+      signImageUrl: fieldValue('signImageUrl') || defaults.signImageUrl || ''
     };
+  }
+
+  function resolveSignPreviewUrl(url) {
+    const value = String(url || '').trim();
+    if (!value) return '';
+    if (typeof ReceiptDocument.resolveAssetUrl === 'function') {
+      return ReceiptDocument.resolveAssetUrl(value);
+    }
+    return value;
   }
 
   function fillForm(settings) {
     const current = { ...defaults, ...settings };
+    const storedImage = String(settings?.signImageUrl ?? current.signImageUrl ?? '').trim();
+    const signImageUrl = storedImage || defaults.signImageUrl || '';
+    // Empty/missing stored image → use default file + image mode
+    const mode = !storedImage
+      ? 'image'
+      : (String(current.signMode || defaults.signMode || 'hand') === 'image' ? 'image' : 'hand');
+
     setField('name', current.name || defaults.name);
     setField('address', current.address || '');
     setField('taxId', current.taxId || '');
@@ -45,7 +82,34 @@
     setField('docTitle', current.docTitle || defaults.docTitle);
     setField('footerThanks', current.footerThanks || defaults.footerThanks);
     setField('signLabel', current.signLabel || defaults.signLabel);
+    setField('signImageUrl', signImageUrl);
+    setField('signMode', mode);
+
+    syncSignUi();
     renderPreview();
+  }
+
+  function syncSignUi() {
+    const upload = document.getElementById('receiptSignUpload');
+    const mode = currentSignMode();
+    if (upload) upload.hidden = mode !== 'image';
+    updateSignPreview();
+  }
+
+  function updateSignPreview() {
+    const host = document.getElementById('receiptSignPreview');
+    const clearBtn = document.getElementById('btnSignClear');
+    if (!host) return;
+    const url = fieldValue('signImageUrl') || defaults.signImageUrl || '';
+    const resolved = resolveSignPreviewUrl(url);
+    const isDefault = !!url && url === defaults.signImageUrl;
+    if (resolved) {
+      host.innerHTML = `<img src="${resolved.replace(/"/g, '&quot;')}" alt="ลายเซ็นที่อัปโหลด">`;
+      if (clearBtn) clearBtn.hidden = isDefault;
+    } else {
+      host.innerHTML = '<span class="receipt-settings__signPreviewEmpty">ยังไม่มีไฟล์</span>';
+      if (clearBtn) clearBtn.hidden = true;
+    }
   }
 
   function sampleData() {
@@ -123,9 +187,13 @@
     document.body.classList.remove('receipt-modal-open');
   }
 
-  form.addEventListener('input', () => {
+  function onFormChange() {
+    syncSignUi();
     renderPreview();
-  });
+  }
+
+  form.addEventListener('input', onFormChange);
+  form.addEventListener('change', onFormChange);
 
   logoFileInput?.addEventListener('change', (e) => {
     const file = e.target.files?.[0];
@@ -143,6 +211,35 @@
     reader.readAsDataURL(file);
   });
 
+  document.getElementById('btnSignUpload')?.addEventListener('click', () => {
+    signFileInput?.click();
+  });
+
+  signFileInput?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 1 * 1024 * 1024) {
+      toast('ไฟล์ลายเซ็นใหญ่เกิน 1MB', 'error');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setField('signImageUrl', String(reader.result || ''));
+      setField('signMode', 'image');
+      syncSignUi();
+      renderPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('btnSignClear')?.addEventListener('click', () => {
+    setField('signImageUrl', defaults.signImageUrl || '');
+    if (signFileInput) signFileInput.value = '';
+    syncSignUi();
+    renderPreview();
+  });
+
   document.getElementById('btnPaperPreview')?.addEventListener('click', openPrintPreview);
   document.getElementById('btnReceiptClose')?.addEventListener('click', closePrintPreview);
   printModal?.querySelector('.receipt-print-modal__backdrop')?.addEventListener('click', closePrintPreview);
@@ -158,7 +255,13 @@
     try {
       if (App.ReceiptService) {
         const company = await App.ReceiptService.getPaperSettings('default');
-        fillForm(company);
+        fillForm({
+          ...defaults,
+          ...company,
+          signEnabled: true,
+          signMode: defaults.signMode,
+          signImageUrl: defaults.signImageUrl
+        });
       } else {
         fillForm(defaults);
       }
@@ -175,6 +278,10 @@
     }
     const btn = document.getElementById('btnPaperSave');
     const payload = readForm();
+    if (payload.signEnabled && payload.signMode === 'image' && !payload.signImageUrl) {
+      toast('กรุณาอัปโหลดลายเซ็น หรือเปลี่ยนเป็นโหมดเว้นว่างให้เซ็นตอนพิมพ์', 'error');
+      return;
+    }
     const btnHtml = btn?.innerHTML;
     if (btn) {
       btn.disabled = true;

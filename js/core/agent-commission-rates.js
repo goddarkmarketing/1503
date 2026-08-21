@@ -323,9 +323,30 @@ App.AgentCommissionRates = {
       : this.normalize(rates);
     const groups = this.listCategoryGroups();
 
+    const tabButtons = groups.map((group, index) => {
+      const groupId = `${prefix}${group.code}`;
+      const active = index === 0 ? ' is-active' : '';
+      return `
+        <button
+          type="button"
+          class="agent-commission-rates__tab agent-commission-rates__tab--${this._escape(group.code)}${active}"
+          role="tab"
+          id="${this._escape(groupId)}-tab"
+          data-commission-tab="${this._escape(groupId)}"
+          data-tab-theme="${this._escape(group.code)}"
+          aria-selected="${index === 0 ? 'true' : 'false'}"
+          aria-controls="${this._escape(groupId)}-panel"
+        >
+          <i data-lucide="${group.icon}" class="agent-commission-rates__cat-icon" aria-hidden="true"></i>
+          <span class="agent-commission-rates__tabLabel">${this._escape(group.label)}</span>
+          <em>${group.insurers.length}</em>
+        </button>
+      `;
+    }).join('');
+
     const panels = groups.map((group, index) => {
       const groupId = `${prefix}${group.code}`;
-      const open = index === 0 ? ' is-open' : '';
+      const active = index === 0 ? ' is-active' : '';
       const insurerRows = group.insurers.map((ins) => {
         const key = this.productKey(group.code, ins.code);
         const logoSrc = this._logoUrl(ins.logo);
@@ -392,16 +413,16 @@ App.AgentCommissionRates = {
       const firstTax = firstKey ? source.taxWithhold[firstKey] : this.DEFAULT_TAX_WITHHOLD;
 
       return `
-        <div class="agent-commission-rates__group${open}" data-commission-group="${groupId}">
-          <button type="button" class="agent-commission-rates__category" data-commission-toggle aria-expanded="${index === 0 ? 'true' : 'false'}">
-            <span class="agent-commission-rates__category-left">
-              <i data-lucide="${group.icon}" class="agent-commission-rates__cat-icon" aria-hidden="true"></i>
-              <span class="agent-commission-rates__label">${this._escape(group.label)}</span>
-              <em>${group.insurers.length} บริษัท</em>
-            </span>
-            <i data-lucide="chevron-down" class="agent-commission-rates__chevron" aria-hidden="true"></i>
-          </button>
-          <div class="agent-commission-rates__panel" ${index === 0 ? '' : 'hidden'}>
+        <div
+          class="agent-commission-rates__group${active}"
+          data-commission-group="${groupId}"
+          data-tab-theme="${this._escape(group.code)}"
+          id="${this._escape(groupId)}-panel"
+          role="tabpanel"
+          aria-labelledby="${this._escape(groupId)}-tab"
+          ${index === 0 ? '' : 'hidden'}
+        >
+          <div class="agent-commission-rates__panel">
             <div class="agent-commission-rates__bulk">
               <span>ตั้งทั้งหมวดนี้</span>
               <label>คอม
@@ -427,7 +448,16 @@ App.AgentCommissionRates = {
       `;
     }).join('');
 
-    return `<div class="agent-commission-rates" data-commission-rates>${panels}</div>`;
+    return `
+      <div class="agent-commission-rates" data-commission-rates>
+        <div class="agent-commission-rates__tabs" role="tablist" aria-label="หมวดประกัน">
+          ${tabButtons}
+        </div>
+        <div class="agent-commission-rates__panels">
+          ${panels}
+        </div>
+      </div>
+    `;
   },
 
   _syncTaxEnabledUI(root) {
@@ -451,15 +481,23 @@ App.AgentCommissionRates = {
     if (!root) return;
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    root.querySelectorAll('[data-commission-toggle]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const group = btn.closest('[data-commission-group]');
-        if (!group) return;
-        const panel = group.querySelector('.agent-commission-rates__panel');
-        const willOpen = !group.classList.contains('is-open');
-        group.classList.toggle('is-open', willOpen);
-        if (panel) panel.hidden = !willOpen;
-        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    root.querySelectorAll('[data-commission-rates]').forEach((wrap) => {
+      const tabs = wrap.querySelectorAll('[data-commission-tab]');
+      const panels = wrap.querySelectorAll('[data-commission-group]');
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const id = tab.getAttribute('data-commission-tab');
+          tabs.forEach((t) => {
+            const active = t === tab;
+            t.classList.toggle('is-active', active);
+            t.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+          panels.forEach((panel) => {
+            const active = panel.getAttribute('data-commission-group') === id;
+            panel.classList.toggle('is-active', active);
+            panel.hidden = !active;
+          });
+        });
       });
     });
 
@@ -490,8 +528,146 @@ App.AgentCommissionRates = {
     });
 
     this._bindTeamQuickRates(root);
+    this._bindTeamOverviewTotals(root);
+    this._bindTeamLeaderRadios(root);
     this._bindOverrideSection(root);
     this._syncTaxEnabledUI(root);
+  },
+
+  _parseOverviewRate(input) {
+    const raw = String(input?.value ?? '').trim();
+    if (raw === '') return null;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < 0) return null;
+    return Math.round(n * 100) / 100;
+  },
+
+  _formatPctLabel(n) {
+    if (n == null) return '—';
+    const rounded = Math.round(n * 100) / 100;
+    return `${rounded}%`;
+  },
+
+  _syncTeamOverviewTotals(overview) {
+    if (!overview) return;
+    overview.querySelectorAll('[data-team-member-row]').forEach((row) => {
+      const out = row.querySelector('[data-team-total]');
+      if (!out) return;
+      const role = row.getAttribute('data-team-role');
+      if (role === 'leader') {
+        const self = this._parseOverviewRate(row.querySelector('[data-team-self-rate]'));
+        out.innerHTML = self == null
+          ? '<span class="agent-team-overview__totalVal">—</span>'
+          : `<span class="agent-team-overview__totalVal">${this._formatPctLabel(self)}</span>
+             <span class="agent-team-overview__totalHint">ขายเอง</span>`;
+        return;
+      }
+      const member = this._parseOverviewRate(row.querySelector('[data-member-rate]'));
+      const leader = this._parseOverviewRate(row.querySelector('[data-leader-rate]'));
+      if (member == null && (leader == null || leader === 0)) {
+        out.innerHTML = '<span class="agent-team-overview__totalVal">—</span>';
+        return;
+      }
+      const saleTotal = (member || 0) + (leader || 0);
+      const hint = leader
+        ? `รวมยอดขายนี้ ${this._formatPctLabel(saleTotal)}`
+        : '';
+      out.innerHTML = `
+        <span class="agent-team-overview__totalVal">${this._formatPctLabel(member)}</span>
+        ${hint ? `<span class="agent-team-overview__totalHint">${hint}</span>` : ''}
+      `;
+    });
+  },
+
+  _bindTeamLeaderRadios(root) {
+    const overview = root.querySelector('[data-team-commission-overview]');
+    if (!overview) return;
+    const tbody = overview.querySelector('tbody');
+    if (!tbody) return;
+
+    const getSelected = () => overview.querySelector('[name=teamLeaderId]:checked')?.value || '';
+    let selectedId = getSelected();
+
+    const applyLeader = (nextLeaderId) => {
+      if (!nextLeaderId) return;
+
+      const rows = Array.from(tbody.querySelectorAll('[data-team-member-row]'));
+      const leaderRow = rows.find((r) => (r.getAttribute('data-team-member-row') || '') === nextLeaderId) || rows[0];
+      if (!leaderRow) return;
+
+      // reorder: selected leader goes to top
+      const rest = rows.filter((r) => r !== leaderRow);
+      [leaderRow, ...rest].forEach((r) => tbody.appendChild(r));
+
+      // toggle inputs + role for totals + saving
+      rows.forEach((row) => {
+        const rowId = row.getAttribute('data-team-member-row') || '';
+        const isLeader = rowId === nextLeaderId;
+
+        row.setAttribute('data-team-role', isLeader ? 'leader' : 'member');
+        row.classList.toggle('is-team-head', isLeader);
+
+        const text = row.querySelector('.agent-team-overview__roleText');
+        if (text) text.textContent = isLeader ? 'หัวทีม' : 'ลูกทีม';
+
+        const selfInput = row.querySelector('[data-team-self-rate]');
+        const memberInput = row.querySelector('[data-member-rate]');
+        const leaderInput = row.querySelector('[data-leader-rate]');
+        const naSpan = row.querySelector('[data-team-leader-na]');
+
+        if (isLeader) {
+          // self = member-rate (own product rate)
+          if (selfInput && memberInput) selfInput.value = memberInput.value;
+          if (memberInput) memberInput.hidden = true;
+          if (selfInput) selfInput.hidden = false;
+          if (leaderInput) leaderInput.hidden = true;
+          if (naSpan) naSpan.hidden = false;
+        } else {
+          // member = self (own product rate)
+          if (memberInput && selfInput) memberInput.value = selfInput.value;
+          if (selfInput) selfInput.hidden = true;
+          if (memberInput) memberInput.hidden = false;
+          if (leaderInput) leaderInput.hidden = false;
+          if (naSpan) naSpan.hidden = true;
+        }
+      });
+
+      this._syncTeamOverviewTotals(overview);
+    };
+
+    // apply initial selection state
+    applyLeader(selectedId || (tbody.querySelector('[data-team-member-row]')?.getAttribute('data-team-member-row') || ''));
+
+    overview.addEventListener('change', (e) => {
+      if (!e.target.matches('[name=teamLeaderId]')) return;
+
+      const nextSelectedId = getSelected();
+      if (!nextSelectedId || nextSelectedId === selectedId) return;
+
+      const ok = window.confirm(
+        'หากเปลี่ยนหัวทีม ค่าคอมในตารางจะต้องตั้งค่าใหม่ และช่อง “คอม/หัวทีม/คนนี้ได้” จะถูกสลับตามหัวทีมที่เลือก\nต้องการดำเนินการหรือไม่?'
+      );
+      if (!ok) {
+        // revert checked radio
+        overview.querySelectorAll('[name=teamLeaderId]').forEach((r) => {
+          r.checked = r.value === selectedId;
+        });
+        return;
+      }
+
+      selectedId = nextSelectedId;
+      applyLeader(selectedId);
+    });
+  },
+
+  _bindTeamOverviewTotals(root) {
+    const overview = root.querySelector('[data-team-commission-overview]');
+    if (!overview) return;
+    const sync = () => this._syncTeamOverviewTotals(overview);
+    overview.addEventListener('input', (e) => {
+      if (e.target.matches('[data-team-self-rate], [data-member-rate], [data-leader-rate]')) sync();
+    });
+    sync();
   },
 
   _commonProductRate(products) {
@@ -750,9 +926,40 @@ App.AgentCommissionRates = {
     return next;
   },
 
+  _rolePickCell(agentId, isLeader) {
+    return `
+      <td class="agent-team-overview__role">
+        <label class="agent-team-overview__rolePick">
+          <input
+            type="radio"
+            name="teamLeaderId"
+            value="${this._escape(agentId)}"
+            ${isLeader ? 'checked' : ''}
+            aria-label="ตั้งเป็นหัวทีม"
+          >
+          <span class="agent-team-overview__roleText">${isLeader ? 'หัวทีม' : 'ลูกทีม'}</span>
+        </label>
+      </td>
+    `;
+  },
+
+  _readOverviewMemberRate(row) {
+    if (!row) return '';
+    const role = row.getAttribute('data-team-role');
+    if (role === 'leader') {
+      return row.querySelector('[data-team-self-rate]')?.value ?? '';
+    }
+    return row.querySelector('[data-member-rate]')?.value
+      ?? row.querySelector('[data-team-self-rate]')?.value
+      ?? '';
+  },
+
   renderTeamCommissionOverview(leader, members = []) {
     const leaderNorm = this.normalize(leader.commissionRates);
     const leaderSelf = this._commonProductRate(leaderNorm.products);
+    const leaderOverrideRate = leaderNorm.overrideEnabled
+      ? this._commonProductRate(leaderNorm.override.products)
+      : '';
 
     const leaderRow = `
       <tr data-team-member-row="${this._escape(leader.id)}" data-team-role="leader">
@@ -760,7 +967,7 @@ App.AgentCommissionRates = {
           <strong>${this._escape(leader.name)}</strong>
           <span class="agent-team-overview__code">${this._escape(leader.code)}</span>
         </td>
-        <td><span class="agent-form__sectionBadge">หัวทีม</span></td>
+        ${this._rolePickCell(leader.id, true)}
         <td>
           <input
             type="number"
@@ -773,8 +980,35 @@ App.AgentCommissionRates = {
             value="${leaderSelf !== '' ? leaderSelf : ''}"
             aria-label="ค่าคอมของ ${this._escape(leader.name)} เมื่อขายเอง"
           >
+          <input
+            type="number"
+            data-member-rate
+            min="0"
+            max="100"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="เช่น 15"
+            value="${leaderSelf !== '' ? leaderSelf : ''}"
+            hidden
+            aria-label="ลูกทีม ${this._escape(leader.name)} ได้คอม"
+          >
         </td>
-        <td class="agent-team-overview__na" aria-hidden="true">—</td>
+        <td>
+          <span class="agent-team-overview__na" data-team-leader-na aria-hidden="true">—</span>
+          <input
+            type="number"
+            data-leader-rate
+            min="0"
+            max="100"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="เช่น 3"
+            value="${leaderOverrideRate !== '' ? leaderOverrideRate : ''}"
+            hidden
+            aria-label="หัวทีมได้จากยอดขายของ ${this._escape(leader.name)}"
+          >
+        </td>
+        <td class="agent-team-overview__total" data-team-total></td>
       </tr>
     `;
 
@@ -790,7 +1024,7 @@ App.AgentCommissionRates = {
             <strong>${this._escape(member.name)}</strong>
             <span class="agent-team-overview__code">${this._escape(member.code)}</span>
           </td>
-          <td><span class="agent-form__sectionBadge agent-form__sectionBadge--muted">ลูกทีม</span></td>
+          ${this._rolePickCell(member.id, false)}
           <td>
             <input
               type="number"
@@ -803,8 +1037,21 @@ App.AgentCommissionRates = {
               value="${memberRate !== '' ? memberRate : ''}"
               aria-label="ลูกทีม ${this._escape(member.name)} ได้คอม"
             >
+            <input
+              type="number"
+              data-team-self-rate
+              min="0"
+              max="100"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="เช่น 12"
+              value="${memberRate !== '' ? memberRate : ''}"
+              hidden
+              aria-label="ค่าคอมของ ${this._escape(member.name)} เมื่อขายเอง"
+            >
           </td>
           <td>
+            <span class="agent-team-overview__na" data-team-leader-na aria-hidden="true" hidden>—</span>
             <input
               type="number"
               data-leader-rate
@@ -817,6 +1064,7 @@ App.AgentCommissionRates = {
               aria-label="หัวทีมได้จากยอดขายของ ${this._escape(member.name)}"
             >
           </td>
+          <td class="agent-team-overview__total" data-team-total></td>
         </tr>
       `;
     }).join('');
@@ -832,7 +1080,7 @@ App.AgentCommissionRates = {
           <span class="agent-form__sectionBadge">แนะนำ</span>
         </div>
         <p class="agent-form__sectionHint">
-          กำหนด % ให้หัวทีมและลูกทีมทุกคนในที่เดียว — เช่น หัวทีมขายเองได้ 15 · ลูกทีมได้ 12 · หัวทีมได้จากยอดลูก 3
+          เลือก <strong>วงกลมในคอลัมน์บทบาท</strong> เพื่อกำหนดหัวทีม · กำหนด % ให้ทุกคนในที่เดียว — คอลัมน์ <strong>คนนี้ได้ (%)</strong> จะโชว์ทันทีว่าแต่ละคนได้รับเท่าไร
         </p>
         <div class="agent-team-overview__tableWrap">
           <table class="agent-team-overview__table">
@@ -842,6 +1090,7 @@ App.AgentCommissionRates = {
                 <th scope="col">บทบาท</th>
                 <th scope="col">ได้คอม (%)</th>
                 <th scope="col">หัวทีมได้จากยอดนี้ (%)</th>
+                <th scope="col">คนนี้ได้ (%)</th>
               </tr>
             </thead>
             <tbody>
@@ -857,27 +1106,32 @@ App.AgentCommissionRates = {
 
   buildTeamOverviewUpdates(form, leader, members = []) {
     if (!form || !leader) return [];
+    const roster = [leader, ...members];
+    const selectedLeaderId = form.querySelector('[name=teamLeaderId]:checked')?.value || leader.id;
     const updates = [];
-    const leaderRow = form.querySelector(`[data-team-member-row="${leader.id}"]`);
-    if (leaderRow) {
-      const selfRate = leaderRow.querySelector('[data-team-self-rate]')?.value;
+
+    const leaderRow = form.querySelector(`[data-team-member-row="${selectedLeaderId}"]`);
+    const leaderAgent = roster.find((a) => a.id === selectedLeaderId);
+    if (leaderRow && leaderAgent) {
       updates.push({
-        id: leader.id,
-        parentId: form.parentId?.value || null,
-        commissionRates: this.applyUniformRates(leader.commissionRates, { memberPercent: selfRate })
+        id: selectedLeaderId,
+        parentId: null,
+        commissionRates: this.applyUniformRates(leaderAgent.commissionRates, {
+          memberPercent: this._readOverviewMemberRate(leaderRow)
+        })
       });
     }
 
-    members.forEach((member) => {
+    roster.forEach((member) => {
+      if (member.id === selectedLeaderId) return;
       const row = form.querySelector(`[data-team-member-row="${member.id}"]`);
       if (!row) return;
-      const memberRate = row.querySelector('[data-member-rate]')?.value;
       const leaderRate = row.querySelector('[data-leader-rate]')?.value;
       updates.push({
         id: member.id,
-        parentId: leader.id,
+        parentId: selectedLeaderId,
         commissionRates: this.applyUniformRates(member.commissionRates, {
-          memberPercent: memberRate,
+          memberPercent: this._readOverviewMemberRate(row),
           leaderPercent: leaderRate
         })
       });

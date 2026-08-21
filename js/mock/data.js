@@ -921,6 +921,66 @@ App.MockData = {
       paidAt: '2026-08-05',
       printedAt: null,
       refNote: 'กรมธรรม์ POL-2026-ERGO-050 / คอมมิชชัน COM-WHT50-DEMO / ทะเบียน นว 5039'
+    },
+    {
+      id: 'WHT50-DEMO-002',
+      docNo: '256907-0003',
+      bookNo: '2569',
+      seqNo: '3',
+      commissionId: 'COM-WHT50-DEMO-2',
+      policyNo: 'POL-2026-AXA-021',
+      agentId: 'agent-002',
+      agentCode: 'Ck1-040',
+      payer: {
+        name: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+        address: '1311/35 หมู่ 10 ต.นครสวรรค์ตก อ.เมือง จ.นครสวรรค์ 60000',
+        taxId: '0125566000000'
+      },
+      payee: {
+        name: 'วิไล สุขใจ',
+        address: 'นครสวรรค์',
+        taxId: '1103700000040',
+        idCard: '1103700000040'
+      },
+      paidAmount: 1280.50,
+      taxAmount: 0,
+      incomeType: '2',
+      formType: '4',
+      payMethod: '1',
+      issuedAt: '2026-07-18',
+      paidAt: '2026-07-18',
+      printedAt: '2026-07-19T10:00:00.000Z',
+      refNote: 'กรมธรรม์ POL-2026-AXA-021 / คอมมิชชัน COM-WHT50-DEMO-2'
+    },
+    {
+      id: 'WHT50-DEMO-003',
+      docNo: '256906-0012',
+      bookNo: '2569',
+      seqNo: '12',
+      commissionId: 'COM-WHT50-DEMO-3',
+      policyNo: 'POL-2026-BKI-008',
+      agentId: 'agent-001',
+      agentCode: 'Ck1-039',
+      payer: {
+        name: 'บริษัท กล้าดีโบรคเกอร์ จำกัด',
+        address: '1311/35 หมู่ 10 ต.นครสวรรค์ตก อ.เมือง จ.นครสวรรค์ 60000',
+        taxId: '0125566000000'
+      },
+      payee: {
+        name: 'สมชาย ใจดี',
+        address: 'นครสวรรค์',
+        taxId: '1103700000039',
+        idCard: '1103700000039'
+      },
+      paidAmount: 990.00,
+      taxAmount: 0,
+      incomeType: '2',
+      formType: '4',
+      payMethod: '1',
+      issuedAt: '2026-06-02',
+      paidAt: '2026-06-02',
+      printedAt: null,
+      refNote: 'กรมธรรม์ POL-2026-BKI-008 / คอมมิชชัน COM-WHT50-DEMO-3'
     }
   ]
 };

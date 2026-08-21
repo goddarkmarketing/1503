@@ -34,6 +34,16 @@
     stampUrlData: null
   };
 
+  const defaultSignatureSrc = () =>
+    App.Wht50Document?.DEFAULT_SIGNATURE_PATH
+      ? `../${App.Wht50Document.DEFAULT_SIGNATURE_PATH}?v=20260821b`
+      : '../assets/wht50/payer-signature.png?v=20260821b';
+
+  const defaultStampSrc = () =>
+    App.Wht50Document?.DEFAULT_STAMP_PATH
+      ? `../${App.Wht50Document.DEFAULT_STAMP_PATH}?v=20260821b`
+      : '../assets/wht50/company-stamp.png?v=20260821b';
+
   const showToast = (msg, type) => {
     if (App.AdminUtils?.showToast) return App.AdminUtils.showToast(msg, type);
     alert(msg);
@@ -81,17 +91,19 @@
   }
 
   function buildPreviewDoc(settings) {
+    const signatureUrl = settings?.signatureUrlData || undefined;
+    const stampUrl = settings?.stampUrlData || undefined;
     const payer = {
       ...(App.Wht50Document?.DEFAULT_PAYER || {}),
       ...(settings?.payer || {}),
-      signatureUrl: settings?.signatureUrlData || undefined,
-      stampUrl: settings?.stampUrlData || undefined
+      signatureUrl,
+      stampUrl
     };
     return {
       ...(App.Wht50Document?.SAMPLE_FROM_PDF || {}),
       payer,
-      signatureUrl: settings?.signatureUrlData || undefined,
-      stampUrl: settings?.stampUrlData || undefined
+      signatureUrl,
+      stampUrl
     };
   }
 
@@ -107,7 +119,7 @@
       }
       return;
     }
-    signaturePreview.src = '../assets/wht50/payer-signature.png';
+    signaturePreview.src = defaultSignatureSrc();
     signaturePreview.alt = 'ลายเซ็นค่าเริ่มต้น';
     if (signatureBadge) {
       signatureBadge.textContent = 'ค่าเริ่มต้น';
@@ -128,12 +140,13 @@
       return;
     }
     if (stampPreview) {
-      stampPreview.removeAttribute('src');
-      stampPreview.hidden = true;
+      stampPreview.src = defaultStampSrc();
+      stampPreview.hidden = false;
+      stampPreview.alt = 'ตราประทับค่าเริ่มต้น';
     }
-    if (stampEmpty) stampEmpty.hidden = false;
+    if (stampEmpty) stampEmpty.hidden = true;
     if (stampBadge) {
-      stampBadge.textContent = 'ยังไม่อัปโหลด';
+      stampBadge.textContent = 'ค่าเริ่มต้น';
       stampBadge.classList.add('agent-form__sectionBadge--muted');
     }
   }
@@ -212,11 +225,7 @@
     }
 
     const payload = readForm();
-    if (isCompanyName(payload.payer.name) && !payload.stampUrlData) {
-      showToast('ออกชื่อบริษัทต้องอัปโหลดรูปตราประทับด้วย', 'error');
-      stampFile?.click();
-      return;
-    }
+    // ตราประทับมีค่าเริ่มต้น (company-stamp.png) — ไม่บังคับอัปโหลดเอง
 
     const btn = document.getElementById('btnWht50Save');
     try {

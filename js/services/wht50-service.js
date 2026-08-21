@@ -34,9 +34,14 @@ App.Wht50Service = {
     App.Wht50Document.openPreview(doc);
   },
 
-  /** Alias — always show preview before print. */
+  /** Alias — always show preview before print / PDF. */
   print(doc) {
     this.preview(doc);
+  },
+
+  async downloadPdf(doc, options = {}) {
+    if (!App.Wht50Document?.downloadPdf) throw new Error('Wht50Document module not loaded');
+    return App.Wht50Document.downloadPdf(doc, options);
   },
 
   async markPrinted(id) {

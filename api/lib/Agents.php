@@ -3,6 +3,23 @@ declare(strict_types=1);
 
 final class Agents
 {
+  public const TEAM_MEMBER_LIMIT = 2;
+
+  public static function assertParentHasSlot(PDO $pdo, string $parentId, ?string $exceptAgentId = null): void
+  {
+    $sql = 'SELECT COUNT(*) FROM agents WHERE parent_id = :parent_id';
+    $params = [':parent_id' => $parentId];
+    if ($exceptAgentId) {
+      $sql .= ' AND id <> :except_id';
+      $params[':except_id'] = $exceptAgentId;
+    }
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    if ((int)$stmt->fetchColumn() >= self::TEAM_MEMBER_LIMIT) {
+      Response::error('หัวทีมนี้มีลูกทีมครบ ' . self::TEAM_MEMBER_LIMIT . ' คนแล้ว', 422, 'TEAM_FULL');
+    }
+  }
+
   public static function fetchAll(PDO $pdo): array
   {
     $sql = 'SELECT a.*, u.name, u.email, u.phone, u.username, u.status AS user_status
@@ -235,6 +252,7 @@ final class Agents
       if (!$parent->fetch()) {
         Response::error('ไม่พบหัวหน้าทีมที่เลือก', 422, 'VALIDATION');
       }
+      self::assertParentHasSlot($pdo, (string)$parentId);
     }
 
     $id = 'agent-' . bin2hex(random_bytes(6));
@@ -365,6 +383,7 @@ final class Agents
         if (!$parent->fetch()) {
           Response::error('ไม่พบหัวหน้าทีมที่เลือก', 422, 'VALIDATION');
         }
+        self::assertParentHasSlot($pdo, (string)$parentId, $agentId);
       }
       $agentFields[] = 'parent_id = :parent_id';
       $agentParams[':parent_id'] = $parentId;

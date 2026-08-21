@@ -184,7 +184,7 @@
     return `
       <header class="team-org__detailHead">
         <span class="team-org__avatar team-org__avatar--lg" aria-hidden="true"><i data-lucide="users"></i></span>
-        <div>
+        <div class="team-org__detailIdentity">
           <h2>${escapeHtml(t.leaderName || '-')}</h2>
           <p>
             <span>${escapeHtml(t.leaderCode)}</span>
@@ -192,8 +192,13 @@
             <span class="status-pill ${statusClass(t.leaderStatus)}">${statusLabel(t.leaderStatus)}</span>
           </p>
         </div>
-        <a class="btn-secondary btn-sm" href="agents">จัดการบัญชีนี้</a>
-        <p class="admin-hint" style="margin:12px 0 0">ค่าคอมและโครงสร้างทีม <strong>ตั้งโดยแอดมินเท่านั้น</strong> — ใช้ปุ่ม ทีม/คอม ที่หน้าจัดการนายหน้า</p>
+        <div class="team-org__detailActions">
+          <span class="team-org__adminBadge" role="note">
+            <i data-lucide="settings" aria-hidden="true"></i>
+            <span>ค่าคอมและโครงสร้างทีม <strong>ตั้งโดยแอดมินเท่านั้น</strong> — ใช้ปุ่ม <strong>ทีม/คอม</strong> ที่หน้าจัดการนายหน้า</span>
+          </span>
+          <a class="btn-secondary btn-sm" href="agent?id=${encodeURIComponent(t.leaderId)}&view=team">ทีม/คอม</a>
+        </div>
       </header>
 
       <dl class="team-org__metrics">

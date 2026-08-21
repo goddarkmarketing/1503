@@ -215,30 +215,136 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
   background: #fafbfc;
 }
 
-/* Agents table — single-line rows */
+/* Agents table — fit container width (no horizontal scroll on desktop) */
 .data-table--agents {
-  min-width: 980px;
+  table-layout: fixed;
+  width: 100%;
+  min-width: 0;
 }
 
 .data-table--agents th,
 .data-table--agents td {
-  padding: 10px 12px;
+  padding: 10px 10px;
   vertical-align: middle;
-  white-space: nowrap;
+  border-right: 1px solid var(--border);
 }
 
 .data-table--agents th:first-child,
 .data-table--agents td:first-child {
-  padding-left: 16px;
+  padding-left: 14px;
 }
 
 .data-table--agents th:last-child,
 .data-table--agents td:last-child {
-  padding-right: 16px;
+  padding-right: 14px;
+  border-right: none;
 }
 
+.data-table--agents th:nth-child(1),
+.data-table--agents td:nth-child(1) {
+  width: 88px;
+}
+
+.data-table--agents th:nth-child(2),
 .data-table--agents td:nth-child(2) {
-  max-width: 240px;
+  width: 18%;
+}
+
+.data-table--agents th:nth-child(3),
+.data-table--agents td:nth-child(3) {
+  width: 110px;
+}
+
+.data-table--agents th:nth-child(4),
+.data-table--agents td:nth-child(4) {
+  width: 110px;
+}
+
+.data-table--agents th:nth-child(5),
+.data-table--agents td:nth-child(5) {
+  width: 118px;
+}
+
+.data-table--agents th:nth-child(6),
+.data-table--agents td:nth-child(6) {
+  width: 168px;
+}
+
+.data-table--agents th:nth-child(7),
+.data-table--agents td:nth-child(7) {
+  width: 84px;
+}
+
+.data-table--agents th:nth-child(8),
+.data-table--agents td:nth-child(8) {
+  width: 200px;
+  min-width: 0;
+}
+
+.data-table--agents .col-code {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.data-table--agents .col-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table--agents .col-phone {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-table--agents .col-balance,
+.data-table--agents .col-credit {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.data-table--agents th.col-balance,
+.data-table--agents th.col-credit {
+  text-align: right;
+}
+
+.data-table--agents .col-status {
+  text-align: center;
+}
+
+.data-table--agents th.col-status {
+  text-align: center;
+}
+
+.data-table--agents .col-actions {
+  text-align: center;
+}
+
+.data-table--agents th.col-actions {
+  text-align: center;
+}
+
+/* Backward/typo safety: some DOM paths may reference col-action */
+.data-table--agents .col-action {
+  text-align: center;
+}
+
+.data-table--agents th.col-action {
+  text-align: center;
+}
+
+.data-table--agents .admin-agent-cell--team {
+  min-height: 2.5em;
+  justify-content: center;
+}
+
+.data-table--agents .admin-agent-cell__code,
+.data-table--agents .admin-agent-cell__name {
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -248,16 +354,37 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
   font-variant-numeric: tabular-nums;
 }
 
+.data-table--agents .col-credit .credit-gauge {
+  justify-content: flex-end;
+  width: 100%;
+  gap: 6px;
+}
+
+.data-table--agents .col-credit .credit-gauge__bar {
+  width: 56px;
+}
+
 .data-table--agents .btn-group {
   flex-wrap: nowrap;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
+  align-items: center;
 }
 
 .data-table--agents .btn-group .btn-sm {
-  padding: 5px 9px;
-  font-size: 0.76rem;
-  line-height: 1.2;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  line-height: 1.25;
   white-space: nowrap;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+/* Keep horizontal scroll only as fallback on very small screens */
+@media (max-width: 1100px) {
+  .data-table--agents {
+    min-width: 960px;
+  }
 }
 
 /* Credit bank accounts table: balanced spacing */
@@ -705,7 +832,7 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
 
 .agent-team-overview__table {
   width: 100%;
-  min-width: 520px;
+  min-width: 680px;
   border-collapse: collapse;
 }
 
@@ -758,6 +885,57 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
 .agent-team-overview__na {
   color: var(--text-muted);
   text-align: center;
+}
+
+.agent-team-overview__total {
+  white-space: nowrap;
+}
+
+.agent-team-overview__totalVal {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.agent-team-overview__totalHint {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.agent-team-overview__rolePick {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.agent-team-overview__rolePick input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #1a7d58;
+  flex-shrink: 0;
+}
+
+.agent-team-overview__roleText {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.agent-team-overview__table tbody tr.is-team-head .agent-team-overview__roleText {
+  color: #166534;
+}
+
+.agent-team-overview__table tbody tr.is-team-head {
+  background: #f0fdf4;
 }
 
 .agent-form__advanced {
@@ -862,6 +1040,468 @@ body[data-portal="admin"] .sidebar-footer .nav-link:hover {
 .admin-toolbar .admin-filter-bar {
   margin-bottom: 0;
   align-items: flex-end;
+}
+
+.admin-toolbar--agents {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.admin-toolbar--agents > .admin-page-title {
+  margin-bottom: 0;
+}
+
+.admin-toolbar__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-toolbar--agents .admin-filter-bar--inline {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+  flex-wrap: nowrap;
+  --admin-control-h: 48px;
+}
+
+.admin-toolbar--agents .admin-filter-bar--inline .form-field {
+  min-width: 120px;
+  flex: 1 1 120px;
+  max-width: 170px;
+}
+
+.admin-toolbar--agents .admin-filter-bar--inline .form-field input,
+.admin-toolbar--agents .admin-filter-bar--inline .form-field select,
+.admin-toolbar--agents .admin-filter-bar--inline > .btn-secondary,
+.admin-toolbar--agents .admin-filter-bar--inline > .btn-primary {
+  height: var(--admin-control-h);
+  min-height: var(--admin-control-h);
+  box-sizing: border-box;
+}
+
+.admin-toolbar--agents .admin-toolbar-actions {
+  flex-shrink: 0;
+  margin-left: auto;
+  align-items: flex-end;
+}
+
+.admin-toolbar--agents .admin-toolbar-actions .btn-primary,
+.admin-toolbar--agents .admin-toolbar-actions .btn-secondary {
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding-top: 0;
+  padding-bottom: 0;
+  text-decoration: none;
+}
+
+.admin-toolbar--agents .agents-viewToggle {
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
+  align-items: stretch;
+  padding: 3px;
+}
+
+.admin-toolbar--agents .agents-viewToggle__btn {
+  height: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.admin-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.agent-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: #047857;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.agent-page__back:hover {
+  text-decoration: underline;
+}
+
+.agent-page__back svg {
+  width: 16px;
+  height: 16px;
+}
+
+.agent-page__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 4px;
+  width: fit-content;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.agent-page__tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 9px;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.agent-page__tab.is-active {
+  background: #fff;
+  color: #047857;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.agent-page__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.agent-page__actions .btn-primary,
+.agent-page__actions .btn-secondary {
+  text-decoration: none;
+}
+
+.agent-team-card__actions a.btn-sm,
+.btn-group a.btn-sm {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.agents-viewToggle {
+  display: inline-flex;
+  padding: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.agents-viewToggle__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.agents-viewToggle__btn i,
+.agents-viewToggle__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.agents-viewToggle__btn.is-active {
+  background: #fff;
+  color: #047857;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.agents-team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.agents-team-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.agent-team-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 0 16px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.agent-team-card__head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 10px 12px;
+  align-items: start;
+  margin: 0 -16px 14px;
+  padding: 16px;
+  background: linear-gradient(135deg, #065f46 0%, #047857 55%, #059669 100%);
+  color: #ecfdf5;
+}
+
+.agent-team-card__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ecfdf5;
+}
+
+.agent-team-card__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.agent-team-card__leader {
+  min-width: 0;
+}
+
+.agent-team-card__role {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #a7f3d0;
+}
+
+.agent-team-card__name {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: #fff;
+}
+
+.agent-team-card__code {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: rgba(236, 253, 245, 0.82);
+}
+
+.agent-team-card__head .status-pill.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ecfdf5;
+}
+
+.agent-team-card__head .status-pill.inactive {
+  background: rgba(15, 23, 42, 0.22);
+  color: #f8fafc;
+}
+
+.agent-team-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+.agent-team-card__stat {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #e8eef5;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.agent-team-card__stat dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #64748b;
+}
+
+.agent-team-card__stat dd {
+  margin: 6px 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-team-card__stat--members {
+  border-color: #d1fae5;
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.agent-team-card__stat--members dd {
+  color: #047857;
+}
+
+.agent-team-card__stat--balance {
+  border-color: #e2e8f0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.agent-team-card__stat--balance dd {
+  color: #0f172a;
+}
+
+.agent-team-card__membersWrap {
+  flex: 1;
+  margin-bottom: 14px;
+}
+
+.agent-team-card__membersTitle {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.agent-team-card__members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.agent-team-card__member {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+}
+
+.agent-team-card__memberIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+}
+
+.agent-team-card__memberIcon i,
+.agent-team-card__memberIcon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.agent-team-card__member--empty {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.agent-team-card__memberName {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-team-card__memberCode {
+  font-size: 0.76rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.agent-team-card__member .status-pill {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+}
+
+.agent-team-card__actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.agent-team-card__actions .btn-sm {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  padding: 6px 8px;
+}
+
+@media (max-width: 1400px) {
+  .agents-team-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .admin-toolbar--agents .admin-toolbar__row {
+    flex-wrap: wrap;
+  }
+
+  .admin-toolbar--agents .admin-filter-bar--inline {
+    flex-wrap: wrap;
+    flex-basis: 100%;
+  }
+
+  .admin-toolbar--agents .admin-toolbar-actions {
+    flex-basis: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .agents-team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-toolbar-actions {
+    width: 100%;
+  }
+
+  .agents-viewToggle {
+    width: 100%;
+  }
+
+  .agents-viewToggle__btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .admin-toolbar-actions .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .admin-form-grid {
@@ -1725,6 +2365,48 @@ body[data-portal="admin"] .content-card--team {
   margin-bottom: 16px;
 }
 
+.team-org__detailIdentity {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-org__detailActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
+  max-width: min(100%, 560px);
+}
+
+.team-org__adminBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  color: #065f46;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.team-org__adminBadge i,
+.team-org__adminBadge svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #059669;
+}
+
+.team-org__adminBadge strong {
+  color: #047857;
+  font-weight: 700;
+}
+
 .team-org__detailHead h2 {
   margin: 0;
   font-size: 1.15rem;
@@ -1747,8 +2429,8 @@ body[data-portal="admin"] .content-card--team {
   text-decoration: none;
 }
 
-.team-org__detailHead .btn-secondary {
-  margin-left: auto;
+.team-org__detailActions .btn-secondary {
+  flex-shrink: 0;
 }
 
 .team-org__metrics {
@@ -1998,8 +2680,16 @@ body[data-portal="admin"] .content-card--team {
     flex-wrap: wrap;
   }
 
-  .team-org__detailHead .btn-secondary {
+  .team-org__detailActions {
+    width: 100%;
+    max-width: none;
     margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .team-org__adminBadge {
+    white-space: normal;
   }
 }
 
@@ -2123,8 +2813,271 @@ body[data-portal="admin"] .content-card--team {
 }
 
 .agent-commission-rates {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.agent-commission-rates__tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 0;
+  overflow: visible;
+  padding-top: 6px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 14px 14px 0 0;
+}
+
+.agent-commission-rates__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 11px 14px 12px;
+  border: 0;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.agent-commission-rates__tab:last-child {
+  border-right: 0;
+}
+
+/* พ.ร.บ. — เขียว */
+.agent-commission-rates__tab--compulsory {
+  --tab-accent: #1a7d58;
+  --tab-bg-hover: #ecfdf5;
+  --tab-bg-active: #ecfdf5;
+  --tab-text-hover: #166534;
+  --tab-text-active: #166534;
+  --tab-badge-active-bg: #bbf7d0;
+  --tab-badge-active-text: #166534;
+  --tab-shadow: rgba(26, 125, 88, 0.14);
+}
+
+/* 2+ / 3+ — น้ำเงิน */
+.agent-commission-rates__tab--voluntary {
+  --tab-accent: #2563eb;
+  --tab-bg-hover: #eff6ff;
+  --tab-bg-active: #eff6ff;
+  --tab-text-hover: #1d4ed8;
+  --tab-text-active: #1e40af;
+  --tab-badge-active-bg: #bfdbfe;
+  --tab-badge-active-text: #1e40af;
+  --tab-shadow: rgba(37, 99, 235, 0.14);
+}
+
+/* ประกันอุบัติเหตุ — ส้ม */
+.agent-commission-rates__tab--pa {
+  --tab-accent: #ea580c;
+  --tab-bg-hover: #fff7ed;
+  --tab-bg-active: #fff7ed;
+  --tab-text-hover: #c2410c;
+  --tab-text-active: #9a3412;
+  --tab-badge-active-bg: #fed7aa;
+  --tab-badge-active-text: #9a3412;
+  --tab-shadow: rgba(234, 88, 12, 0.14);
+}
+
+/* ประกันเดินทาง — ม่วง */
+.agent-commission-rates__tab--travel {
+  --tab-accent: #7c3aed;
+  --tab-bg-hover: #f5f3ff;
+  --tab-bg-active: #f5f3ff;
+  --tab-text-hover: #6d28d9;
+  --tab-text-active: #5b21b6;
+  --tab-badge-active-bg: #ddd6fe;
+  --tab-badge-active-text: #5b21b6;
+  --tab-shadow: rgba(124, 58, 237, 0.14);
+}
+
+.agent-commission-rates__tab:hover:not(.is-active) {
+  color: var(--tab-text-hover);
+  background: var(--tab-bg-hover);
+}
+
+.agent-commission-rates__tab:hover:not(.is-active) .agent-commission-rates__cat-icon {
+  color: var(--tab-accent);
+}
+
+.agent-commission-rates__tab.is-active {
+  color: var(--tab-text-active);
+  font-weight: 700;
+  background: var(--tab-bg-active);
+  border-bottom-color: var(--tab-bg-active);
+  border-radius: 10px 10px 0 0;
+  transform: translateY(-4px);
+  z-index: 3;
+  padding-bottom: 15px;
+  box-shadow:
+    0 -2px 10px var(--tab-shadow),
+    0 2px 0 var(--tab-bg-active),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.agent-commission-rates__tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--tab-accent);
+}
+
+.agent-commission-rates__tab.is-active .agent-commission-rates__cat-icon {
+  color: var(--tab-accent);
+}
+
+.agent-commission-rates__tabLabel {
+  line-height: 1.2;
+}
+
+.agent-commission-rates__tab em {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.agent-commission-rates__tab.is-active em {
+  color: var(--tab-badge-active-text);
+  background: var(--tab-badge-active-bg);
+}
+
+.agent-commission-rates__panels {
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+}
+
+.agent-commission-rates__group {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.agent-commission-rates__group[hidden] {
+  display: none;
+}
+
+.agent-commission-rates__cat-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #94a3b8;
+}
+
+.agent-commission-rates__tab:not(.is-active) .agent-commission-rates__cat-icon {
+  color: #94a3b8;
+}
+
+.agent-commission-rates__panel {
   display: grid;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  background: #fff;
+}
+
+.agent-commission-rates__cols,
+.agent-commission-rates__row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.5fr) minmax(96px, 1fr) minmax(200px, 1.25fr) minmax(140px, 1fr);
+  column-gap: 24px;
+  row-gap: 8px;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.agent-commission-rates__cols {
+  padding: 6px 4px 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.agent-commission-rates__cols span:nth-child(1) {
+  text-align: left;
+}
+
+.agent-commission-rates__cols span:nth-child(2) {
+  text-align: center;
+}
+
+.agent-commission-rates__cols span:nth-child(3) {
+  text-align: center;
+}
+
+.agent-commission-rates__cols span:nth-child(4) {
+  text-align: right;
+}
+
+.agent-commission-rates__row {
+  padding: 10px 12px;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  background: #f8fafc;
+  min-height: 56px;
+}
+
+.agent-commission-rates__cell {
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.agent-commission-rates__field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 96px;
+  margin: 0 auto;
+}
+
+.agent-commission-rates__field.is-disabled {
+  opacity: 0.45;
+}
+
+.agent-commission-rates__tax-block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
+  min-width: 0;
+  justify-self: center;
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
 }
 
 .agent-commission-rates__howto {
@@ -2161,16 +3114,30 @@ body[data-portal="admin"] .content-card--team {
 
 .agent-commission-rates__quickRow .form-field input {
   width: 100%;
-  min-height: 42px;
+  height: 52px;
+  min-height: 52px;
+  box-sizing: border-box;
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 0.95rem;
 }
 
+.agent-commission-rates__quickAction {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
 .agent-commission-rates__quickAction .btn-primary {
-  min-height: 42px;
+  height: 52px;
+  min-height: 52px;
+  box-sizing: border-box;
+  padding: 0 16px;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 720px) {
@@ -2181,78 +3148,6 @@ body[data-portal="admin"] .content-card--team {
 
 .agent-commission-rates__override .wht50-settings__option {
   margin-top: 0;
-}
-
-.agent-commission-rates__group {
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #fff;
-  overflow: hidden;
-}
-
-.agent-commission-rates__category {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 14px;
-  border: 0;
-  background: #f8fafc;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-  box-sizing: border-box;
-}
-
-.agent-commission-rates__category:hover {
-  background: #f1f5f9;
-}
-
-.agent-commission-rates__category-left {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.agent-commission-rates__category-left em {
-  font-style: normal;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #64748b;
-}
-
-.agent-commission-rates__cat-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  color: #1a7d58;
-}
-
-.agent-commission-rates__chevron {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  color: #94a3b8;
-  transition: transform 0.18s ease;
-}
-
-.agent-commission-rates__group.is-open .agent-commission-rates__chevron {
-  transform: rotate(180deg);
-}
-
-.agent-commission-rates__panel {
-  display: grid;
-  gap: 6px;
-  padding: 10px 12px 12px;
-  border-top: 1px solid #eef2f7;
-  background: #fff;
-}
-
-.agent-commission-rates__panel[hidden] {
-  display: none;
 }
 
 .agent-commission-rates__bulk {
@@ -2266,6 +3161,46 @@ body[data-portal="admin"] .content-card--team {
   border: 1px solid #bbf7d0;
   font-size: 0.8rem;
   color: #166534;
+}
+
+.agent-commission-rates__group[data-tab-theme="compulsory"] .agent-commission-rates__bulk {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.agent-commission-rates__group[data-tab-theme="compulsory"] .agent-commission-rates__bulk input[type="number"] {
+  border-color: #86efac;
+}
+
+.agent-commission-rates__group[data-tab-theme="voluntary"] .agent-commission-rates__bulk {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+
+.agent-commission-rates__group[data-tab-theme="voluntary"] .agent-commission-rates__bulk input[type="number"] {
+  border-color: #93c5fd;
+}
+
+.agent-commission-rates__group[data-tab-theme="pa"] .agent-commission-rates__bulk {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+.agent-commission-rates__group[data-tab-theme="pa"] .agent-commission-rates__bulk input[type="number"] {
+  border-color: #fdba74;
+}
+
+.agent-commission-rates__group[data-tab-theme="travel"] .agent-commission-rates__bulk {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #5b21b6;
+}
+
+.agent-commission-rates__group[data-tab-theme="travel"] .agent-commission-rates__bulk input[type="number"] {
+  border-color: #c4b5fd;
 }
 
 .agent-commission-rates__bulk > span {
@@ -2295,50 +3230,6 @@ body[data-portal="admin"] .content-card--team {
   padding: 4px 8px;
   border-radius: 8px;
   background: #fff;
-}
-
-.agent-commission-rates__cols,
-.agent-commission-rates__row {
-  display: grid;
-  grid-template-columns: minmax(140px, 1.2fr) 110px minmax(160px, 1fr) minmax(120px, 0.9fr);
-  gap: 10px;
-  align-items: center;
-}
-
-.agent-commission-rates__cols {
-  padding: 4px 10px 2px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #64748b;
-}
-
-.agent-commission-rates__row {
-  padding: 8px 10px;
-  border: 1px solid #eef2f7;
-  border-radius: 10px;
-  background: #f8fafc;
-  min-height: 52px;
-}
-
-.agent-commission-rates__cell {
-  min-width: 0;
-}
-
-.agent-commission-rates__field {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.agent-commission-rates__field.is-disabled {
-  opacity: 0.45;
-}
-
-.agent-commission-rates__tax-block {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
 }
 
 .agent-commission-rates__tax-block.is-off .agent-commission-rates__input {
@@ -2373,13 +3264,16 @@ body[data-portal="admin"] .content-card--team {
   align-items: center;
   justify-content: center;
   min-height: 28px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
   text-align: center;
   background: #fffbeb;
   color: #92400e;
+  justify-self: end;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .agent-commission-rates__result.is-wht50 {
@@ -2390,9 +3284,10 @@ body[data-portal="admin"] .content-card--team {
 .agent-commission-rates__brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
   cursor: pointer;
+  padding-right: 8px;
 }
 
 .agent-commission-rates__logo {
@@ -2466,17 +3361,37 @@ body[data-portal="admin"] .content-card--team {
     display: none;
   }
 
+  .agent-commission-rates__cols,
+  .agent-commission-rates__row {
+    column-gap: 12px;
+    padding: 0;
+  }
+
   .agent-commission-rates__row {
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 10px 12px;
+    padding: 10px;
   }
 
   .agent-commission-rates__brand {
     grid-column: 1 / -1;
+    padding-right: 0;
+  }
+
+  .agent-commission-rates__cell,
+  .agent-commission-rates__tax-block {
+    justify-self: stretch;
+    max-width: none;
+  }
+
+  .agent-commission-rates__field {
+    max-width: none;
   }
 
   .agent-commission-rates__result {
     grid-column: 1 / -1;
+    justify-self: stretch;
+    margin-left: 0;
   }
 }
 
@@ -2512,10 +3427,129 @@ body[data-portal="admin"] .content-card--team {
   color: var(--text-muted);
 }
 
+.form-field__with-action {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.form-field__with-action > input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.form-field__with-action > .btn-secondary,
+.form-field__with-action > .btn-primary {
+  flex: 0 0 auto;
+  align-self: stretch;
+  white-space: nowrap;
+}
+
+/* Searchable select (admin forms) */
+.agent-form .search-select,
+.content-card .search-select {
+  position: relative;
+  width: 100%;
+}
+
+.agent-form .search-select-native,
+.content-card .search-select-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.agent-form .search-select-input,
+.content-card .search-select-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 36px;
+  cursor: text;
+}
+
+.agent-form .search-select-chevron,
+.content-card .search-select-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  display: flex;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.agent-form .search-select.open .search-select-chevron,
+.content-card .search-select.open .search-select-chevron {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.agent-form .search-select-dropdown,
+.content-card .search-select-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+  z-index: 40;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  display: none;
+}
+
+.agent-form .search-select.open .search-select-dropdown,
+.content-card .search-select.open .search-select-dropdown {
+  display: block;
+}
+
+.agent-form .search-select-item,
+.content-card .search-select-item {
+  padding: 9px 12px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.agent-form .search-select-item:hover,
+.agent-form .search-select-item.highlighted,
+.content-card .search-select-item:hover,
+.content-card .search-select-item.highlighted {
+  background: var(--accent-green-soft, #ecfdf5);
+}
+
+.agent-form .search-select-item.empty,
+.content-card .search-select-item.empty {
+  color: var(--text-muted);
+  cursor: default;
+  font-size: 0.82rem;
+}
+
 .agent-form .form-field input {
   padding: 11px 14px;
   font-size: 0.92rem;
   border-radius: 12px;
+}
+
+.agent-form .form-field .search-select-input {
+  min-height: 54px;
+  height: 54px;
+  box-sizing: border-box;
+}
+
+.agent-form .form-field__with-action > .btn-secondary {
+  min-height: 54px;
+  height: 54px;
+  box-sizing: border-box;
+  padding: 0 14px;
 }
 
 .agent-form .form-field select {
@@ -2550,80 +3584,184 @@ body[data-portal="admin"] .content-card--team {
   }
 }
 
+.agent-perm {
+  display: grid;
+  gap: 22px;
+}
+
+.agent-perm__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.agent-perm__toolbarActions {
+  display: flex;
+  gap: 8px;
+}
+
 .agent-perm__tableWrap {
-  max-height: 58vh;
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  background: #fff;
+  border: 1px solid #edf0f4;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .agent-perm__table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.84rem;
+  table-layout: fixed;
+  font-size: 0.88rem;
 }
 
-.agent-perm__table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #f8fafc;
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  font-weight: 600;
-}
-
+.agent-perm__table th,
 .agent-perm__table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+  border-bottom: 1px solid #e8edf3;
+  border-right: 1px solid #e8edf3;
   vertical-align: middle;
 }
 
-.agent-perm__zoneHead td {
-  background: #eef2ff;
-  border-bottom: 1px solid #dbe3f8;
+.agent-perm__table th:last-child,
+.agent-perm__table td:last-child {
+  border-right: none;
 }
 
-.agent-perm__zoneToggle {
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
+.agent-perm__table thead th {
+  background: #f8fafc;
   font-weight: 600;
-  color: #1f379d;
-  cursor: pointer;
+  color: #64748b;
+  text-align: left;
 }
 
-.agent-perm__zoneToggle:hover {
-  text-decoration: underline;
+.agent-perm__table--matrix thead th {
+  text-align: center;
+  min-width: 104px;
 }
 
-.agent-perm__zone {
-  width: 150px;
-  color: var(--text-muted);
+.agent-perm__table tbody th {
+  text-align: left;
   font-weight: 600;
-  white-space: nowrap;
+  color: #334155;
 }
 
-.agent-perm__check {
-  width: 120px;
+.agent-perm__table tbody tr:last-child th,
+.agent-perm__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.agent-perm__table tbody tr:hover td,
+.agent-perm__table tbody tr:hover th {
+  background: #fafbfc;
+}
+
+.agent-perm__table--list col.agent-perm__colGroup { width: 18%; }
+.agent-perm__table--list thead th:first-child,
+.agent-perm__table--list .agent-perm__group {
+  width: 18%;
+  background: #f8fafc;
+}
+
+.agent-perm__table--list thead th:last-child,
+.agent-perm__table--list .agent-perm__tickCell {
+  width: 96px;
   text-align: center;
 }
 
-.agent-perm__checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
+.agent-perm__table--list .agent-perm__label {
+  text-align: left;
 }
 
-.agent-perm__checkbox input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent-green);
+.agent-perm__group {
+  vertical-align: top;
 }
+
+.agent-perm__corner {
+  text-align: left !important;
+  min-width: 132px;
+  padding-left: 18px !important;
+}
+
+.agent-perm__headBtn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.agent-perm__rowBtn {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 650;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+}
+
+.agent-perm__headBtn img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.agent-perm__headBtn span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.agent-perm__headBtn:hover span,
+.agent-perm__rowBtn:hover {
+  color: #047857;
+}
+
+.agent-perm__table--matrix td {
+  text-align: center;
+}
+
+.agent-perm__na {
+  background: repeating-linear-gradient(
+    -45deg,
+    #fff,
+    #fff 6px,
+    #f8fafc 6px,
+    #f8fafc 12px
+  );
+}
+
+.agent-perm__tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.agent-perm__tick input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #059669;
+  cursor: pointer;
+}
+
 
 .agent-perm__status {
   margin: 0 0 12px;

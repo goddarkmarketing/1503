@@ -16,7 +16,7 @@
   </script>
   <title>จัดการนายหน้า — Admin</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css?v=20260820m">
+  <link rel="stylesheet" href="../css/admin.css?v=20260820aj">
   <link rel="stylesheet" href="../css/portal.css">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
@@ -110,21 +110,73 @@
         <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name">Admin</span></div></header>
       <main class="main-content">
         <div class="content-card">
-          <div class="admin-toolbar">
-            <div>
-              <h1 class="admin-page-title">จัดการบัญชีนายหน้า</h1>
-              <p class="admin-hint">เพิ่มนายหน้า ปรับวงเงิน กำหนดสิทธิ์ฟังก์ชัน ระงับ/เปิดใช้บัญชี — โครงสร้างทีมและค่าคอม <strong>ตั้งโดยแอดมินเท่านั้น</strong> (ปุ่ม ทีม/คอม)</p>
-              <p class="admin-hint admin-hint--demo">บัญชีทดลอง: <strong>Ck1-039</strong> (สิทธิ์ครบ) · <strong>Ag2-112</strong> (จำกัดสิทธิ์) · <strong>Ag3-205</strong> (ทดลองใบเสร็จ) — รหัสผ่าน <code>demo</code></p>
+          <div class="admin-toolbar admin-toolbar--agents">
+            <h1 class="admin-page-title">จัดการบัญชีนายหน้า</h1>
+            <div class="admin-toolbar__row">
+              <div class="admin-filter-bar admin-filter-bar--inline" role="search" aria-label="ตัวกรองนายหน้า">
+                <div class="form-field">
+                  <label for="agentSearchCode">รหัสนายหน้า</label>
+                  <input id="agentSearchCode" type="text" placeholder="เช่น Ag4-301" autocomplete="off">
+                </div>
+                <div class="form-field">
+                  <label for="agentSearchName">ชื่อ</label>
+                  <input id="agentSearchName" type="text" placeholder="ชื่อ-นามสกุล" autocomplete="off">
+                </div>
+                <div class="form-field">
+                  <label for="agentStatusFilter">สถานะ</label>
+                  <select id="agentStatusFilter">
+                    <option value="">ทั้งหมด</option>
+                    <option value="active">ใช้งาน</option>
+                    <option value="inactive">ระงับ</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="agentRoleFilter">บทบาท</label>
+                  <select id="agentRoleFilter">
+                    <option value="">ทั้งหมด</option>
+                    <option value="leader">หัวทีม</option>
+                    <option value="member">ลูกทีม</option>
+                  </select>
+                </div>
+                <button type="button" class="btn-secondary btn-sm" id="btnClearAgentFilters">ล้างตัวกรอง</button>
+              </div>
+              <div class="admin-toolbar-actions">
+                <div class="agents-viewToggle" role="tablist" aria-label="มุมมองรายการนายหน้า">
+                  <button type="button" class="agents-viewToggle__btn is-active" role="tab" aria-selected="true" data-agents-view="team">
+                    <i data-lucide="layout-grid"></i> มุมมองทีม
+                  </button>
+                  <button type="button" class="agents-viewToggle__btn" role="tab" aria-selected="false" data-agents-view="table">
+                    <i data-lucide="table"></i> ตารางทั้งหมด
+                  </button>
+                </div>
+                <a class="btn-primary" id="btnAddAgent" href="agent-new"><i data-lucide="user-plus" style="width:16px;height:16px"></i> เพิ่มนายหน้า</a>
+              </div>
             </div>
-            <button type="button" class="btn-primary" id="btnAddAgent"><i data-lucide="user-plus" style="width:16px;height:16px"></i> เพิ่มนายหน้า</button>
           </div>
+
+          <div id="agentsTeamView">
+            <div class="agents-team-grid" id="agentsTeamGrid" aria-live="polite"></div>
+            <div id="agentsTeamPagination"></div>
+          </div>
+
+          <div id="agentsTableView" hidden>
           <div class="data-table-wrap">
             <table class="data-table data-table--agents">
-              <thead><tr><th>รหัส</th><th>ชื่อ</th><th>ทีม</th><th>โทรศัพท์</th><th>วงเงินคงเหลือ</th><th>วงเงินสูงสุด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+              <thead><tr>
+                <th class="col-code">รหัส</th>
+                <th class="col-name">ชื่อ</th>
+                <th class="col-team">ทีม</th>
+                <th class="col-phone">โทรศัพท์</th>
+                <th class="col-balance">วงเงินคงเหลือ</th>
+                <th class="col-credit">วงเงินสูงสุด</th>
+                <th class="col-status">สถานะ</th>
+                <th class="col-actions">จัดการ</th>
+              </tr></thead>
               <tbody id="agentsTableBody"></tbody>
             </table>
           </div>
           <div id="agentsPagination"></div>
+          </div>
 
           <div class="admin-section">
             <h2 class="admin-section-title">ประวัติปรับวงเงินล่าสุด</h2>
@@ -147,8 +199,8 @@
     </div>
   </div>
   <script src="../js/admin-sidebar-nav-template.js?v=20260816k"></script>
-  <script src="../js/load-admin.js?v=20260819m"></script>
-  <script src="../js/admin-app.js?v=20260819m"></script>
-  <script src="../js/pages/admin-agents.js?v=20260820g"></script>
+  <script src="../js/load-admin.js?v=20260820n"></script>
+  <script src="../js/admin-app.js?v=20260820r"></script>
+  <script src="../js/pages/admin-agents.js?v=20260820p"></script>
 </body>
 </html>
