@@ -264,70 +264,106 @@ App.MockAPI = {
     }
   },
 
+  _defaultWht50Numbering() {
+    return {
+      mode: 'auto',
+      format: 'ym-seq',
+      prefix: '',
+      nextSeq: 1,
+      pad: 4,
+      bookMode: 'year',
+      bookNo: '',
+      manualBookNo: String(new Date().getFullYear() + 543),
+      manualDocNo: '0001',
+      manualAutoBump: true
+    };
+  },
+
+  _normalizeWht50Numbering(raw = {}) {
+    const base = this._defaultWht50Numbering();
+    const mode = raw.mode === 'manual' ? 'manual' : 'auto';
+    const format = ['ym-seq', 'prefix-seq', 'seq'].includes(raw.format) ? raw.format : 'ym-seq';
+    const pad = Math.min(8, Math.max(1, Number(raw.pad) || 4));
+    const nextSeq = Math.max(1, Number(raw.nextSeq) || 1);
+    return {
+      mode,
+      format,
+      prefix: String(raw.prefix || '').trim(),
+      nextSeq,
+      pad,
+      bookMode: raw.bookMode === 'fixed' ? 'fixed' : 'year',
+      bookNo: String(raw.bookNo || '').trim(),
+      manualBookNo: String(raw.manualBookNo || base.manualBookNo).trim(),
+      manualDocNo: String(raw.manualDocNo || base.manualDocNo).trim(),
+      manualAutoBump: raw.manualAutoBump !== false
+    };
+  },
+
+  _defaultWht50Settings() {
+    const company = App.Config?.COMPANY || {};
+    return {
+      payer: {
+        name: company.name || '',
+        address: company.address || '',
+        taxId: company.taxId || ''
+      },
+      signatureUrlData: null,
+      stampUrlData: null,
+      numbering: this._defaultWht50Numbering()
+    };
+  },
+
   _hydrateWht50Settings() {
     if (this._wht50SettingsHydrated) return;
     this._wht50SettingsHydrated = true;
     try {
-      const company = App.Config?.COMPANY || {};
+      const defaults = this._defaultWht50Settings();
       const raw = localStorage.getItem(App.Config.WHT50_SETTINGS_KEY);
       if (!raw) {
-        App.MockData.wht50Settings = {
-          payer: {
-            name: company.name || '',
-            address: company.address || '',
-            taxId: company.taxId || ''
-          },
-          signatureUrlData: null,
-          stampUrlData: null
-        };
+        App.MockData.wht50Settings = defaults;
         return;
       }
       const parsed = JSON.parse(raw);
       const payer = parsed?.payer || {};
       App.MockData.wht50Settings = {
         payer: {
-          name: payer.name ?? (company.name || ''),
-          address: payer.address ?? (company.address || ''),
-          taxId: payer.taxId ?? (company.taxId || '')
+          name: payer.name ?? defaults.payer.name,
+          address: payer.address ?? defaults.payer.address,
+          taxId: payer.taxId ?? defaults.payer.taxId
         },
         signatureUrlData: parsed?.signatureUrlData || null,
-        stampUrlData: parsed?.stampUrlData || null
+        stampUrlData: parsed?.stampUrlData || null,
+        numbering: this._normalizeWht50Numbering(parsed?.numbering || {})
       };
     } catch (e) {
       console.warn('hydrateWht50Settings failed', e);
-      const company = App.Config?.COMPANY || {};
-      App.MockData.wht50Settings = {
-        payer: {
-          name: company.name || '',
-          address: company.address || '',
-          taxId: company.taxId || ''
-        },
-        signatureUrlData: null,
-        stampUrlData: null
-      };
+      App.MockData.wht50Settings = this._defaultWht50Settings();
     }
   },
 
   async getWht50Settings() {
     await this._delay();
     this._hydrateWht50Settings();
-    return JSON.parse(JSON.stringify(App.MockData.wht50Settings || {}));
+    return JSON.parse(JSON.stringify(App.MockData.wht50Settings || this._defaultWht50Settings()));
   },
 
   async updateWht50Settings(payload = {}) {
     await this._delay();
     this._hydrateWht50Settings();
 
-    const company = App.Config?.COMPANY || {};
+    const defaults = this._defaultWht50Settings();
     const payer = payload.payer || {};
     const next = {
       payer: {
-        name: payer.name ?? company.name ?? '',
-        address: payer.address ?? company.address ?? '',
-        taxId: payer.taxId ?? company.taxId ?? ''
+        name: payer.name ?? defaults.payer.name,
+        address: payer.address ?? defaults.payer.address,
+        taxId: payer.taxId ?? defaults.payer.taxId
       },
       signatureUrlData: payload.signatureUrlData || null,
-      stampUrlData: payload.stampUrlData || null
+      stampUrlData: payload.stampUrlData || null,
+      numbering: this._normalizeWht50Numbering(
+        payload.numbering || App.MockData.wht50Settings?.numbering || {}
+      )
     };
 
     App.MockData.wht50Settings = next;
@@ -352,8 +388,19 @@ App.MockAPI = {
       this._persistWht50Documents();
     }
 
-    this._logAudit?.('wht50_settings', 'ตั้งค่า 50 ทวิ', `applyToUnprinted=${applyToUnprinted}`);
+    this._logAudit?.('wht50_settings', 'ตั้งค่า 50 ทวิ', `applyToUnprinted=${applyToUnprinted}; mode=${next.numbering.mode}`);
     return JSON.parse(JSON.stringify(next));
+  },
+
+  _persistWht50Settings() {
+    try {
+      localStorage.setItem(
+        App.Config.WHT50_SETTINGS_KEY,
+        JSON.stringify(App.MockData.wht50Settings || this._defaultWht50Settings())
+      );
+    } catch (e) {
+      console.warn('persistWht50Settings failed', e);
+    }
   },
 
   _persistWht50Documents() {
@@ -365,13 +412,67 @@ App.MockAPI = {
     }
   },
 
-  _nextWht50DocNo() {
+  _bumpTrailingNumber(value) {
+    const raw = String(value || '');
+    const match = raw.match(/^(.*?)(\d+)(\D*)$/);
+    if (!match) return raw;
+    const [, head, digits, tail] = match;
+    const next = String(Number(digits) + 1).padStart(digits.length, '0');
+    return `${head}${next}${tail}`;
+  },
+
+  _allocateWht50Numbers() {
+    this._hydrateWht50Settings();
     this._hydrateWht50Documents();
-    const list = App.MockData.wht50Documents || [];
+    const settings = App.MockData.wht50Settings || this._defaultWht50Settings();
+    const numbering = this._normalizeWht50Numbering(settings.numbering || {});
     const now = new Date();
-    const ym = `${now.getFullYear() + 543}${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const seq = list.filter((d) => String(d.docNo || '').startsWith(ym)).length + 1;
-    return `${ym}-${String(seq).padStart(4, '0')}`;
+    const beYear = String(now.getFullYear() + 543);
+    const ym = `${beYear}${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    let bookNo = beYear;
+    let docNo = '';
+    let seqNo = '';
+
+    if (numbering.mode === 'manual') {
+      bookNo = numbering.manualBookNo || beYear;
+      docNo = numbering.manualDocNo || '0001';
+      seqNo = String(docNo).replace(/\D/g, '') || docNo;
+      if (numbering.manualAutoBump) {
+        numbering.manualDocNo = this._bumpTrailingNumber(docNo);
+      }
+    } else {
+      const pad = numbering.pad;
+      let seq = Number(numbering.nextSeq) || 1;
+      // Keep sequence unique for ym-seq within the same month prefix.
+      if (numbering.format === 'ym-seq') {
+        const used = (App.MockData.wht50Documents || [])
+          .map((d) => String(d.docNo || ''))
+          .filter((no) => no.startsWith(`${ym}-`))
+          .map((no) => Number(String(no.split('-').pop()).replace(/\D/g, '')) || 0);
+        const maxUsed = used.length ? Math.max(...used) : 0;
+        if (seq <= maxUsed) seq = maxUsed + 1;
+      }
+      const padded = String(seq).padStart(pad, '0');
+      if (numbering.format === 'prefix-seq') docNo = `${numbering.prefix}${padded}`;
+      else if (numbering.format === 'seq') docNo = padded;
+      else docNo = `${ym}-${padded}`;
+      seqNo = String(seq);
+      numbering.nextSeq = seq + 1;
+      bookNo = numbering.bookMode === 'fixed'
+        ? (numbering.bookNo || beYear)
+        : beYear;
+    }
+
+    settings.numbering = numbering;
+    App.MockData.wht50Settings = settings;
+    this._persistWht50Settings();
+
+    return { bookNo, docNo, seqNo };
+  },
+
+  _nextWht50DocNo() {
+    return this._allocateWht50Numbers().docNo;
   },
 
   _mapPolicyToProductKey(policy) {
@@ -487,11 +588,12 @@ App.MockAPI = {
     this._hydrateWht50Settings();
     const whtSettings = App.MockData.wht50Settings || {};
     const payerSettings = whtSettings.payer || {};
+    const numbers = this._allocateWht50Numbers();
     const doc = {
       id: `WHT50-${Date.now()}`,
-      docNo: this._nextWht50DocNo(),
-      bookNo: String(new Date().getFullYear() + 543),
-      seqNo: String((App.MockData.wht50Documents.length % 99) + 1),
+      docNo: numbers.docNo,
+      bookNo: numbers.bookNo,
+      seqNo: numbers.seqNo,
       commissionId: commission.id,
       policyNo: policy?.id || commission.policyNo,
       agentId: agent.id,
@@ -1800,7 +1902,7 @@ App.MockAPI = {
     return { ...req };
   },
 
-  async getAllCommissions({ period, status, agentId } = {}) {
+  async getAllCommissions({ period, periodType = 'month', status, agentId } = {}) {
     await this._delay();
     let list = [];
     Object.keys(App.MockData.commissions).forEach((aid) => {
@@ -1815,7 +1917,14 @@ App.MockAPI = {
       });
     });
     if (agentId) list = list.filter((c) => c.agentId === agentId);
-    if (period) list = list.filter((c) => c.period === period);
+    if (period) {
+      list = list.filter((c) => {
+        const earnedAt = c.earnedAt || `${c.period || ''}-01`;
+        if (periodType === 'day') return earnedAt === period;
+        if (periodType === 'year') return String(earnedAt).startsWith(`${period}-`) || String(c.period || '').startsWith(`${period}-`);
+        return c.period === period || String(earnedAt).startsWith(`${period}-`);
+      });
+    }
     const immediate = !!App.Config?.COMMISSION_PAY_THROUGH_WALLET;
     if (status && !immediate) list = list.filter((c) => c.status === status);
 
@@ -1838,7 +1947,7 @@ App.MockAPI = {
       };
     });
 
-    return list.sort((a, b) => (b.period || '').localeCompare(a.period || ''));
+    return list.sort((a, b) => String(b.earnedAt || b.period || '').localeCompare(String(a.earnedAt || a.period || '')));
   },
 
   async updateCommissionStatus(commissionId, status) {

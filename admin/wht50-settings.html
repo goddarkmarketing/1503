@@ -16,9 +16,9 @@
   </script>
   <title>ตั้งค่า 50 ทวิ — Admin</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css?v=20260821g">
+  <link rel="stylesheet" href="../css/admin.css?v=20260821ab">
   <link rel="stylesheet" href="../css/portal.css">
-  <link rel="stylesheet" href="../css/wht50-print.css?v=20260821c">
+  <link rel="stylesheet" href="../css/wht50-print.css?v=20260821z">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
 <body data-portal="admin" data-base-path="../">
@@ -113,130 +113,235 @@
         <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name">Admin</span></div>
       </header>
       <main class="main-content">
-        <div class="content-card">
-          <div class="admin-toolbar">
+        <div class="content-card content-card--wht50-settings">
+          <div class="admin-toolbar wht50-settings__toolbar">
             <div>
               <h1 class="admin-page-title">ตั้งค่า 50 ทวิ</h1>
-              <p class="admin-hint">กำหนดลายเซ็นและรายละเอียดผู้จ่ายเงิน สำหรับเอกสารที่ระบบออกอัตโนมัติ</p>
+              <p class="admin-hint">ค่าเริ่มต้นสำหรับเอกสารที่ระบบออกอัตโนมัติเมื่อเคลียร์ค่าคอม</p>
             </div>
-            <a href="commission" class="btn-secondary btn-sm"><i data-lucide="coins"></i> ไปหน้าค่าคอมมิชชัน</a>
+            <div class="wht50-settings__toolbarActions">
+              <a href="wht50" class="btn-secondary btn-sm"><i data-lucide="folder-open"></i> สรุปยอด 50 ทวิ</a>
+              <a href="commission" class="btn-secondary btn-sm"><i data-lucide="coins"></i> ค่าคอมมิชชัน</a>
+            </div>
           </div>
 
           <div class="wht50-settings">
             <form id="wht50SettingsForm" class="wht50-settings__form agent-form" novalidate>
-              <p class="agent-form__intro">
-                ค่าที่บันทึกจะใช้เป็นค่าเริ่มต้นตอนระบบ <strong>ออกหนังสือ 50 ทวิ อัตโนมัติ</strong>
-                และสามารถอัปเดตเอกสารที่ยังไม่พิมพ์ได้ทันทีจากตัวเลือกด้านล่าง
-              </p>
+              <div class="wht50-settings__tabs" role="tablist" aria-label="หมวดตั้งค่า 50 ทวิ">
+                <button type="button" class="wht50-settings__tab is-active" role="tab" id="tabBtnPayer" aria-selected="true" aria-controls="sectionPayer" data-wht50-tab="payer">
+                  <span class="wht50-settings__tabIcon"><i data-lucide="building-2"></i></span>
+                  <span class="wht50-settings__tabText">ผู้จ่ายเงิน</span>
+                </button>
+                <button type="button" class="wht50-settings__tab" role="tab" id="tabBtnAssets" aria-selected="false" aria-controls="sectionAssets" data-wht50-tab="assets" tabindex="-1">
+                  <span class="wht50-settings__tabIcon"><i data-lucide="pen-line"></i></span>
+                  <span class="wht50-settings__tabText">ลายเซ็น / ตรา</span>
+                </button>
+                <button type="button" class="wht50-settings__tab" role="tab" id="tabBtnNumbering" aria-selected="false" aria-controls="sectionNumbering" data-wht50-tab="numbering" tabindex="-1">
+                  <span class="wht50-settings__tabIcon"><i data-lucide="hash"></i></span>
+                  <span class="wht50-settings__tabText">เลขที่เอกสาร</span>
+                </button>
+                <button type="button" class="wht50-settings__tab" role="tab" id="tabBtnApply" aria-selected="false" aria-controls="sectionApply" data-wht50-tab="apply" tabindex="-1">
+                  <span class="wht50-settings__tabIcon"><i data-lucide="check-circle"></i></span>
+                  <span class="wht50-settings__tabText">นำไปใช้</span>
+                </button>
+              </div>
 
-              <section class="agent-form__section">
+              <div class="wht50-settings__panels">
+              <section class="agent-form__section wht50-settings__section is-active" id="sectionPayer" role="tabpanel" aria-labelledby="tabBtnPayer" data-wht50-panel="payer">
                 <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">
-                    <i data-lucide="pen-line" class="wht50-settings__titleIcon"></i>
-                    ลายเซ็นผู้จ่ายเงิน
-                  </h3>
-                  <span class="agent-form__sectionBadge" id="signatureStatusBadge">ค่าเริ่มต้น</span>
+                  <h3 class="agent-form__sectionTitle">รายละเอียดผู้จ่ายเงิน</h3>
                 </div>
-                <p class="agent-form__sectionHint">อัปโหลดลายเซ็นเพื่อแสดงตรงช่องผู้จ่ายเงินบนแบบฟอร์ม 50 ทวิ · ใช้ทั้งกรณีออกชื่อบุคคลและบริษัท</p>
+                <p class="agent-form__sectionHint">พิมพ์ในส่วนผู้มีหน้าที่หักภาษี ณ ที่จ่าย</p>
 
-                <div class="wht50-settings__signRow">
-                  <label class="wht50-settings__dropzone" for="payerSignatureFile">
-                    <input id="payerSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-                    <input type="hidden" id="payerSignatureUrlData" name="signatureUrlData">
-                    <span class="wht50-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
-                    <span class="wht50-settings__dropzoneTitle">อัปโหลดไฟล์ลายเซ็น</span>
-                    <span class="wht50-settings__dropzoneMeta">PNG / JPG / WebP · สูงสุด 2MB</span>
-                    <span class="wht50-settings__dropzoneBtn">เลือกไฟล์</span>
-                  </label>
-
-                  <div class="wht50-settings__signPreviewCard">
-                    <div class="wht50-settings__signPreviewHead">
-                      <span>ตัวอย่างลายเซ็น</span>
-                      <button type="button" class="btn-secondary btn-sm" id="btnClearSignature">ล้าง</button>
-                    </div>
-                    <div class="wht50-settings__signaturePreview">
-                      <img id="payerSignaturePreview" alt="ตัวอย่างลายเซ็น">
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="agent-form__section" id="stampSection">
-                <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">
-                    <i data-lucide="stamp" class="wht50-settings__titleIcon"></i>
-                    ตราประทับนิติบุคคล
-                  </h3>
-                  <span class="agent-form__sectionBadge agent-form__sectionBadge--muted" id="stampStatusBadge">ค่าเริ่มต้น</span>
-                </div>
-                <p class="agent-form__sectionHint">ใช้เมื่อชื่อผู้จ่ายเงินเป็นบริษัท / ห้าง / นิติบุคคล — มีตราเริ่มต้นของกล้าดีโบรกเกอร์ และอัปโหลดแทนได้</p>
-
-                <div class="wht50-settings__signRow">
-                  <label class="wht50-settings__dropzone" for="payerStampFile">
-                    <input id="payerStampFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-                    <input type="hidden" id="payerStampUrlData" name="stampUrlData">
-                    <span class="wht50-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
-                    <span class="wht50-settings__dropzoneTitle">อัปโหลดรูปตราประทับ</span>
-                    <span class="wht50-settings__dropzoneMeta">PNG พื้นโปร่งใสแนะนำ · JPG / WebP · สูงสุด 2MB</span>
-                    <span class="wht50-settings__dropzoneBtn">เลือกไฟล์</span>
-                  </label>
-
-                  <div class="wht50-settings__signPreviewCard">
-                    <div class="wht50-settings__signPreviewHead">
-                      <span>ตัวอย่างตราประทับ</span>
-                      <button type="button" class="btn-secondary btn-sm" id="btnClearStamp">ล้าง</button>
-                    </div>
-                    <div class="wht50-settings__signaturePreview wht50-settings__signaturePreview--stamp">
-                      <img id="payerStampPreview" alt="ตัวอย่างตราประทับ" src="../assets/wht50/company-stamp.png?v=20260821b">
-                      <span class="wht50-settings__previewEmpty" id="payerStampEmpty" hidden>ยังไม่มีรูปตรา</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="agent-form__section">
-                <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">
-                    <i data-lucide="building-2" class="wht50-settings__titleIcon"></i>
-                    รายละเอียดผู้จ่ายเงิน
-                  </h3>
-                </div>
-                <p class="agent-form__sectionHint">ข้อมูลนี้จะถูกพิมพ์ในส่วนผู้มีหน้าที่หักภาษี ณ ที่จ่าย</p>
-
-                <div class="agent-form__grid">
+                <div class="agent-form__grid wht50-settings__payerGrid">
                   <div class="form-field full">
                     <label for="payerName">ชื่อผู้จ่ายเงิน <span class="form-req">*</span></label>
                     <input id="payerName" name="payerName" type="text" required placeholder="เช่น บริษัท กล้าดีโบรคเกอร์ จำกัด" autocomplete="organization">
-                    <span class="form-field__hint" id="payerTypeHint">ถ้าชื่อมีคำว่า บริษัท / จำกัด ระบบจะประทับตราด้วยลายเซ็น</span>
+                    <span class="form-field__hint" id="payerTypeHint">ถ้าชื่อมีคำว่า บริษัท / จำกัด ระบบจะใช้ลายเซ็น + ตราประทับ</span>
                   </div>
                   <div class="form-field full">
                     <label for="payerAddress">ที่อยู่ <span class="form-req">*</span></label>
-                    <textarea id="payerAddress" name="payerAddress" rows="3" required placeholder="ที่อยู่ตามทะเบียนภาษี"></textarea>
+                    <textarea id="payerAddress" name="payerAddress" rows="2" required placeholder="ที่อยู่ตามทะเบียนภาษี"></textarea>
                   </div>
-                  <div class="form-field full">
+                  <div class="form-field wht50-settings__taxField">
                     <label for="payerTaxId">เลขประจำตัวผู้เสียภาษี <span class="form-req">*</span></label>
                     <input id="payerTaxId" name="payerTaxId" type="text" required inputmode="numeric" maxlength="13" placeholder="ตัวเลข 13 หลัก" autocomplete="off">
-                    <span class="form-field__hint">กรอกเฉพาะตัวเลข 13 หลัก ไม่ต้องใส่ขีด</span>
+                    <span class="form-field__hint">กรอกตัวเลข 13 หลัก ไม่ต้องใส่ขีด</span>
                   </div>
                 </div>
               </section>
 
-              <section class="agent-form__section">
+              <section class="agent-form__section wht50-settings__section" id="sectionAssets" role="tabpanel" aria-labelledby="tabBtnAssets" data-wht50-panel="assets" hidden>
                 <div class="agent-form__sectionHead">
-                  <h3 class="agent-form__sectionTitle">
-                    <i data-lucide="refresh-cw" class="wht50-settings__titleIcon"></i>
-                    การนำไปใช้
-                  </h3>
+                  <h3 class="agent-form__sectionTitle">ลายเซ็นและตราประทับ</h3>
                 </div>
+                <p class="agent-form__sectionHint">บุคคล = ลายเซ็นอย่างเดียว · บริษัท / นิติบุคคล = ลายเซ็น + ตรา · แนะนำไฟล์ PNG พื้นโปร่งใส</p>
+
+                <div class="wht50-settings__assetGrid">
+                  <article class="wht50-settings__assetCard">
+                    <header class="wht50-settings__assetHead">
+                      <div>
+                        <h4 class="wht50-settings__assetTitle"><i data-lucide="pen-line"></i> ลายเซ็นผู้จ่ายเงิน</h4>
+                        <p class="wht50-settings__assetHint">ใช้ทุกกรณี</p>
+                      </div>
+                      <span class="agent-form__sectionBadge" id="signatureStatusBadge">ค่าเริ่มต้น</span>
+                    </header>
+                    <div class="wht50-settings__signRow">
+                      <label class="wht50-settings__dropzone" for="payerSignatureFile">
+                        <input id="payerSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                        <input type="hidden" id="payerSignatureUrlData" name="signatureUrlData">
+                        <span class="wht50-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
+                        <span class="wht50-settings__dropzoneTitle">อัปโหลดลายเซ็น</span>
+                        <span class="wht50-settings__dropzoneMeta">PNG / JPG / WebP · สูงสุด 2MB</span>
+                        <span class="wht50-settings__dropzoneBtn">เลือกไฟล์</span>
+                      </label>
+                      <div class="wht50-settings__signPreviewCard">
+                        <div class="wht50-settings__signPreviewHead">
+                          <span>ตัวอย่าง</span>
+                          <button type="button" class="btn-secondary btn-sm" id="btnClearSignature">ล้าง</button>
+                        </div>
+                        <div class="wht50-settings__signaturePreview">
+                          <img id="payerSignaturePreview" alt="ตัวอย่างลายเซ็น">
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="wht50-settings__assetCard" id="stampSection">
+                    <header class="wht50-settings__assetHead">
+                      <div>
+                        <h4 class="wht50-settings__assetTitle"><i data-lucide="stamp"></i> ตราประทับนิติบุคคล</h4>
+                        <p class="wht50-settings__assetHint">ใช้เมื่อออกชื่อบริษัท</p>
+                      </div>
+                      <span class="agent-form__sectionBadge agent-form__sectionBadge--muted" id="stampStatusBadge">ค่าเริ่มต้น</span>
+                    </header>
+                    <div class="wht50-settings__signRow">
+                      <label class="wht50-settings__dropzone" for="payerStampFile">
+                        <input id="payerStampFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                        <input type="hidden" id="payerStampUrlData" name="stampUrlData">
+                        <span class="wht50-settings__dropzoneIcon"><i data-lucide="upload-cloud"></i></span>
+                        <span class="wht50-settings__dropzoneTitle">อัปโหลดตราประทับ</span>
+                        <span class="wht50-settings__dropzoneMeta">PNG พื้นโปร่งใสแนะนำ · สูงสุด 2MB</span>
+                        <span class="wht50-settings__dropzoneBtn">เลือกไฟล์</span>
+                      </label>
+                      <div class="wht50-settings__signPreviewCard">
+                        <div class="wht50-settings__signPreviewHead">
+                          <span>ตัวอย่าง</span>
+                          <button type="button" class="btn-secondary btn-sm" id="btnClearStamp">ล้าง</button>
+                        </div>
+                        <div class="wht50-settings__signaturePreview wht50-settings__signaturePreview--stamp">
+                          <img id="payerStampPreview" alt="ตัวอย่างตราประทับ" src="../assets/wht50/company-stamp.png?v=20260821b">
+                          <span class="wht50-settings__previewEmpty" id="payerStampEmpty" hidden>ยังไม่มีรูปตรา</span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="agent-form__section wht50-settings__section" id="sectionNumbering" role="tabpanel" aria-labelledby="tabBtnNumbering" data-wht50-panel="numbering" hidden>
+                <div class="agent-form__sectionHead">
+                  <h3 class="agent-form__sectionTitle">เล่มที่ / เลขที่เอกสาร</h3>
+                </div>
+                <p class="agent-form__sectionHint">ใช้เมื่อระบบออกหนังสือ 50 ทวิอัตโนมัติ</p>
+
+                <div class="wht50-settings__modeRow" role="radiogroup" aria-label="โหมดเลขที่">
+                  <label class="wht50-settings__option wht50-settings__option--radio" for="numberModeAuto">
+                    <input id="numberModeAuto" name="numberMode" type="radio" value="auto" checked>
+                    <span class="wht50-settings__optionBody">
+                      <span class="wht50-settings__optionTitle">รันอัตโนมัติ</span>
+                      <span class="wht50-settings__optionDesc">ระบบออกเลขลำดับถัดไปให้ทุกครั้ง</span>
+                    </span>
+                  </label>
+                  <label class="wht50-settings__option wht50-settings__option--radio" for="numberModeManual">
+                    <input id="numberModeManual" name="numberMode" type="radio" value="manual">
+                    <span class="wht50-settings__optionBody">
+                      <span class="wht50-settings__optionTitle">กำหนดเอง</span>
+                      <span class="wht50-settings__optionDesc">กรอกเล่มที่และเลขที่เอกสารถัดไปเอง</span>
+                    </span>
+                  </label>
+                </div>
+
+                <div class="wht50-settings__numberPanel" id="numberPanelAuto" data-number-panel="auto">
+                  <div class="agent-form__grid wht50-settings__numberGrid">
+                    <div class="form-field">
+                      <label for="autoFormat">รูปแบบเลขที่</label>
+                      <select id="autoFormat" name="autoFormat">
+                        <option value="ym-seq">ปีเดือน-ลำดับ (เช่น 256908-0001)</option>
+                        <option value="prefix-seq">คำนำหน้า + ลำดับ</option>
+                        <option value="seq">ลำดับอย่างเดียว</option>
+                      </select>
+                    </div>
+                    <div class="form-field" id="autoPrefixField">
+                      <label for="autoPrefix">คำนำหน้า</label>
+                      <input id="autoPrefix" name="autoPrefix" type="text" placeholder="เช่น WHT-" maxlength="20" autocomplete="off">
+                    </div>
+                    <div class="form-field">
+                      <label for="autoNextSeq">เลขลำดับถัดไป</label>
+                      <input id="autoNextSeq" name="autoNextSeq" type="number" min="1" step="1" inputmode="numeric" placeholder="1">
+                    </div>
+                    <div class="form-field">
+                      <label for="autoPad">จำนวนหลัก</label>
+                      <input id="autoPad" name="autoPad" type="number" min="1" max="8" step="1" value="4" inputmode="numeric">
+                    </div>
+                    <div class="form-field">
+                      <label for="autoBookMode">เล่มที่</label>
+                      <select id="autoBookMode" name="autoBookMode">
+                        <option value="year">ปี พ.ศ. อัตโนมัติ</option>
+                        <option value="fixed">กำหนดเอง</option>
+                      </select>
+                    </div>
+                    <div class="form-field" id="autoBookNoField" hidden>
+                      <label for="autoBookNo">เล่มที่ (กำหนดเอง)</label>
+                      <input id="autoBookNo" name="autoBookNo" type="text" placeholder="เช่น 2569" maxlength="20" autocomplete="off">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="wht50-settings__numberPanel" id="numberPanelManual" data-number-panel="manual" hidden>
+                  <div class="agent-form__grid wht50-settings__numberGrid">
+                    <div class="form-field">
+                      <label for="manualBookNo">เล่มที่ถัดไป</label>
+                      <input id="manualBookNo" name="manualBookNo" type="text" placeholder="เช่น 2569" maxlength="20" autocomplete="off">
+                    </div>
+                    <div class="form-field">
+                      <label for="manualDocNo">เลขที่ถัดไป</label>
+                      <input id="manualDocNo" name="manualDocNo" type="text" placeholder="เช่น 0001" maxlength="40" autocomplete="off">
+                    </div>
+                  </div>
+                  <label class="wht50-settings__option" for="manualAutoBump">
+                    <input id="manualAutoBump" name="manualAutoBump" type="checkbox" checked>
+                    <span class="wht50-settings__optionBody">
+                      <span class="wht50-settings__optionTitle">บวกเลขที่อัตโนมัติหลังออกเอกสาร</span>
+                      <span class="wht50-settings__optionDesc">ถ้าเลขที่ลงท้ายด้วยตัวเลข ระบบจะบวก 1 ให้ค่าถัดไป</span>
+                    </span>
+                  </label>
+                </div>
+
+                <div class="wht50-settings__numberPreview" id="numberPreviewHint">
+                  <span class="wht50-settings__numberPreviewLabel">เอกสารถัดไป</span>
+                  <div class="wht50-settings__numberPreviewValues">
+                    <span>เล่มที่ <strong id="previewBookNo">—</strong></span>
+                    <span>เลขที่ <strong id="previewDocNo">—</strong></span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="agent-form__section wht50-settings__section wht50-settings__section--apply" id="sectionApply" role="tabpanel" aria-labelledby="tabBtnApply" data-wht50-panel="apply" hidden>
+                <div class="agent-form__sectionHead">
+                  <h3 class="agent-form__sectionTitle">บันทึกและนำไปใช้</h3>
+                </div>
+                <p class="agent-form__sectionHint">เลือกว่าจะอัปเดตเอกสารค้างในระบบด้วยค่าล่าสุดหรือไม่ แล้วกดบันทึกด้านล่าง</p>
 
                 <label class="wht50-settings__option" for="applyToUnprinted">
                   <input id="applyToUnprinted" name="applyToUnprinted" type="checkbox" checked>
                   <span class="wht50-settings__optionBody">
-                    <span class="wht50-settings__optionTitle">อัปเดตเอกสาร 50 ทวิที่ยังไม่พิมพ์</span>
-                    <span class="wht50-settings__optionDesc">ใช้ค่าล่าสุดนี้กับเอกสารที่ยังไม่เคยพิมพ์ทั้งหมด · เอกสารที่พิมพ์แล้วจะไม่ถูกเปลี่ยน</span>
+                    <span class="wht50-settings__optionTitle">อัปเดตเอกสารที่ยังไม่พิมพ์ด้วยค่าผู้จ่ายเงินล่าสุด</span>
+                    <span class="wht50-settings__optionDesc">ไม่เปลี่ยนเลขที่เดิม · เอกสารที่พิมพ์แล้วจะไม่ถูกแก้</span>
                   </span>
                 </label>
               </section>
+              </div>
 
               <div class="wht50-settings__actions">
                 <button type="button" class="btn-secondary" id="btnWht50Reset">
@@ -253,21 +358,10 @@
               </div>
             </form>
 
-            <aside class="wht50-settings__aside">
-              <div class="wht50-settings__asideCard">
-                <div class="wht50-settings__asideIcon"><i data-lucide="file-signature"></i></div>
-                <h3 class="wht50-settings__asideTitle">ใช้ตอนไหน?</h3>
-                <ul class="wht50-settings__asideList">
-                  <li>ออก 50 ทวิอัตโนมัติเมื่อเคลียร์ค่าคอม</li>
-                  <li>พิมพ์/ดูตัวอย่างจากหน้าค่าคอมมิชชัน</li>
-                  <li>คลังเอกสารของนายหน้า</li>
-                </ul>
-              </div>
-              <div class="wht50-settings__asideCard wht50-settings__asideCard--muted">
-                <h3 class="wht50-settings__asideTitle">คำแนะนำ</h3>
-                <p class="wht50-settings__asideText">ใช้ลายเซ็นและตราประทับพื้นโปร่งใส (PNG) จะคมชัดตอนพิมพ์</p>
-                <p class="wht50-settings__asideText">ออกชื่อบุคคล = ลายเซ็นอย่างเดียว · ออกชื่อบริษัท = ลายเซ็น + ตราประทับ</p>
-                <p class="wht50-settings__asideText">ติ๊ก “อัปเดตเอกสารที่ยังไม่พิมพ์” เฉพาะเมื่อต้องการให้เอกสารค้างในระบบใช้ค่าล่าสุดทันที</p>
+            <aside class="wht50-settings__aside" aria-label="คำแนะนำสั้นๆ">
+              <div class="wht50-settings__tip">
+                <i data-lucide="info"></i>
+                <p>ออกอัตโนมัติเมื่อเคลียร์ค่าคอม · พิมพ์จากหน้าค่าคอมมิชชันหรือสรุปยอด 50 ทวิ · ใช้ PNG พื้นโปร่งใสจะคมชัดตอนพิมพ์</p>
               </div>
             </aside>
           </div>
@@ -277,8 +371,8 @@
   </div>
 
   <script src="../js/admin-sidebar-nav-template.js?v=20260821e"></script>
-  <script src="../js/load-admin.js?v=20260821g"></script>
-  <script src="../js/admin-app.js?v=20260821g"></script>
-  <script src="../js/pages/admin-wht50-settings.js?v=20260821b"></script>
+  <script src="../js/load-admin.js?v=20260821y"></script>
+  <script src="../js/admin-app.js?v=20260821y"></script>
+  <script src="../js/pages/admin-wht50-settings.js?v=20260821y"></script>
 </body>
 </html>

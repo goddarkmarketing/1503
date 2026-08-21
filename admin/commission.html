@@ -16,9 +16,9 @@
   </script>
   <title>ค่าคอมมิชชัน — Admin</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/admin.css?v=20260821g">
+  <link rel="stylesheet" href="../css/admin.css?v=20260821ab">
   <link rel="stylesheet" href="../css/portal.css">
-  <link rel="stylesheet" href="../css/wht50-print.css?v=20260821c">
+  <link rel="stylesheet" href="../css/wht50-print.css?v=20260821z">
   <script src="../js/vendor/lucide.min.js"></script>
 </head>
 <body data-portal="admin" data-base-path="../">
@@ -113,41 +113,93 @@
         <div class="user-profile"><div class="user-avatar">AD</div><span class="user-name" data-shell="user-name">Admin</span></div>
       </header>
       <main class="main-content">
-        <div class="content-card">
+        <div class="content-card content-card--commission">
           <div class="admin-toolbar">
             <div>
               <h1 class="admin-page-title">ค่าคอมมิชชัน</h1>
-              <p class="admin-hint">จัดการค่าคอมมิชชันทั้งระบบ</p>
+              <p class="admin-hint">ดูและจัดการค่าคอมทั้งระบบ พร้อมกรองตามช่วงวันที่ และส่งออกไฟล์</p>
             </div>
-            <div class="admin-filter-bar">
-              <select id="commissionPeriod" class="admin-select"></select>
+            <div class="admin-toolbar-actions commission-toolbar-actions">
+              <button type="button" class="btn-secondary" id="btnCommissionExport">
+                <i data-lucide="file-spreadsheet"></i> ส่งออก Excel
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-filter-bar commission-filter-bar" id="commissionFilterBar">
+            <div class="form-field commission-filter-bar__date">
+              <label for="commissionDateFrom">จากวันที่</label>
+              <div class="commission-date">
+                <input id="commissionDateFrom" type="date" lang="th" class="commission-date__input" aria-label="จากวันที่">
+                <span class="commission-date__thai" id="commissionDateFromThai" aria-hidden="true">เลือกวัน</span>
+              </div>
+            </div>
+            <div class="form-field commission-filter-bar__date">
+              <label for="commissionDateTo">ถึงวันที่</label>
+              <div class="commission-date">
+                <input id="commissionDateTo" type="date" lang="th" class="commission-date__input" aria-label="ถึงวันที่">
+                <span class="commission-date__thai" id="commissionDateToThai" aria-hidden="true">เลือกวัน</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="commissionStatus">สถานะจ่าย</label>
               <select id="commissionStatus" class="admin-select">
                 <option value="">ทุกสถานะ</option>
                 <option value="paid">จ่ายแล้ว</option>
                 <option value="pending">ค้างจ่าย</option>
               </select>
+            </div>
+            <div class="form-field">
+              <label for="commissionWht50Status">50 ทวิ</label>
               <select id="commissionWht50Status" class="admin-select">
-                <option value="">50 ทวิ ทั้งหมด</option>
+                <option value="">ทั้งหมด</option>
                 <option value="unprinted">ยังไม่พิมพ์</option>
                 <option value="printed">พิมพ์แล้ว</option>
                 <option value="waiting">รอออก</option>
                 <option value="none">ไม่ต้องออก</option>
               </select>
             </div>
+            <div class="form-field form-field--search">
+              <label for="commissionSearch">ค้นหา</label>
+              <input type="search" id="commissionSearch" class="commission-filter-input" placeholder="นายหน้า / กรมธรรม์ / ทะเบียน">
+            </div>
+            <div class="form-field form-field--action">
+              <label aria-hidden="true">&nbsp;</label>
+              <button type="button" class="btn-primary" id="btnCommissionSearch"><i data-lucide="search"></i> ค้นหา</button>
+            </div>
+            <div class="form-field form-field--action">
+              <label aria-hidden="true">&nbsp;</label>
+              <button type="button" class="btn-secondary" id="btnCommissionClear">ล้างตัวกรอง</button>
+            </div>
           </div>
-          <div class="data-table-wrap">
-            <table class="data-table">
-              <thead><tr><th>นายหน้า</th><th>เลขกรมธรรม์</th><th>ประเภท</th><th>เบี้ย</th><th>ค่าคอม</th><th>สถานะ</th><th>50 ทวิ</th><th>จัดการ</th></tr></thead>
+
+          <div id="commissionTableView" class="data-table-wrap">
+            <table class="data-table data-table--vlines">
+              <thead>
+                <tr>
+                  <th>นายหน้า</th>
+                  <th>เลขกรมธรรม์</th>
+                  <th>ประเภท</th>
+                  <th class="col-center">วันที่</th>
+                  <th class="col-money">เบี้ย</th>
+                  <th class="col-money">ค่าคอม</th>
+                  <th>สถานะ</th>
+                  <th>50 ทวิ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
               <tbody id="adminCommissionBody"></tbody>
             </table>
           </div>
+
+          <div class="team-pagination" id="commissionPagination"></div>
         </div>
       </main>
     </div>
   </div>
-  <script src="../js/admin-sidebar-nav-template.js?v=20260816k"></script>
-  <script src="../js/load-admin.js?v=20260821g"></script>
-  <script src="../js/admin-app.js?v=20260821g"></script>
-  <script src="../js/pages/admin-commission.js?v=20260811d"></script>
+  <script src="../js/admin-sidebar-nav-template.js?v=20260821e"></script>
+  <script src="../js/load-admin.js?v=20260821s"></script>
+  <script src="../js/admin-app.js?v=20260821s"></script>
+  <script src="../js/pages/admin-commission.js?v=20260821v"></script>
 </body>
 </html>

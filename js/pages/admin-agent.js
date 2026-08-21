@@ -66,17 +66,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   root.innerHTML = `
     <div class="admin-toolbar agent-page__toolbar">
-      <div>
+      <div class="agent-page__toolbarHead">
         <a class="agent-page__back" href="agents"><i data-lucide="arrow-left"></i> กลับไปจัดการนายหน้า</a>
         <h1 class="admin-page-title">${escapeHtml(view === 'team' ? teamTitle : titles[view])} — ${escapeHtml(agent.name)}</h1>
         <p class="admin-hint">${escapeHtml(agent.code)} · ${agent.parentId ? 'ลูกทีม' : 'หัวทีม'} · ${agent.status === 'active' ? 'ใช้งาน' : 'ระงับ'}</p>
       </div>
+      <nav class="agent-page__tabs" aria-label="ส่วนตั้งค่านายหน้า">
+        <a class="agent-page__tab${view === 'team' ? ' is-active' : ''}" href="${pageHref(agent.id, 'team')}">${agent.parentId ? 'ตั้งค่าคอม' : 'ทีม/คอม'}</a>
+        <a class="agent-page__tab${view === 'perms' ? ' is-active' : ''}" href="${pageHref(agent.id, 'perms')}">สิทธิ์</a>
+        <a class="agent-page__tab${view === 'edit' ? ' is-active' : ''}" href="${pageHref(agent.id, 'edit')}">แก้ไข</a>
+      </nav>
     </div>
-    <nav class="agent-page__tabs" aria-label="ส่วนตั้งค่านายหน้า">
-      <a class="agent-page__tab${view === 'team' ? ' is-active' : ''}" href="${pageHref(agent.id, 'team')}">${agent.parentId ? 'ตั้งค่าคอม' : 'ทีม/คอม'}</a>
-      <a class="agent-page__tab${view === 'perms' ? ' is-active' : ''}" href="${pageHref(agent.id, 'perms')}">สิทธิ์</a>
-      <a class="agent-page__tab${view === 'edit' ? ' is-active' : ''}" href="${pageHref(agent.id, 'edit')}">แก้ไข</a>
-    </nav>
     <div class="agent-page__body" id="agentPageBody"></div>
   `;
 

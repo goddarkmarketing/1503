@@ -294,20 +294,32 @@
 
   function waitFrameReady(frame) {
     return new Promise((resolve, reject) => {
-      const done = () => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
         try {
-          if (!frame.contentDocument) throw new Error('ไม่สามารถอ่านเอกสารได้');
-          resolve(frame.contentDocument);
+          const doc = frame.contentDocument;
+          if (!doc) throw new Error('ไม่สามารถอ่านเอกสารได้');
+          // รอให้ body พร้อมก่อน fill
+          if (!doc.body) {
+            setTimeout(finish, 50);
+            return;
+          }
+          settled = true;
+          resolve(doc);
         } catch (err) {
+          settled = true;
           reject(err);
         }
       };
       if (frame.contentDocument?.readyState === 'complete') {
-        setTimeout(done, 60);
+        setTimeout(finish, 120);
         return;
       }
-      frame.addEventListener('load', () => setTimeout(done, 80), { once: true });
-      setTimeout(() => reject(new Error('โหลดแบบฟอร์มหมดเวลา')), 12000);
+      frame.addEventListener('load', () => setTimeout(finish, 150), { once: true });
+      setTimeout(() => {
+        if (!settled) reject(new Error('โหลดแบบฟอร์มหมดเวลา'));
+      }, 15000);
     });
   }
 
@@ -319,11 +331,95 @@
     }
   }
 
+  function waitImages(root) {
+    const imgs = [...(root?.querySelectorAll?.('img') || [])];
+    if (!imgs.length) return Promise.resolve();
+    return Promise.all(imgs.map((img) => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise((resolve) => {
+        const done = () => resolve();
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+        setTimeout(done, 4000);
+      });
+    }));
+  }
+
+  function waitStylesheets(root) {
+    const links = [...(root?.querySelectorAll?.('link[rel="stylesheet"]') || [])];
+    if (!links.length) return Promise.resolve();
+    return Promise.all(links.map((link) => {
+      if (link.sheet) return Promise.resolve();
+      return new Promise((resolve) => {
+        const done = () => resolve();
+        link.addEventListener('load', done, { once: true });
+        link.addEventListener('error', done, { once: true });
+        setTimeout(done, 3000);
+      });
+    }));
+  }
+
+  /**
+   * โคลนแบบฟอร์มเข้า parent document ที่พิกัด (0,0)
+   * — ห้ามวาง left ติดลบ (html2canvas จะตัดขอบซ้าย)
+   * — ห้ามจับจาก iframe โดยตรง (พิกัดคนละ window ทำให้เลื่อน)
+   */
   function cloneFormForExport(sourceDoc) {
     const source = sourceDoc.getElementById('documentBody') || sourceDoc.body;
     if (!source) throw new Error('ไม่พบเนื้อหาเอกสาร');
+
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm;background:#fff;z-index:-1;';
+    wrap.setAttribute('data-wht50-export', '1');
+    wrap.style.cssText = [
+      'position:fixed',
+      'left:0',
+      'top:0',
+      'width:210mm',
+      'height:297mm',
+      'margin:0',
+      'padding:0',
+      'background:#fff',
+      'z-index:2147483646',
+      'opacity:0.015',
+      'overflow:hidden',
+      'pointer-events:none',
+      'box-sizing:border-box'
+    ].join(';');
+
+    sourceDoc.querySelectorAll('style').forEach((node) => {
+      const style = document.createElement('style');
+      style.textContent = node.textContent || '';
+      wrap.appendChild(style);
+    });
+    sourceDoc.querySelectorAll('link[rel="stylesheet"]').forEach((node) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = node.href;
+      wrap.appendChild(link);
+    });
+
+    const force = document.createElement('style');
+    force.textContent = `
+      [data-wht50-export],
+      [data-wht50-export] * { box-sizing: border-box; }
+      [data-wht50-export] .a4-page,
+      [data-wht50-export] #documentBody {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        max-width: 210mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+      }
+      [data-wht50-export] .no-print { display: none !important; }
+    `;
+    wrap.appendChild(force);
+
     const clone = source.cloneNode(true);
     clone.querySelectorAll('img').forEach((img) => {
       const src = img.getAttribute('src');
@@ -338,6 +434,35 @@
     return wrap;
   }
 
+  async function saveCanvasAsA4Pdf(canvas, filename) {
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = await global.html2pdf()
+      .set({
+        margin: 0,
+        filename,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      })
+      .from(canvas)
+      .toPdf()
+      .get('pdf');
+
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    let w = pageW;
+    let h = (canvas.height * pageW) / canvas.width;
+    if (h > pageH) {
+      h = pageH;
+      w = (canvas.width * pageH) / canvas.height;
+    }
+
+    // ล้างหน้าที่ html2pdf แบ่งอัตโนมัติ แล้วใส่ภาพพอดี 1 หน้า A4
+    const pages = pdf.internal.getNumberOfPages();
+    for (let i = pages; i >= 1; i -= 1) pdf.deletePage(i);
+    pdf.addPage([pageW, pageH], 'portrait');
+    pdf.addImage(imgData, 'JPEG', (pageW - w) / 2, 0, w, h, undefined, 'FAST');
+    pdf.save(filename);
+  }
+
   async function downloadPdf(data, options = {}) {
     const payload = data || SAMPLE_FROM_PDF;
     const filename = String(options.filename || `50ทวิ-${payload.docNo || payload.id || 'document'}.pdf`)
@@ -345,26 +470,84 @@
 
     await ensureHtml2Pdf();
 
+    const prevScrollX = window.scrollX;
+    const prevScrollY = window.scrollY;
+    window.scrollTo(0, 0);
+
+    // โหลดฟอร์มใน iframe เพื่อให้ Tailwind สร้าง CSS ครบ แล้วค่อยโคลนมาจับภาพ
     const frame = document.createElement('iframe');
-    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none';
+    frame.setAttribute('title', 'wht50-pdf-export');
+    frame.style.cssText = [
+      'position:fixed',
+      'left:0',
+      'top:0',
+      'width:210mm',
+      'height:297mm',
+      'border:0',
+      'opacity:0',
+      'pointer-events:none',
+      'z-index:-1',
+      'background:#fff'
+    ].join(';');
     frame.src = sampleFormUrl({ embed: '1' });
     document.body.appendChild(frame);
 
     let host = null;
     try {
       const doc = await waitFrameReady(frame);
+      await waitStylesheets(doc);
+      // รอ Tailwind CDN สแกน DOM แล้ว inject utilities
+      await new Promise((r) => setTimeout(r, 400));
       fillForm(doc, payload);
-      await new Promise((r) => setTimeout(r, 450));
+      await waitImages(doc);
+      await new Promise((r) => setTimeout(r, 200));
+
       host = cloneFormForExport(doc);
-      const target = host.firstElementChild || host;
-      await global.html2pdf().set({
-        margin: [6, 6, 6, 6],
-        filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      }).from(target).save();
+      await waitStylesheets(host);
+      await waitImages(host);
+      if (document.fonts?.ready) {
+        try { await document.fonts.ready; } catch (_) { /* ignore */ }
+      }
+      await new Promise((r) => setTimeout(r, 200));
+
+      const target = host.querySelector('#documentBody') || host.querySelector('.a4-page');
+      if (!target) throw new Error('ไม่พบเนื้อหาเอกสารสำหรับสร้าง PDF');
+
+      // จับทั้ง host (มี <style>/Tailwind) — ถ้าจับแค่ #documentBody สไตล์พี่น้องจะหาย
+      const width = Math.ceil(host.getBoundingClientRect().width) || host.offsetWidth;
+      const height = Math.ceil(host.getBoundingClientRect().height) || host.offsetHeight;
+
+      const canvas = await global.html2pdf()
+        .set({
+          margin: 0,
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            scrollX: 0,
+            scrollY: 0,
+            x: 0,
+            y: 0,
+            width,
+            height,
+            windowWidth: width,
+            windowHeight: height,
+            // wrapper ใช้ opacity ต่ำเพื่อไม่ให้กระพริบบนจอ — ตอนจับภาพต้องทึบ
+            onclone: (clonedDoc) => {
+              const root = clonedDoc.querySelector('[data-wht50-export]');
+              if (root) {
+                root.style.opacity = '1';
+                root.style.zIndex = '1';
+              }
+            }
+          }
+        })
+        .from(host)
+        .toCanvas();
+
+      await saveCanvasAsA4Pdf(canvas, filename);
 
       if (options.markPrinted !== false && payload?.id && App.Wht50Service?.markPrinted) {
         App.Wht50Service.markPrinted(payload.id).catch(() => {});
@@ -373,6 +556,7 @@
     } finally {
       host?.remove();
       frame.remove();
+      window.scrollTo(prevScrollX, prevScrollY);
     }
   }
 
