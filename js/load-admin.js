@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
-  const cache = '20260821d';
+  const cache = '20260821g';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'vendor/lucide.min.js',
@@ -42,7 +42,8 @@
     'ui/role-guard.js',
     'ui/shell.js',
     'ui/table-ui.js',
-    'ui/admin-modal.js'
+    'ui/admin-modal.js',
+    'ui/themed-select.js'
   ].forEach((file) => {
     document.write(`<script src="${root}${file}?v=${cache}"><\/script>`);
   });

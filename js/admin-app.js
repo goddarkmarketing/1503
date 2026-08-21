@@ -42,7 +42,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   initAdminDashboard();
   initBackToTop();
   initDatePicker();
+  initThemedSelects();
 });
+
+function initThemedSelects() {
+  if (!window.App?.ThemedSelect) return;
+  App.ThemedSelect.enhance(document);
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!node || node.nodeType !== 1) return;
+        if (node.matches?.('select')) App.ThemedSelect.create(node);
+        else if (node.querySelectorAll) App.ThemedSelect.enhance(node);
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
 
 function initLucideIcons() {
   if (typeof lucide === 'undefined' || !lucide.createIcons) return;

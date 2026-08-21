@@ -134,6 +134,7 @@ class SearchableSelect {
       li.textContent = opt.textContent;
       li.dataset.value = opt.value;
       li.setAttribute('role', 'option');
+      if (opt.value === this.select.value) li.classList.add('is-selected');
       if (i === this.highlightIndex) li.classList.add('highlighted');
 
       li.addEventListener('mousedown', (e) => {

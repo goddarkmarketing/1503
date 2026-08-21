@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for agent pages — keep before app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-agent\.js.*$/, '');
-  const cache = '20260821c';
+  const cache = '20260821g';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'vendor/lucide.min.js',
@@ -38,7 +38,8 @@
     'core/agent-onboarding.js',
     'core/agent-portal-init.js',
     'ui/shell.js',
-    'ui/table-ui.js'
+    'ui/table-ui.js',
+    'ui/themed-select.js'
   ].forEach((file) => {
     document.write(`<script src="${root}${file}?v=${cache}"><\/script>`);
   });

@@ -782,6 +782,13 @@
 .search-select-item:hover,
 .search-select-item.highlighted {
   background: var(--accent-green-soft);
+  color: #047857;
+}
+
+.search-select-item.is-selected {
+  background: linear-gradient(135deg, rgba(42, 157, 110, 0.14), rgba(61, 184, 138, 0.22));
+  color: #047857;
+  font-weight: 700;
 }
 
 .search-select-item.empty {
