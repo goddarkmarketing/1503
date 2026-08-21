@@ -5,6 +5,9 @@ const AGENT_SIDEBAR_CACHE = '20260819f';
 document.addEventListener('DOMContentLoaded', async () => {
   const basePath = App.Paths.detectBasePath();
 
+  // Enhance selects before any await — avoids flash of native OS dropdowns
+  initThemedSelects();
+
   if (window.App?.AuthService?.isAuthenticated?.()) {
     try {
       await App.AuthService.refreshUser();
@@ -18,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSidebar();
   initNavDropdowns();
   initDevelopingInsurerLinks();
-  initThemedSelects();
+  if (window.App?.ThemedSelect) App.ThemedSelect.enhance(document);
   initBalanceRefresh();
   initChartTabs();
   initRevenueChart();
@@ -148,17 +151,8 @@ function initSidebar() {
 /* ── Nav Dropdowns ── */
 function initThemedSelects() {
   if (!window.App?.ThemedSelect) return;
-  App.ThemedSelect.enhance(document);
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (!node || node.nodeType !== 1) return;
-        if (node.matches?.('select')) App.ThemedSelect.create(node);
-        else if (node.querySelectorAll) App.ThemedSelect.enhance(node);
-      });
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
+  if (typeof App.ThemedSelect.boot === 'function') App.ThemedSelect.boot();
+  else App.ThemedSelect.enhance(document);
 }
 
 function initNavDropdowns() {

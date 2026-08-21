@@ -198,5 +198,34 @@
     nodes.forEach((select) => create(select));
   }
 
-  App.ThemedSelect = { enhance, create, closeAll };
+  let observerStarted = false;
+  function startObserver() {
+    if (observerStarted || !document.body) return;
+    observerStarted = true;
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (!node || node.nodeType !== 1) return;
+          if (node.matches?.('select')) create(node);
+          else if (node.querySelectorAll) enhance(node);
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function boot() {
+    if (!document.body) return;
+    enhance(document);
+    startObserver();
+  }
+
+  App.ThemedSelect = { enhance, create, closeAll, boot, startObserver };
+
+  // Boot as soon as DOM is ready — do not wait for portal async init
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
 })(window);

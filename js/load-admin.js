@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for admin pages — keep before admin-app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-admin\.js.*$/, '');
-  const cache = '20260821y';
+  const cache = '20260821ac';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'vendor/lucide.min.js',

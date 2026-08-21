@@ -4,6 +4,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const basePath = document.body.dataset.basePath || '../';
 
+  // Enhance selects before any await — avoids 1–2s flash of native OS dropdowns
+  initThemedSelects();
+
   try {
     if (window.App?.RoleGuard && !App.RoleGuard.enforce('admin', { basePath })) {
       return;
@@ -42,22 +45,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   initAdminDashboard();
   initBackToTop();
   initDatePicker();
-  initThemedSelects();
+  // Re-enhance in case page scripts added selects during async init
+  if (window.App?.ThemedSelect) App.ThemedSelect.enhance(document);
 });
 
 function initThemedSelects() {
   if (!window.App?.ThemedSelect) return;
-  App.ThemedSelect.enhance(document);
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (!node || node.nodeType !== 1) return;
-        if (node.matches?.('select')) App.ThemedSelect.create(node);
-        else if (node.querySelectorAll) App.ThemedSelect.enhance(node);
-      });
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
+  if (typeof App.ThemedSelect.boot === 'function') App.ThemedSelect.boot();
+  else App.ThemedSelect.enhance(document);
 }
 
 function initLucideIcons() {

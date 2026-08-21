@@ -2333,6 +2333,38 @@ body.modal-open {
   min-width: 200px;
 }
 
+/*
+ * Style native selects before ThemedSelect wraps them.
+ * Prevents OS-blue “unstyled” flash on first paint.
+ */
+.form-field > select:not(.kb-select__native):not(.search-select-native):not([multiple]),
+.admin-filter-bar select:not(.kb-select__native):not([multiple]),
+.admin-toolbar-filters select:not(.kb-select__native):not([multiple]),
+.finance-toolbar select:not(.kb-select__native):not([multiple]),
+.admin-toolbar select:not(.kb-select__native):not([multiple]) {
+  height: var(--admin-control-h, 40px);
+  min-height: var(--admin-control-h, 40px);
+  width: 100%;
+  min-width: 0;
+  padding: 0 36px 0 var(--admin-control-pad-x, 12px);
+  font-family: inherit;
+  font-size: var(--admin-control-font, 0.875rem);
+  font-weight: 500;
+  color: var(--text-dark);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--admin-control-radius, 10px);
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233db88a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  accent-color: var(--accent-green, #3db88a);
+  cursor: pointer;
+}
+
 /* Themed custom select (replaces native OS blue lists) */
 .kb-select {
   position: relative;
