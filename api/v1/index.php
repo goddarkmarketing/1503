@@ -373,6 +373,25 @@ try {
     }
   }
 
+  if ($method === 'GET' && $path === '/admin/motor-ws/status') {
+    Auth::requireAdmin($pdo);
+    Response::json(MotorWebService::statusReport());
+  }
+
+  if ($method === 'POST' && $path === '/admin/motor-ws/ping') {
+    Auth::requireAdmin($pdo);
+    try {
+      Response::json(MotorWebService::ping());
+    } catch (Throwable $e) {
+      Response::json([
+        'reachable' => false,
+        'status' => 0,
+        'body' => null,
+        'message' => $e->getMessage(),
+      ], 502);
+    }
+  }
+
   if (preg_match('#^/agents/([^/]+)$#', $path, $m)) {
     $agentId = urldecode($m[1]);
     if ($method === 'GET') {

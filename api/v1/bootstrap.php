@@ -32,6 +32,7 @@ require_once $apiRoot . '/lib/WithdrawRequests.php';
 require_once $apiRoot . '/lib/AgentRegistrationRequests.php';
 require_once $apiRoot . '/lib/PasswordReset.php';
 require_once $apiRoot . '/lib/AgentIdentity.php';
+require_once $apiRoot . '/lib/MotorWebService.php';
 
 function api_json_body(): array
 {
