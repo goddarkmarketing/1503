@@ -156,4 +156,35 @@ CREATE TABLE IF NOT EXISTS withdraw_requests (
   KEY idx_wd_req_status (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS policies (
+  id VARCHAR(36) NOT NULL,
+  agent_id VARCHAR(36) NOT NULL,
+  agent_code VARCHAR(32) NOT NULL,
+  insurer_code VARCHAR(32) NOT NULL,
+  insurer_name VARCHAR(120) NOT NULL,
+  product_id VARCHAR(64) NULL,
+  product_name VARCHAR(190) NULL,
+  type VARCHAR(32) NOT NULL,
+  type_label VARCHAR(64) NOT NULL,
+  plan_code VARCHAR(32) NULL,
+  status ENUM('active','pending','failed','cancelled') NOT NULL DEFAULT 'active',
+  premium_total DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  plate VARCHAR(64) NULL,
+  insured_name VARCHAR(190) NULL,
+  coverage_start DATE NULL,
+  coverage_end DATE NULL,
+  bki_policy_no VARCHAR(64) NULL,
+  bki_agent_ref VARCHAR(64) NULL,
+  external_status VARCHAR(64) NULL,
+  external_message VARCHAR(500) NULL,
+  request_json JSON NULL,
+  response_json JSON NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_policies_agent (agent_id, created_at),
+  KEY idx_policies_status (status, created_at),
+  KEY idx_policies_plate (plate)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

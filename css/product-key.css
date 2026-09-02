@@ -990,17 +990,19 @@
   transition: background-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.axa-cmp.is-col-hover-2plus [data-col="2plus"],
-.axa-cmp.is-col-hover-3plus [data-col="3plus"],
-.axa-cmp.is-col-hover-3 [data-col="3"] {
+.axa-cmp.is-col-hover-2plus tbody [data-col="2plus"],
+.axa-cmp.is-col-hover-3plus tbody [data-col="3plus"],
+.axa-cmp.is-col-hover-3 tbody [data-col="3"] {
   background: #e3f4f6 !important;
 }
 
 .axa-cmp.is-col-hover-2plus thead [data-col="2plus"],
 .axa-cmp.is-col-hover-3plus thead [data-col="3plus"],
 .axa-cmp.is-col-hover-3 thead [data-col="3"] {
-  filter: brightness(1.06);
-  box-shadow: inset 0 -3px 0 rgba(245, 215, 110, 0.55);
+  background: var(--axa-cmp-teal-deep) !important;
+  color: #fff;
+  filter: none;
+  box-shadow: inset 0 -3px 0 rgba(245, 215, 110, 0.75);
 }
 
 .axa-cmp.is-col-hover-2plus tr.axa-cmp__footer [data-col="2plus"],
@@ -1259,4 +1261,130 @@
 
 .product-key-toast[data-type="error"] {
   background: #b91c1c;
+}
+
+/* BKI issue — customer step after quote */
+.bki-issue {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.1rem 1.35rem;
+  border: 1px solid #c5e4e7;
+  border-radius: 8px;
+  background: #f8feff;
+}
+
+.bki-issue__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.bki-issue__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bki-issue__sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.bki-issue__back {
+  flex: 0 0 auto;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.bki-issue__back:hover {
+  background: #f1f5f9;
+}
+
+.bki-issue__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem 0.75rem;
+}
+
+.bki-issue__field--full {
+  grid-column: 1 / -1;
+}
+
+.bki-issue__field label,
+.bki-issue__field .axa-quote__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.bki-issue__radioRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  min-height: var(--axa-control-h, 38px);
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.bki-issue__radioRow label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.bki-issue__sectionTitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bki-issue__drivers {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.bki-issue__actions {
+  margin-top: 1.15rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bki-issue__success {
+  padding: 0.5rem 0.15rem;
+}
+
+.bki-issue__success p {
+  margin: 0.35rem 0;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+@media (max-width: 1100px) {
+  .bki-issue__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .bki-issue__head {
+    flex-direction: column;
+  }
+
+  .bki-issue__grid {
+    grid-template-columns: 1fr;
+  }
 }

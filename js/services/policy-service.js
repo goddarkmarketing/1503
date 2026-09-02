@@ -2,7 +2,7 @@ window.App = window.App || {};
 
 App.PolicyService = {
   async getPolicies(filters = {}) {
-    if (App.Config.USE_MOCK_API) {
+    if (App.Config.USE_MOCK_API && !App.Config.USE_REAL_POLICIES) {
       return App.MockAPI.getPolicies(filters);
     }
     const params = new URLSearchParams(filters).toString();
@@ -19,14 +19,14 @@ App.PolicyService = {
   },
 
   async getPolicy(policyId) {
-    if (App.Config.USE_MOCK_API) {
+    if (App.Config.USE_MOCK_API && !App.Config.USE_REAL_POLICIES) {
       return App.MockAPI.getPolicy(policyId);
     }
     return App.API.request(`/policies/${policyId}`);
   },
 
   async createPolicy(payload) {
-    if (App.Config.USE_MOCK_API) {
+    if (App.Config.USE_MOCK_API && !App.Config.USE_REAL_POLICIES) {
       return App.MockAPI.createPolicy(payload);
     }
     return App.API.request('/policies', {

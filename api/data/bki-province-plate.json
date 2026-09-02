@@ -1,0 +1,314 @@
+{
+    "source": "plate_jw.xls.xlsx",
+    "exported_at": "2026-09-02T09:47:21+00:00",
+    "items": [
+        {
+            "province": "กาญจนบุรี",
+            "plate_jw": "กจ"
+        },
+        {
+            "province": "กทม.",
+            "plate_jw": "กท"
+        },
+        {
+            "province": "กระบี่",
+            "plate_jw": "กบ"
+        },
+        {
+            "province": "กำแพงเพชร",
+            "plate_jw": "กพ"
+        },
+        {
+            "province": "กาฬสินธุ์",
+            "plate_jw": "กส"
+        },
+        {
+            "province": "ขอนแก่น",
+            "plate_jw": "ขก"
+        },
+        {
+            "province": "จันทบุรี",
+            "plate_jw": "จบ"
+        },
+        {
+            "province": "ฉะเชิงเทรา",
+            "plate_jw": "ฉช"
+        },
+        {
+            "province": "ชัยนาท",
+            "plate_jw": "ชน"
+        },
+        {
+            "province": "ชลบุรี",
+            "plate_jw": "ชบ"
+        },
+        {
+            "province": "ชุมพร",
+            "plate_jw": "ชพ"
+        },
+        {
+            "province": "เชียงใหม่",
+            "plate_jw": "ชม"
+        },
+        {
+            "province": "ชัยภูมิ",
+            "plate_jw": "ชย"
+        },
+        {
+            "province": "เชียงราย",
+            "plate_jw": "ชร"
+        },
+        {
+            "province": "ตาก",
+            "plate_jw": "ตก"
+        },
+        {
+            "province": "ตรัง",
+            "plate_jw": "ตง"
+        },
+        {
+            "province": "ตราด",
+            "plate_jw": "ตร"
+        },
+        {
+            "province": "หนองคาย",
+            "plate_jw": "นค"
+        },
+        {
+            "province": "นครปฐม",
+            "plate_jw": "นฐ"
+        },
+        {
+            "province": "นราธิวาส",
+            "plate_jw": "นธ"
+        },
+        {
+            "province": "น่าน",
+            "plate_jw": "นน"
+        },
+        {
+            "province": "นนทบุรี",
+            "plate_jw": "นบ"
+        },
+        {
+            "province": "นครพนม",
+            "plate_jw": "นพ"
+        },
+        {
+            "province": "นครราชสีมา",
+            "plate_jw": "นม"
+        },
+        {
+            "province": "นครนายก",
+            "plate_jw": "นย"
+        },
+        {
+            "province": "นครสวรรค์",
+            "plate_jw": "นว"
+        },
+        {
+            "province": "นครศรีธรรมราช",
+            "plate_jw": "นศ"
+        },
+        {
+            "province": "บุรีรัมย์",
+            "plate_jw": "บร"
+        },
+        {
+            "province": "ประจวบคีรีขันธ์",
+            "plate_jw": "ปข"
+        },
+        {
+            "province": "ปราจีนบุรี",
+            "plate_jw": "ปจ"
+        },
+        {
+            "province": "ปทุมธานี",
+            "plate_jw": "ปท"
+        },
+        {
+            "province": "ปัตตานี",
+            "plate_jw": "ปน"
+        },
+        {
+            "province": "พังงา",
+            "plate_jw": "พง"
+        },
+        {
+            "province": "พิจิตร",
+            "plate_jw": "พจ"
+        },
+        {
+            "province": "พัทลุง",
+            "plate_jw": "พท"
+        },
+        {
+            "province": "พระนครศรีอยุธยา",
+            "plate_jw": "อย"
+        },
+        {
+            "province": "พิษณุโลก",
+            "plate_jw": "พล"
+        },
+        {
+            "province": "เพชรบุรี",
+            "plate_jw": "พบ"
+        },
+        {
+            "province": "เพชรบูรณ์",
+            "plate_jw": "พช"
+        },
+        {
+            "province": "แพร่",
+            "plate_jw": "พร"
+        },
+        {
+            "province": "ภูเก็ต",
+            "plate_jw": "ภก"
+        },
+        {
+            "province": "มหาสารคาม",
+            "plate_jw": "มค"
+        },
+        {
+            "province": "แม่ฮ่องสอน",
+            "plate_jw": "มส"
+        },
+        {
+            "province": "ยโสธร",
+            "plate_jw": "ยส"
+        },
+        {
+            "province": "ยะลา",
+            "plate_jw": "ยล"
+        },
+        {
+            "province": "ร้อยเอ็ด",
+            "plate_jw": "รอ"
+        },
+        {
+            "province": "ระนอง",
+            "plate_jw": "รน"
+        },
+        {
+            "province": "ระยอง",
+            "plate_jw": "รย"
+        },
+        {
+            "province": "ราชบุรี",
+            "plate_jw": "รบ"
+        },
+        {
+            "province": "ลพบุรี",
+            "plate_jw": "ลบ"
+        },
+        {
+            "province": "ลำปาง",
+            "plate_jw": "ลป"
+        },
+        {
+            "province": "ลำพูน",
+            "plate_jw": "ลพ"
+        },
+        {
+            "province": "เลย",
+            "plate_jw": "ลย"
+        },
+        {
+            "province": "ศรีสะเกษ",
+            "plate_jw": "ศก"
+        },
+        {
+            "province": "สกลนคร",
+            "plate_jw": "สน"
+        },
+        {
+            "province": "สงขลา",
+            "plate_jw": "สข"
+        },
+        {
+            "province": "สตูล",
+            "plate_jw": "สต"
+        },
+        {
+            "province": "สมุทรปราการ",
+            "plate_jw": "สป"
+        },
+        {
+            "province": "สมุทรสงคราม",
+            "plate_jw": "สส"
+        },
+        {
+            "province": "สมุทรสาคร",
+            "plate_jw": "สค"
+        },
+        {
+            "province": "สระบุรี",
+            "plate_jw": "สบ"
+        },
+        {
+            "province": "สิงห์บุรี",
+            "plate_jw": "สห"
+        },
+        {
+            "province": "สุโขทัย",
+            "plate_jw": "สท"
+        },
+        {
+            "province": "สุพรรณบุรี",
+            "plate_jw": "สพ"
+        },
+        {
+            "province": "สุราษฎร์ธานี",
+            "plate_jw": "สฎ"
+        },
+        {
+            "province": "สุรินทร์",
+            "plate_jw": "สร"
+        },
+        {
+            "province": "อ่างทอง",
+            "plate_jw": "อท"
+        },
+        {
+            "province": "อุดรธานี",
+            "plate_jw": "อด"
+        },
+        {
+            "province": "อุตรดิตถ์",
+            "plate_jw": "อต"
+        },
+        {
+            "province": "อุทัยธานี",
+            "plate_jw": "อน"
+        },
+        {
+            "province": "อุบลราชธานี",
+            "plate_jw": "อบ"
+        },
+        {
+            "province": "พะเยา",
+            "plate_jw": "พย"
+        },
+        {
+            "province": "มุกดาหาร",
+            "plate_jw": "มห"
+        },
+        {
+            "province": "สระแก้ว",
+            "plate_jw": "สก"
+        },
+        {
+            "province": "อำนาจเจริญ",
+            "plate_jw": "อจ"
+        },
+        {
+            "province": "หนองบัวลำภู",
+            "plate_jw": "นภ"
+        },
+        {
+            "province": "บึงกาฬ",
+            "plate_jw": "บก"
+        }
+    ]
+}

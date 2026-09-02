@@ -482,17 +482,17 @@ try {
       Response::error('BKI Motor API ยังไม่ได้ตั้งค่า', 503, 'MOTOR_WS_NOT_READY');
     }
     $body = api_json_body();
-    $quote = is_array($body['quote'] ?? null) ? $body['quote'] : [];
-    $payload = array_merge(MotorBkiVol::buildPremiumPayload($body), $quote);
-    unset($payload['quote']);
+    $payload = MotorBkiVol::buildTransferPayload($body);
     try {
       $result = MotorWebService::transferVolPolicy($payload);
+      $parsed = MotorBkiVol::parseTransferResponse($result['body']);
       Response::json([
         'ok' => $result['ok'],
         'status' => $result['status'],
         'request' => $payload,
+        'parsed' => $parsed,
         'body' => $result['body'],
-      ], $result['status'] > 0 ? ($result['ok'] ? 200 : $result['status']) : 502);
+      ], 200);
     } catch (Throwable $e) {
       Response::json([
         'ok' => false,
@@ -501,6 +501,132 @@ try {
         'message' => $e->getMessage(),
       ], 502);
     }
+  }
+
+  if ($method === 'POST' && $path === '/motor/bki/vol/issue') {
+    $user = Auth::requireUser($pdo);
+    if (!MotorWebService::isReady()) {
+      Response::error('BKI Motor API ยังไม่ได้ตั้งค่า', 503, 'MOTOR_WS_NOT_READY');
+    }
+    $ctx = Policies::requireAgent($pdo, $user);
+    $body = api_json_body();
+    $payload = MotorBkiVol::buildTransferPayload($body);
+    $premium = (float)($body['premiumTotal'] ?? $body['premium_total'] ?? 0);
+    if ($premium <= 0) {
+      $pkg = is_array($body['package'] ?? null) ? $body['package'] : [];
+      $premium = (float)(MotorBkiVol::pkgField($pkg, ['gross_total_vol', 'total_premium', 'premium_total'], 0));
+    }
+    if ($premium <= 0) {
+      Response::error('ไม่พบเบี้ยประกันสำหรับออกกรมธรรม์', 422, 'VALIDATION');
+    }
+    if ((float)$ctx['agent']['balance'] < $premium) {
+      Response::error('วงเงินคงเหลือไม่เพียงพอ', 422, 'INSUFFICIENT_BALANCE');
+    }
+
+    try {
+      $result = MotorWebService::transferVolPolicy($payload);
+      $parsed = MotorBkiVol::parseTransferResponse($result['body']);
+      $bkiOk = (bool)$result['ok'];
+      if (!empty($parsed['status_code']) && stripos((string)$parsed['status_code'], 'API000_F') === 0) {
+        $bkiOk = false;
+      }
+      if (!empty($parsed['policy_no'])) {
+        $bkiOk = true;
+      }
+
+      if (!$bkiOk) {
+        $message = $parsed['status_message'] ?: 'BKI ไม่สามารถออกกรมธรรม์ได้';
+        Response::json([
+          'ok' => false,
+          'status' => (int)($result['status'] ?? 0),
+          'message' => $message,
+          'parsed' => $parsed,
+          'body' => $result['body'],
+          'request' => $payload,
+        ], 200);
+      }
+
+      $customer = is_array($body['customer'] ?? null) ? $body['customer'] : $body;
+      $policyInput = [
+        'premiumTotal' => $premium,
+        'insurer' => 'BKI กรุงเทพ',
+        'insurerCode' => 'bki',
+        'productId' => 'voluntary-bki',
+        'productName' => '2+ / 3+',
+        'type' => 'voluntary',
+        'typeLabel' => '2+ / 3+',
+        'planCode' => (string)($body['coverType'] ?? ''),
+        'licensePlate' => (string)($customer['licensePlate'] ?? ''),
+        'firstName' => (string)($customer['firstName'] ?? ''),
+        'lastName' => (string)($customer['lastName'] ?? ''),
+        'insuredName' => trim(((string)($customer['firstName'] ?? '')) . ' ' . ((string)($customer['lastName'] ?? ''))),
+        'coverageStart' => (string)($body['coverage_start'] ?? ''),
+        'coverageEnd' => (string)($body['coverage_end'] ?? ''),
+        'bkiPolicyNo' => (string)($parsed['policy_no'] ?? ''),
+        'bkiAgentRef' => (string)($payload['agent_ref_no'] ?? ''),
+        'externalStatus' => (string)($parsed['status_code'] ?? ''),
+        'externalMessage' => (string)($parsed['status_message'] ?? ''),
+        'requestJson' => $payload,
+        'responseJson' => $result['body'],
+        'status' => 'active',
+      ];
+
+      $policy = Policies::create($pdo, $ctx['agent'], $user, $policyInput);
+      $balanceStmt = $pdo->prepare('SELECT balance FROM agents WHERE id = :id LIMIT 1');
+      $balanceStmt->execute([':id' => $ctx['agent']['id']]);
+      $balanceRow = $balanceStmt->fetch();
+      Response::json([
+        'ok' => true,
+        'status' => (int)($result['status'] ?? 200),
+        'message' => 'ออกกรมธรรม์สำเร็จ',
+        'policy' => $policy,
+        'parsed' => $parsed,
+        'balance' => isset($balanceRow['balance']) ? (float)$balanceRow['balance'] : null,
+        'body' => $result['body'],
+      ], 200);
+    } catch (Throwable $e) {
+      Response::json([
+        'ok' => false,
+        'status' => 0,
+        'message' => $e->getMessage(),
+        'request' => $payload,
+      ], 502);
+    }
+  }
+
+  if ($method === 'GET' && $path === '/policies') {
+    $user = Auth::requireUser($pdo);
+    Policies::ensureTable($pdo);
+    $filters = [
+      'agentId' => (string)($_GET['agentId'] ?? ''),
+      'date' => (string)($_GET['date'] ?? ''),
+      'status' => (string)($_GET['status'] ?? ''),
+    ];
+    Response::json(Policies::listForUser($pdo, $user, $filters));
+  }
+
+  if ($method === 'POST' && $path === '/policies') {
+    $user = Auth::requireUser($pdo);
+    $ctx = Policies::requireAgent($pdo, $user);
+    $body = api_json_body();
+    $policy = Policies::create($pdo, $ctx['agent'], $user, $body);
+    Response::json($policy, 201);
+  }
+
+  if (preg_match('#^/policies/([^/]+)$#', $path, $m) && $method === 'GET') {
+    $user = Auth::requireUser($pdo);
+    Policies::ensureTable($pdo);
+    $policy = Policies::fetchOne($pdo, urldecode($m[1]));
+    if (!$policy) {
+      Response::error('ไม่พบกรมธรรม์', 404, 'NOT_FOUND');
+    }
+    if (($user['role'] ?? '') === 'agent') {
+      $ctx = Policies::requireAgent($pdo, $user);
+      if (($policy['agentId'] ?? '') !== ($ctx['agent']['id'] ?? '')) {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+    }
+    Response::json($policy);
   }
 
   if (preg_match('#^/agents/([^/]+)$#', $path, $m)) {

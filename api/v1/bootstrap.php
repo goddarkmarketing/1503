@@ -34,6 +34,7 @@ require_once $apiRoot . '/lib/PasswordReset.php';
 require_once $apiRoot . '/lib/AgentIdentity.php';
 require_once $apiRoot . '/lib/MotorWebService.php';
 require_once $apiRoot . '/lib/MotorBkiVol.php';
+require_once $apiRoot . '/lib/Policies.php';
 
 function api_json_body(): array
 {
