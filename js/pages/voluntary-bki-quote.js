@@ -707,12 +707,95 @@ App.VoluntaryBkiQuote = {
   },
 
   getPackagePremium(pkg) {
-    const raw = this.pkgValue(pkg, [
-      'premium_total', 'total_premium', 'premium', 'PREMIUM', 'net_premium', 'NET_PREMIUM'
-    ]);
-    if (raw == null || raw === '') return null;
-    const n = Number(String(raw).replace(/,/g, ''));
-    return Number.isNaN(n) ? null : n;
+    if (!pkg || typeof pkg !== 'object') return null;
+
+    const keys = [
+      'gross_total_vol', 'GROSS_TOTAL_VOL', 'gross_total', 'GROSS_TOTAL',
+      'total_prem', 'TOTAL_PREM', 'total_premium', 'TOTAL_PREMIUM',
+      'premium_total', 'PREMIUM_TOTAL',
+      'gross_prem_vol', 'GROSS_PREM_VOL', 'net_premium', 'NET_PREMIUM',
+      'premium', 'PREMIUM'
+    ];
+    const raw = this.pkgValue(pkg, keys);
+    if (raw != null && raw !== '') {
+      const direct = this.parsePremiumNumber(raw);
+      if (direct != null) return direct;
+    }
+
+    const stamp = this.parsePremiumNumber(this.pkgValue(pkg, ['stamp_vol', 'STAMP_VOL', 'stamp', 'STAMP']));
+    const vat = this.parsePremiumNumber(this.pkgValue(pkg, ['vat_vol', 'VAT_VOL', 'vat', 'VAT']));
+    const gross = this.parsePremiumNumber(this.pkgValue(pkg, ['gross_prem_vol', 'GROSS_PREM_VOL']));
+    if (gross != null && (stamp != null || vat != null)) {
+      return gross + (stamp || 0) + (vat || 0);
+    }
+    if (gross != null) return gross;
+
+    return this.findPremiumInObject(pkg);
+  },
+
+  parsePremiumNumber(value) {
+    if (value == null || value === '') return null;
+    const n = Number(String(value).replace(/,/g, ''));
+    return Number.isNaN(n) || n <= 0 ? null : n;
+  },
+
+  findPremiumInObject(obj, depth = 0) {
+    if (!obj || typeof obj !== 'object' || depth > 4) return null;
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        const found = this.findPremiumInObject(item, depth + 1);
+        if (found != null) return found;
+      }
+      return null;
+    }
+    for (const [key, value] of Object.entries(obj)) {
+      if (/prem|total|gross|net/i.test(key) && (typeof value === 'string' || typeof value === 'number')) {
+        const n = this.parsePremiumNumber(value);
+        if (n != null) return n;
+      }
+    }
+    for (const value of Object.values(obj)) {
+      if (value && typeof value === 'object') {
+        const found = this.findPremiumInObject(value, depth + 1);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  },
+
+  getDisplayedPremium(root, plan) {
+    const el = root?.querySelector(`[data-price-for="${plan}"]`);
+    if (!el) return null;
+    const text = el.textContent || '';
+    if (text.includes('—')) return null;
+    const m = text.replace(/,/g, '').match(/([\d.]+)/);
+    if (!m) return null;
+    return this.parsePremiumNumber(m[1]);
+  },
+
+  resolvePlanPremium(form, plan) {
+    const root = form.querySelector('#bkiQuoteResult');
+    const packages = this.getPackagesByPlan(form);
+    const stored = root?.dataset?.[`premium_${plan}`];
+    if (stored) {
+      const n = this.parsePremiumNumber(stored);
+      if (n != null) return n;
+    }
+
+    const fromPkg = this.getPackagePremium(packages[plan]);
+    if (fromPkg != null) return fromPkg;
+
+    const fromDisplay = this.getDisplayedPremium(root, plan);
+    if (fromDisplay != null) return fromDisplay;
+
+    const premiumEl = form.querySelector('#productKeyPremium');
+    const cover = form.querySelector('#coverType')?.value;
+    if (premiumEl?.dataset?.premium && cover === plan) {
+      const n = this.parsePremiumNumber(premiumEl.dataset.premium);
+      if (n != null) return n;
+    }
+
+    return null;
   },
 
   mapPackagesToPlans(packages) {
@@ -840,6 +923,10 @@ App.VoluntaryBkiQuote = {
 
     ['2plus', '3plus', '3'].forEach((plan) => {
       const premium = this.getPackagePremium(packagesByPlan[plan]);
+      if (root) {
+        if (premium != null) root.dataset[`premium_${plan}`] = String(premium);
+        else delete root.dataset[`premium_${plan}`];
+      }
       const el = root.querySelector(`[data-price-for="${plan}"]`);
       if (el) {
         el.textContent = premium == null
@@ -992,12 +1079,19 @@ App.VoluntaryBkiQuote = {
     if (!resultHost || !panel) return;
 
     const packages = this.getPackagesByPlan(form);
-    const pkg = packages[plan];
-    const premium = this.getPackagePremium(pkg);
+    const premium = this.resolvePlanPremium(form, plan);
     if (premium == null) {
-      toast?.('กรุณาตรวจสอบราคาและเลือกแผนที่มีเบี้ยก่อนสร้างกรมธรรม์', 'error');
+      const hasPackages = Object.values(packages).some(Boolean);
+      toast?.(
+        hasPackages
+          ? 'ไม่พบเบี้ยในแผนที่เลือก — คลิกหัวคอลัมน์แผนที่มีราคา หรือกดตรวจสอบราคาอีกครั้ง'
+          : 'กรุณาตรวจสอบราคาและเลือกแผนที่มีเบี้ยก่อนสร้างกรมธรรม์',
+        'error'
+      );
       return;
     }
+
+    const pkg = packages[plan] || packages['3plus'] || packages['2plus'] || packages['3'] || {};
 
     const planLabel = this.planLabel(plan);
     const premiumText = `${this.money(premium)} บาท/ปี`;
@@ -1005,6 +1099,7 @@ App.VoluntaryBkiQuote = {
     panel.hidden = false;
     panel.dataset.plan = plan;
     panel.dataset.premium = String(premium);
+    panel.dataset.packagePlan = packages[plan] ? plan : (packages['3plus'] ? '3plus' : plan);
 
     const licenseProvince = form.querySelector('#regProvince')?.value || 'กรุงเทพมหานคร';
     const licenseEl = panel.querySelector('#issueLicenseProvince');
@@ -1050,8 +1145,9 @@ App.VoluntaryBkiQuote = {
 
     const plan = panel?.dataset?.plan || this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
     const packages = this.getPackagesByPlan(form);
-    const pkg = packages[plan];
-    const premium = Number(panel?.dataset?.premium || this.getPackagePremium(pkg) || 0);
+    const pkgPlan = panel?.dataset?.packagePlan || plan;
+    const pkg = packages[pkgPlan] || packages[plan] || {};
+    const premium = Number(panel?.dataset?.premium || this.resolvePlanPremium(form, plan) || 0);
     const quote = this.readForm(form);
     const customer = this.readCustomerForm(form);
     const buyPrb = !!form.querySelector(`#bkiQuoteResult input[name="buyPrb_${plan}"]`)?.checked;
