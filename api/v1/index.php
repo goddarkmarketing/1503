@@ -422,6 +422,87 @@ try {
     }
   }
 
+  if ($method === 'GET' && $path === '/motor/bki/vol/car-codes') {
+    Auth::requireUser($pdo);
+    if (!MotorWebService::isReady()) {
+      Response::error('BKI Motor API ยังไม่ได้ตั้งค่า', 503, 'MOTOR_WS_NOT_READY');
+    }
+    $search = MotorBkiVol::searchCarCodes(
+      (string)($_GET['make'] ?? ''),
+      (string)($_GET['q'] ?? ''),
+      (int)($_GET['limit'] ?? 80)
+    );
+    Response::json($search);
+  }
+
+  if ($method === 'POST' && $path === '/motor/bki/vol/premium/calculate') {
+    Auth::requireUser($pdo);
+    if (!MotorWebService::isReady()) {
+      Response::error('BKI Motor API ยังไม่ได้ตั้งค่า', 503, 'MOTOR_WS_NOT_READY');
+    }
+    $body = api_json_body();
+    $payload = MotorBkiVol::buildPremiumPayload($body);
+    try {
+      $result = MotorWebService::calculateVolPremium($payload);
+      $parsed = MotorBkiVol::parsePremiumResponse($result['body']);
+      $bkiStatus = (int)($result['status'] ?? 0);
+      $message = null;
+      if (!$result['ok']) {
+        if ($bkiStatus === 403) {
+          $message = 'BKI ปฏิเสธการเชื่อมต่อ (403) — localhost ไม่ได้อยู่ใน IP whitelist ของ BKI กรุณาทดสอบบนเซิร์ฟเวอร์ production';
+        } elseif ($bkiStatus === 401) {
+          $message = 'BKI ปฏิเสธสิทธิ์ (401) — ตรวจสอบ Basic Auth ใน config';
+        } elseif ($bkiStatus >= 400) {
+          $message = 'BKI ตอบกลับ HTTP ' . $bkiStatus;
+        } else {
+          $message = 'ไม่สามารถเชื่อมต่อ BKI ได้';
+        }
+      }
+      Response::json([
+        'ok' => $result['ok'],
+        'status' => $bkiStatus,
+        'message' => $message,
+        'request' => $payload,
+        'parsed' => $parsed,
+        'body' => $result['body'],
+      ], 200);
+    } catch (Throwable $e) {
+      Response::json([
+        'ok' => false,
+        'status' => 0,
+        'request' => $payload,
+        'message' => $e->getMessage(),
+      ], 502);
+    }
+  }
+
+  if ($method === 'POST' && $path === '/motor/bki/vol/transfer/policy') {
+    Auth::requireUser($pdo);
+    if (!MotorWebService::isReady()) {
+      Response::error('BKI Motor API ยังไม่ได้ตั้งค่า', 503, 'MOTOR_WS_NOT_READY');
+    }
+    $body = api_json_body();
+    $quote = is_array($body['quote'] ?? null) ? $body['quote'] : [];
+    $payload = array_merge(MotorBkiVol::buildPremiumPayload($body), $quote);
+    unset($payload['quote']);
+    try {
+      $result = MotorWebService::transferVolPolicy($payload);
+      Response::json([
+        'ok' => $result['ok'],
+        'status' => $result['status'],
+        'request' => $payload,
+        'body' => $result['body'],
+      ], $result['status'] > 0 ? ($result['ok'] ? 200 : $result['status']) : 502);
+    } catch (Throwable $e) {
+      Response::json([
+        'ok' => false,
+        'status' => 0,
+        'request' => $payload,
+        'message' => $e->getMessage(),
+      ], 502);
+    }
+  }
+
   if (preg_match('#^/agents/([^/]+)$#', $path, $m)) {
     $agentId = urldecode($m[1]);
     if ($method === 'GET') {

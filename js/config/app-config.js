@@ -7,6 +7,7 @@
  * - USE_REAL_WITHDRAW: คำขอถอนเงิน ใช้ PHP API + MySQL และส่งอีเมลแจ้งแอดมิน
  * - USE_REAL_AGENT_REQUESTS: คำขอเพิ่มตัวแทนจากนายหน้า → แอดมินอนุมัติ + อีเมล
  * - USE_REAL_IDENTITY: ยืนยันตัวตนครั้งแรก + ลืมรหัสผ่านทางอีเมล (auth routes)
+ * - USE_REAL_MOTOR_BKI: BKI 2+/3+ คำนวณเบี้ยผ่าน Motor Web Service API
  * - USE_MOCK_API: ฟีเจอร์อื่นยังใช้ mock จนกว่า endpoint จะครบ
  */
 window.App = window.App || {};
@@ -20,6 +21,7 @@ App.Config = {
   USE_REAL_WITHDRAW: true,
   USE_REAL_AGENT_REQUESTS: true,
   USE_REAL_IDENTITY: true,
+  USE_REAL_MOTOR_BKI: true,
   // Production on Atom/Plesk: '/api/v1'
   // Local XAMPP under /kladeebroker/ is detected automatically
   API_BASE_URL: (() => {

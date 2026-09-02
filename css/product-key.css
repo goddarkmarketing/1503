@@ -512,6 +512,22 @@
   display: none;
 }
 
+/* Let native <select> dropdowns scroll; avoid trapping wheel on card body */
+.product-key--axa-quote .product-key__card.product-key__card--quote-only,
+.product-key--bki-quote .product-key__card.product-key__card--quote-only {
+  overflow: visible;
+}
+
+.product-key--axa-quote .product-key-card__body,
+.product-key--bki-quote .product-key-card__body {
+  overflow: visible;
+}
+
+.product-key--axa-quote .product-key__fields,
+.product-key--bki-quote .product-key__fields {
+  overflow: visible;
+}
+
 .product-key--axa-quote .product-key-card__body {
   padding: 1.6rem 1.15rem 1.35rem;
 }
@@ -525,6 +541,85 @@
   display: flex;
 }
 
+.product-key--bki-quote .product-key__card--quote-only .product-key-card__foot,
+.product-key--bki-quote .product-key__hint {
+  display: none;
+}
+
+.product-key--bki-quote .product-key-card__body {
+  padding: 1.6rem 1.15rem 1.35rem;
+}
+
+.product-key--bki-quote .product-key__premium {
+  display: none;
+  margin-top: 0.85rem;
+}
+
+.product-key--bki-quote .product-key__premium.is-visible {
+  display: flex;
+}
+
+/* ── BKI voluntary quote (axa-quote layout + axa-cmp table) ── */
+.bki-quote__field-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.bki-quote__variant {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #dbeafe;
+  background: #f8fafc;
+}
+
+.bki-quote__specs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+
+.bki-quote__specs > div {
+  min-width: 0;
+}
+
+.bki-quote__specs dt {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.bki-quote__specs dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.bki-quote__result-note {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .bki-quote__specs {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .bki-quote__specs {
+    grid-template-columns: 1fr;
+  }
+}
+
 .axa-quote {
   --axa-border: #d0d7e2;
   --axa-border-strong: #94a3b8;
@@ -533,20 +628,23 @@
   --axa-accent: #0f766e;
   --axa-accent-hover: #0d9488;
   --axa-focus: #0284c7;
+  --axa-label-h: 1.125rem;
+  --axa-control-h: 38px;
+  --axa-field-gap: 0.75rem;
   display: grid;
-  gap: 1rem;
+  gap: var(--axa-field-gap);
   max-width: 100%;
 }
 
 .axa-quote__row {
   display: grid;
   gap: 0.6rem 0.65rem;
-  align-items: start;
+  align-items: end;
 }
 
 .axa-quote__row--policy {
   grid-template-columns: minmax(180px, 1.2fr) minmax(200px, 1fr) minmax(120px, 0.7fr);
-  padding-bottom: 0.9rem;
+  padding-bottom: var(--axa-field-gap);
   border-bottom: 1px solid #e8edf3;
 }
 
@@ -561,7 +659,7 @@
 
 .axa-quote__stack {
   display: grid;
-  gap: 1rem;
+  gap: var(--axa-field-gap);
 }
 
 .axa-quote__row--coverA {
@@ -602,19 +700,19 @@
 }
 
 .axa-quote__field {
-  --axa-control-h: 36px;
-  --axa-label-h: 1.05rem;
   min-width: 0;
   display: grid;
   grid-template-rows: var(--axa-label-h) var(--axa-control-h);
-  gap: 0.22rem;
+  gap: 0.25rem;
   align-items: stretch;
+  min-height: calc(var(--axa-label-h) + 0.25rem + var(--axa-control-h));
 }
 
 .axa-quote__field > label,
 .axa-quote__label {
   margin: 0;
   height: var(--axa-label-h);
+  min-height: var(--axa-label-h);
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--axa-muted);
@@ -628,12 +726,14 @@
 .axa-quote__label--spacer {
   visibility: hidden;
   user-select: none;
+  pointer-events: none;
 }
 
 .axa-quote__field .form-input,
-.axa-quote__field select.form-input {
+.axa-quote__field select.form-input,
+.axa-quote__field input[type="date"].form-input {
   width: 100%;
-  height: var(--axa-control-h);
+  height: var(--axa-control-h) !important;
   min-height: var(--axa-control-h);
   max-height: var(--axa-control-h);
   box-sizing: border-box;
@@ -681,9 +781,11 @@
 .axa-quote__seg {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.3rem;
+  gap: 0.35rem;
   height: var(--axa-control-h);
   min-height: var(--axa-control-h);
+  max-height: var(--axa-control-h);
+  align-self: end;
 }
 
 .axa-quote__segOpt {
@@ -733,16 +835,18 @@
   box-sizing: border-box;
   height: var(--axa-control-h);
   min-height: var(--axa-control-h);
+  max-height: var(--axa-control-h);
   width: 100%;
   border: 1px solid #f59e0b;
   border-radius: 6px;
   background: #fbbf24;
   color: #78350f;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1.2;
   cursor: pointer;
   transition: filter 0.15s ease, background 0.15s ease;
+  align-self: end;
 }
 
 .axa-quote__driverBtn:hover {
@@ -755,7 +859,7 @@
 }
 
 .axa-quote__field--check {
-  align-self: start;
+  align-self: end;
 }
 
 .axa-quote__checkBtn {
@@ -766,18 +870,20 @@
   width: 100%;
   height: var(--axa-control-h);
   min-height: var(--axa-control-h);
+  max-height: var(--axa-control-h);
   padding: 0 0.65rem;
   border: 0;
   border-radius: 6px;
   background: var(--axa-accent);
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(15, 118, 110, 0.2);
   transition: background 0.15s ease, box-shadow 0.15s ease;
+  align-self: end;
 }
 
 .axa-quote__checkBtn:hover {
@@ -1125,4 +1231,32 @@
   .axa-cmp {
     font-size: 0.74rem;
   }
+}
+
+.product-key-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9999;
+  max-width: min(420px, calc(100vw - 2rem));
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.product-key-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-key-toast[data-type="error"] {
+  background: #b91c1c;
 }

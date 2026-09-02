@@ -48,7 +48,7 @@ App.AgentFeatures = {
         { key: 'compulsory-chubb', label: 'พ.ร.บ. — CHUBB' },
         { key: 'compulsory-indara', label: 'พ.ร.บ. — อินทรประกันภัย' },
         { key: 'voluntary-axa', label: '2+/3+ — AXA', page: 'voluntary/axa' },
-        { key: 'voluntary-bki', label: '2+/3+ — BKI กรุงเทพ' },
+        { key: 'voluntary-bki', label: '2+/3+ — BKI กรุงเทพ', page: 'voluntary/bki' },
         { key: 'voluntary-chubb', label: '2+/3+ — CHUBB' },
         { key: 'voluntary-indara', label: '2+/3+ — อินทรประกันภัย' },
         { key: 'pa-axa', label: 'อุบัติเหตุ — AXA' },

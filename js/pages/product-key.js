@@ -135,6 +135,14 @@
       return '<p class="product-key__hint">ไม่สามารถโหลดฟอร์ม AXA ได้ กรุณารีเฟรชหน้า</p>';
     }
 
+    if (kind === 'voluntary-bki') {
+      const user = window.App?.AuthService?.getCurrentUser?.() || window.App?.Session?.getUser?.();
+      if (App.VoluntaryBkiQuote?.buildFields) {
+        return App.VoluntaryBkiQuote.buildFields(user);
+      }
+      return '<p class="product-key__hint">ไม่สามารถโหลดฟอร์ม BKI ได้ กรุณารีเฟรชหน้า</p>';
+    }
+
     if (kind === 'voluntary-indara') {
       return `
         <div class="product-key__grid">
@@ -262,8 +270,26 @@
   }
 
   function toast(msg, type) {
-    if (window.App?.TableUI?.showToast) App.TableUI.showToast(msg, type || 'success');
-    else alert(msg);
+    if (window.App?.TableUI?.showToast) {
+      App.TableUI.showToast(msg, type || 'success');
+      return;
+    }
+    let box = document.getElementById('productKeyToast');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'productKeyToast';
+      box.className = 'product-key-toast';
+      document.body.appendChild(box);
+    }
+    box.textContent = msg;
+    box.dataset.type = type || 'success';
+    box.hidden = false;
+    box.classList.add('is-visible');
+    clearTimeout(box._timer);
+    box._timer = setTimeout(() => {
+      box.classList.remove('is-visible');
+      box.hidden = true;
+    }, type === 'error' ? 7000 : 3500);
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -285,7 +311,7 @@
 
     if (fieldsHost) fieldsHost.innerHTML = buildFields(product.formKind);
     if (hintEl) {
-      if (product.formKind === 'voluntary-axa') {
+      if (product.formKind === 'voluntary-axa' || product.formKind === 'voluntary-bki') {
         hintEl.hidden = true;
         hintEl.textContent = '';
       } else {
@@ -296,6 +322,10 @@
     if (product.formKind === 'voluntary-axa') {
       form?.classList.add('product-key__card--quote-only');
       document.querySelector('.product-key')?.classList.add('product-key--axa-quote');
+    }
+    if (product.formKind === 'voluntary-bki') {
+      form?.classList.add('product-key__card--quote-only');
+      document.querySelector('.product-key')?.classList.add('product-key--bki-quote', 'product-key--axa-quote');
     }
 
     const pagesByTab = {};
@@ -311,8 +341,8 @@
       tabs: product.brochureTabs,
       pagesByTab,
       initialTab: product.brochureTabs?.[0]?.id || Object.keys(pagesByTab)[0],
-      collapsible: product.formKind === 'voluntary-axa',
-      collapsed: product.formKind === 'voluntary-axa',
+      collapsible: product.formKind === 'voluntary-axa' || product.formKind === 'voluntary-bki',
+      collapsed: product.formKind === 'voluntary-axa' || product.formKind === 'voluntary-bki',
       layoutRoot: document.querySelector('.product-key'),
       onTabChange(tabId) {
         const cover = form?.querySelector('#coverType');
@@ -341,12 +371,20 @@
         });
       }
 
+      if (product.formKind === 'voluntary-bki' && App.VoluntaryBkiQuote?.bind) {
+        App.VoluntaryBkiQuote.bind(form, { toast, premiumEl });
+      }
+
       sync();
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (product.formKind === 'voluntary-axa') {
           // Quote-only screen for now — use ตรวจสอบราคา instead of issuing policy.
+          form.querySelector('#btnCheckPrice')?.click();
+          return;
+        }
+        if (product.formKind === 'voluntary-bki') {
           form.querySelector('#btnCheckPrice')?.click();
           return;
         }

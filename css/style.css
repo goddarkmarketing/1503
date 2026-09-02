@@ -1,38 +1,6 @@
-/* Better Together Font */
-@font-face {
-  font-family: 'Better Together';
-  src: url('../fonts/better-together/BetterTogether-Light.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Better Together';
-  src: url('../fonts/better-together/BetterTogether-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Better Together';
-  src: url('../fonts/better-together/BetterTogether-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Better Together';
-  src: url('../fonts/better-together/BetterTogether-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* ?? Variables ?? */
+/* Portal UI — system fonts (no custom webfont) */
 :root {
+  --font-ui: system-ui, -apple-system, 'Segoe UI', 'Leelawadee UI', Tahoma, sans-serif;
   --sidebar-w: 260px;
   --sidebar-collapsed: 72px;
   --accent-red: #e85d5d;
@@ -70,7 +38,7 @@ html {
 }
 
 body {
-  font-family: 'Better Together', sans-serif;
+  font-family: var(--font-ui);
   font-weight: 400;
   background: var(--bg-page);
   color: var(--text-dark);
@@ -970,7 +938,7 @@ button {
 }
 
 .status-date-input {
-  font-family: 'Better Together', sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-dark);

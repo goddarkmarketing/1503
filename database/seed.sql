@@ -13,12 +13,13 @@ ON DUPLICATE KEY UPDATE
   name = VALUES(name),
   status = VALUES(status);
 
-INSERT INTO agents (id, user_id, code, balance, credit_limit, parent_id, status) VALUES
-('agent-001', 'agent-001', 'Ck1-039', 34531.73, 50000.00, NULL, 'active'),
-('agent-002', 'agent-002', 'Ag2-112', 12890.50, 30000.00, 'agent-001', 'active'),
-('agent-003', 'agent-003', 'Ag3-205', 5200.00, 20000.00, 'agent-001', 'active')
+INSERT INTO agents (id, user_id, code, balance, credit_limit, parent_id, status, identity_status) VALUES
+('agent-001', 'agent-001', 'Ck1-039', 34531.73, 50000.00, NULL, 'active', 'approved'),
+('agent-002', 'agent-002', 'Ag2-112', 12890.50, 30000.00, 'agent-001', 'active', 'approved'),
+('agent-003', 'agent-003', 'Ag3-205', 5200.00, 20000.00, 'agent-001', 'active', 'approved')
 ON DUPLICATE KEY UPDATE
   balance = VALUES(balance),
   credit_limit = VALUES(credit_limit),
   parent_id = VALUES(parent_id),
-  status = VALUES(status);
+  status = VALUES(status),
+  identity_status = VALUES(identity_status);

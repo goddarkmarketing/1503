@@ -12,7 +12,8 @@ App.API = {
       || !!App.Config.USE_REAL_CREDIT
       || !!App.Config.USE_REAL_WITHDRAW
       || !!App.Config.USE_REAL_AGENT_REQUESTS
-      || !!App.Config.USE_REAL_IDENTITY;
+      || !!App.Config.USE_REAL_IDENTITY
+      || !!App.Config.USE_REAL_MOTOR_BKI;
   },
 
   _headers(options = {}, { json = true } = {}) {

@@ -32,7 +32,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
       <a href="#" class="nav-link"><i data-lucide="file-check"></i><span class="nav-link-text">2+ / 3+</span><i data-lucide="chevron-down" class="nav-chevron"></i></a>
       <ul class="nav-submenu">
         <li><a href="{{BASE}}voluntary/axa" class="nav-sub-link" data-nav="voluntary-axa"><img src="{{BASE}}images/partners/axa.jpg" alt="AXA" class="sub-logo-img"><span class="nav-sub-link-label"><span>AXA</span></span></a></li>
-        <li><a href="#" class="nav-sub-link" data-nav="voluntary-bki"><img src="{{BASE}}images/partners/bangkok-insurance.jpg" alt="BKI กรุงเทพประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>BKI กรุงเทพ</span></span></a></li>
+        <li><a href="{{BASE}}voluntary/bki" class="nav-sub-link" data-nav="voluntary-bki"><img src="{{BASE}}images/partners/bangkok-insurance.jpg" alt="BKI กรุงเทพประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>BKI กรุงเทพ</span></span></a></li>
         <li><a href="#" class="nav-sub-link" data-nav="voluntary-chubb"><img src="{{BASE}}images/partners/chubb.jpg" alt="CHUBB" class="sub-logo-img"><span class="nav-sub-link-label"><span>CHUBB</span></span></a></li>
         <li><a href="#" class="nav-sub-link" data-nav="voluntary-indara"><img src="{{BASE}}assets/logos/indara.png" alt="อินทรประกันภัย" class="sub-logo-img"><span class="nav-sub-link-label"><span>อินทรประกันภัย</span></span></a></li>
       </ul>

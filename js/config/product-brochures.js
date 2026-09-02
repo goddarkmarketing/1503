@@ -85,6 +85,23 @@ App.ProductCatalog = {
       formKind: 'voluntary-axa',
       notes: 'กรอกข้อมูลรถให้ครบ → กด “ตรวจสอบราคา” · รถเอเชีย อายุรถ 1–20 ปี · ใช้ส่วนบุคคลได้เบี้ยมาตรฐาน · รวมภาษีและอากรแสตมป์'
     },
+    'voluntary-bki': {
+      id: 'voluntary-bki',
+      type: 'voluntary',
+      typeLabel: '2+ / 3+',
+      insurer: 'BKI กรุงเทพประกันภัย',
+      insurerCode: 'bki',
+      productName: 'ประกันรถยนต์ภาคสมัครใจ BKI',
+      badge: 'BKI',
+      logo: 'images/partners/bangkok-insurance.jpg',
+      navKey: 'voluntary-bki',
+      brochureTitle: 'โบรชัวร์ — BKI 2+ / 3+',
+      brochures: {
+        default: []
+      },
+      formKind: 'voluntary-bki',
+      notes: 'เชื่อมต่อ BKI Motor Web Service · เลือกรุ่นรถจาก lookup · กด “ตรวจสอบราคา” เพื่อดึงแพ็กเกจจาก BKI'
+    },
     'voluntary-indara': {
       id: 'voluntary-indara',
       type: 'voluntary',

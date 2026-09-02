@@ -198,7 +198,7 @@ function initNavDropdowns() {
 }
 
 /* ── Insurer submenu — only open products navigate; others show “กำลังพัฒนา” ── */
-const OPEN_PRODUCT_NAVS = new Set(['compulsory-ergo', 'voluntary-axa']);
+const OPEN_PRODUCT_NAVS = new Set(['compulsory-ergo', 'voluntary-axa', 'voluntary-bki']);
 
 function initDevelopingInsurerLinks() {
   const nav = document.querySelector('.sidebar-nav[data-agent-sidebar]');

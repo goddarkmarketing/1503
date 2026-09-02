@@ -448,7 +448,7 @@
 
 .form-input,
 .form-select {
-  font-family: 'Better Together', sans-serif;
+  font-family: inherit;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-dark);
@@ -834,7 +834,7 @@
   gap: 6px;
   background: var(--white);
   color: var(--form-muted);
-  font-family: 'Better Together', sans-serif;
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: 500;
   padding: 10px 20px;
@@ -856,7 +856,7 @@
   gap: 8px;
   background: var(--brand-green-gradient);
   color: var(--white);
-  font-family: 'Better Together', sans-serif;
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: 600;
   padding: 10px 26px;

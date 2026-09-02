@@ -12,7 +12,7 @@ const PAGES = [
   { file: 'pa/axa.html', product: 'pa-axa', title: 'ประกันอุบัติเหตุ — AXA' },
   { file: 'pa/bki.html', product: 'pa-bki', title: 'ประกันอุบัติเหตุ — BKI' },
   { file: 'voluntary/axa.html', product: 'voluntary-axa', title: '2+ / 3+ — AXA' },
-  { file: 'voluntary/indara.html', product: 'voluntary-indara', title: '2+ / 3+ — อินทร' },
+  { file: 'voluntary/bki.html', product: 'voluntary-bki', title: '2+ / 3+ — BKI กรุงเทพ' },,
   { file: 'travel/indara.html', product: 'travel-indara', title: 'ประกันเดินทาง — อินทร' }
 ];
 
