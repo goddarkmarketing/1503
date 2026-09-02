@@ -171,40 +171,37 @@ final class MotorWsTestRunner
 
   private function testVolPremiumSample(): void
   {
-    try {
-      $result = MotorWebService::calculateVolPremium(MotorWsFixtures::volPremiumSample());
-      $status = $result['status'];
-      $body = $result['body'];
-      $cloudFront = is_string($body) && stripos($body, 'cloudfront') !== false;
+    foreach ([
+      'vol_premium_sample' => MotorWsFixtures::volPremiumSample(),
+      'vol_premium_legacy' => MotorWsFixtures::volPremiumSampleLegacy(),
+    ] as $name => $payload) {
+      try {
+        $result = MotorWebService::calculateVolPremium($payload);
+        $status = $result['status'];
+        $body = $result['body'];
+        $cloudFront = is_string($body) && stripos($body, 'cloudfront') !== false;
 
-      if ($cloudFront) {
-        $this->warn(
-          'vol_premium_sample',
-          'HTTP 403 CloudFront — IP not whitelisted (expected on local)',
-          ['status' => $status, 'message' => 'Use server with whitelisted IP to get premium response']
-        );
-        return;
+        if ($cloudFront) {
+          $this->warn($name, 'HTTP 403 CloudFront — IP not whitelisted', ['status' => $status]);
+          continue;
+        }
+
+        if ($result['ok']) {
+          $first = is_array($body) && isset($body[0]) ? $body[0] : $body;
+          $pack = is_array($first) ? ($first['packname'] ?? $first['status'] ?? 'success') : 'success';
+          $this->pass($name, "HTTP 200 — $pack", $this->shortBody($body));
+          return;
+        }
+
+        if ($status >= 400 && $status < 500) {
+          $this->warn($name, "HTTP $status — " . $this->shortBody($body));
+          continue;
+        }
+
+        $this->fail($name, 'HTTP ' . $status, $this->shortBody($body));
+      } catch (Throwable $e) {
+        $this->fail($name, $e->getMessage());
       }
-
-      if ($result['ok']) {
-        $this->pass('vol_premium_sample', 'HTTP 200 — premium calculate succeeded', $this->shortBody($body));
-        return;
-      }
-
-      if ($status >= 400 && $status < 500 && is_array($body)) {
-        $code = $body['STATUS_CODE'] ?? $body['status_code'] ?? $body['code'] ?? null;
-        $msg = $body['STATUS_MSG'] ?? $body['message'] ?? $body['remark'] ?? 'validation/error response';
-        $this->warn(
-          'vol_premium_sample',
-          "HTTP $status — reached BKI ($msg)",
-          ['status_code' => $code, 'body' => $this->shortBody($body)]
-        );
-        return;
-      }
-
-      $this->fail('vol_premium_sample', 'HTTP ' . $status, $this->shortBody($body));
-    } catch (Throwable $e) {
-      $this->fail('vol_premium_sample', $e->getMessage());
     }
   }
 

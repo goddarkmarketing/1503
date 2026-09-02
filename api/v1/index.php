@@ -392,6 +392,36 @@ try {
     }
   }
 
+  if ($method === 'POST' && $path === '/admin/motor-ws/test-premium') {
+    Auth::requireAdmin($pdo);
+    require_once dirname(__DIR__) . '/tools/motor-ws-fixtures.php';
+    $body = api_json_body();
+    $useLegacy = !empty($body['legacy']);
+    $payload = $useLegacy
+      ? MotorWsFixtures::volPremiumSampleLegacy()
+      : MotorWsFixtures::volPremiumSample();
+    if (!empty($body['overrides']) && is_array($body['overrides'])) {
+      $payload = array_merge($payload, $body['overrides']);
+    }
+    try {
+      $result = MotorWebService::calculateVolPremium($payload);
+      Response::json([
+        'ok' => $result['ok'],
+        'status' => $result['status'],
+        'request' => $payload,
+        'body' => $result['body'],
+      ], $result['ok'] ? 200 : ($result['status'] >= 400 ? $result['status'] : 502));
+    } catch (Throwable $e) {
+      Response::json([
+        'ok' => false,
+        'status' => 0,
+        'request' => $payload,
+        'body' => null,
+        'message' => $e->getMessage(),
+      ], 502);
+    }
+  }
+
   if (preg_match('#^/agents/([^/]+)$#', $path, $m)) {
     $agentId = urldecode($m[1]);
     if ($method === 'GET') {

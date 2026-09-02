@@ -1,0 +1,188 @@
+================================================================================
+  Kladee Broker — เอกสารส่งทีม BKI (UAT Motor Web Service)
+  จัดทำ: 2026-09-02
+  ใช้สำหรับ: ส่งข้อความ / curl / หลักฐานผ่าน LINE หรืออีเมล
+================================================================================
+
+■ สิ่งที่ส่งใน LINE ได้ (copy ด้านล่าง)
+■ อย่าใส่ REST password จริงใน LINE — ส่ง password ทางช่องที่ BKI กำหนดเท่านั้น
+
+
+--------------------------------------------------------------------------------
+[1] ข้อความสำเร็จรูป — copy ไปวางใน LINE
+--------------------------------------------------------------------------------
+
+เรียนทีม BKI Web Partner API
+
+Kladee Broker ทดสอบ UAT แล้ว รบกวนช่วยตรวจสิทธิ์ account ครับ
+
+■ Environment: UAT
+■ URL: https://bkiwpapiuat.bangkokinsurance.com/vol/premium/calculate
+■ Method: POST
+■ Authen: Basic Auth
+
+■ ข้อมูลที่ใช้
+- REST Basic Auth user: 03477
+- user_id (param): 03477
+- agent_code (param): 3477
+- agent_seq (param): 00
+
+■ Server IP ที่ลงทะเบียน (Allowed IP)
+- 14.207.141.5
+- 203.170.129.135
+
+■ ผลทดสอบจาก server (IP whitelist แล้ว)
+- ถึง API ได้ (ไม่โดน CloudFront)
+- HTTP Status: 401
+- ERR_CODE: API000_F_T0001
+- ERR_MSG: Fail - Authorization has been denied for this request
+
+■ หมายเหตุ
+- ทดสอบจาก IP นอก whitelist (เครื่อง dev) ได้ 403 CloudFront — เป็นปกติ
+- ทดสอบจาก server production ที่ whitelist แล้ว ถึง API ได้ แต่ Authorization ไม่ผ่าน
+
+■ คำถาม
+1. REST password ของ user 03477 สำหรับ UAT ยังใช้ได้หรือไม่
+2. account / user_id / agent เปิดใช้งานครบแล้วหรือยัง
+3. ต้องใช้ environment UAT หรือ SIT
+
+ขอบคุณครับ
+Kladee Broker
+
+
+--------------------------------------------------------------------------------
+[2] ผลทดสอบ (แนบ screenshot หรือ copy ข้อความนี้)
+--------------------------------------------------------------------------------
+
+HTTP/1.1 401 Unauthorized
+
+Response body:
+{
+  "ERR_CODE": "API000_F_T0001",
+  "ERR_MSG": ["Fail - Authorization has been denied for this request"]
+}
+
+
+--------------------------------------------------------------------------------
+[3] คำสั่ง curl — รันบน SERVER เท่านั้น (SSH / Plesk Terminal)
+     จากเครื่อง local มักได้ 403 CloudFront
+--------------------------------------------------------------------------------
+
+--- 3.1 ตรวจ IP ออกเน็ตของ server ---
+curl -s https://ifconfig.me && echo
+
+(ควรตรงกับ 14.207.141.5 หรือ 203.170.129.135)
+
+
+--- 3.2 Ping ขั้นต่ำ (params อย่างเดียว) ---
+curl -sS -w "\nHTTP_CODE:%{http_code}\n" \
+  -X POST "https://bkiwpapiuat.bangkokinsurance.com/vol/premium/calculate" \
+  -u "03477:YOUR_REST_PASSWORD_HERE" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "user_id": "03477",
+    "agent_code": "3477",
+    "agent_seq": "00"
+  }'
+
+
+--- 3.3 คำนวณเบี้ย (body ตัวอย่างจาก spec) ---
+curl -sS -w "\nHTTP_CODE:%{http_code}\n" \
+  -X POST "https://bkiwpapiuat.bangkokinsurance.com/vol/premium/calculate" \
+  -u "03477:YOUR_REST_PASSWORD_HERE" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "user_id": "03477",
+    "agent_code": "3477",
+    "agent_seq": "00",
+    "eff_date": "07/10/2025",
+    "risk": "1",
+    "garage": "",
+    "car_type": "1",
+    "car_use": "1",
+    "car_brand": "TOYOTA",
+    "car_code": "1100001",
+    "car_year": "2020",
+    "cc": "1800",
+    "seat": "5",
+    "weight": "1200",
+    "ncb": "0",
+    "deduct": "0",
+    "deduct_lib": "0",
+    "comp_req": "N",
+    "sum_ins": "280000",
+    "agent_ref_no": "TEST-001"
+  }'
+
+
+--- 3.4 เก็บ header + body ส่งให้ BKI debug ---
+curl -sS -D - -o /tmp/bki-response.json \
+  -X POST "https://bkiwpapiuat.bangkokinsurance.com/vol/premium/calculate" \
+  -u "03477:YOUR_REST_PASSWORD_HERE" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"user_id":"03477","agent_code":"3477","agent_seq":"00"}'
+
+echo "----- body -----"
+cat /tmp/bki-response.json
+
+
+--------------------------------------------------------------------------------
+[4] คำสั่ง curl — ทดสอบผ่านระบบ Kladee (รันจากไหนก็ได้)
+--------------------------------------------------------------------------------
+
+--- 4.1 Health ---
+curl -sS "https://www.kladeebroker.co.th/api/v1/health"
+
+--- 4.2 Login admin ---
+curl -sS -X POST "https://www.kladeebroker.co.th/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"YOUR_ADMIN_PASSWORD"}'
+
+--- 4.3 Motor WS status (แทน TOKEN) ---
+curl -sS "https://www.kladeebroker.co.th/api/v1/admin/motor-ws/status" \
+  -H "Authorization: Bearer TOKEN"
+
+--- 4.4 Ping BKI ผ่าน server เรา ---
+curl -sS -X POST "https://www.kladeebroker.co.th/api/v1/admin/motor-ws/ping" \
+  -H "Authorization: Bearer TOKEN"
+
+
+--------------------------------------------------------------------------------
+[5] อ่านผลลัพธ์
+--------------------------------------------------------------------------------
+
+HTTP 403 + HTML CloudFront     → IP ไม่อยู่ whitelist
+HTTP 401 + API000_F_T0001      → ถึง BKI แล้ว แต่ Basic Auth ไม่ผ่าน
+HTTP 400/422 + validation      → Auth ผ่านแล้ว (body ยังไม่ครบ)
+HTTP 200                       → สำเร็จ
+
+
+--------------------------------------------------------------------------------
+[6] สิ่งที่ห้ามส่งใน LINE
+--------------------------------------------------------------------------------
+
+- REST password จริง (B62C36AF...)
+- admin password ของเว็บเรา
+
+ถ้า BKI ขอ password → ส่งทางอีเมล / โทร / ช่อง secure ที่ทีม BKI กำหนด
+
+
+--------------------------------------------------------------------------------
+[7] ไฟล์ config ฝั่ง Kladee (อ้างอิงภายใน — ไม่ส่งให้ BKI)
+--------------------------------------------------------------------------------
+
+Server: api/config.php
+Section: motor_web_service
+
+- enabled: true
+- environment: uat
+- basic_auth_user: 03477
+- default_params: user_id=03477, agent_code=3477, agent_seq=00
+
+Spec อ้างอิง: Send to Partner - API_20260827/
+  BKI API Specification -Motor_(version1.4).xlsx
+
+================================================================================
