@@ -14,6 +14,8 @@ final class MotorWsFixtures
    */
   public static function volPremiumSample(): array
   {
+    // From Look up/bki_car_code_VOL_WithSumins_20260706.xlsx — TO327-03 (TOYOTA CAMRY 2.5 HV NAVI)
+    // SUM_INS 330000–390000; sample uses 350000
     return [
       'eff_date' => '07/10/2026',
       'risk' => '1',
@@ -22,16 +24,16 @@ final class MotorWsFixtures
       'car_use' => '1',
       'make' => 'TOYOTA',
       'make_code' => 'TO327-03',
-      'car_year' => '2025',
-      'cc' => '1800',
+      'car_year' => '2012',
+      'cc' => '2500',
       'seat' => '5',
-      'weight' => '1200',
+      'weight' => '0',
       'zone_use' => '1',
       'ncb' => '0',
       'deduct' => '0',
       'deduct_lib' => '0',
       'comp_req' => 'N',
-      'sum_ins' => '280000',
+      'sum_ins' => '350000',
       'agent_ref_no' => 'TEST-' . date('Ymd-His'),
     ];
   }
