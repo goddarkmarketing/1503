@@ -77,6 +77,26 @@ final class MotorBkiVol
     return self::normalizeCarDesc(trim(implode(' ', array_filter([$carName, $option, $extra]))));
   }
 
+  /** @return array<int,string> */
+  public static function listMakes(): array
+  {
+    $makes = [];
+    foreach (self::catalog()['items'] ?? [] as $row) {
+      if (!is_array($row)) {
+        continue;
+      }
+      $rowMake = strtoupper(trim((string)($row['make'] ?? '')));
+      if ($rowMake !== '') {
+        $makes[$rowMake] = true;
+      }
+    }
+
+    $makeList = array_keys($makes);
+    sort($makeList, SORT_STRING);
+
+    return $makeList;
+  }
+
   /**
    * @return array{items:array<int,array<string,mixed>>,makes:array<int,string>}
    */
@@ -87,16 +107,12 @@ final class MotorBkiVol
     $limit = max(1, min(200, $limit));
     $items = self::catalog()['items'] ?? [];
     $out = [];
-    $makes = [];
 
     foreach ($items as $row) {
       if (!is_array($row)) {
         continue;
       }
       $rowMake = strtoupper(trim((string)($row['make'] ?? '')));
-      if ($rowMake !== '') {
-        $makes[$rowMake] = true;
-      }
       if ($make !== '' && $rowMake !== $make) {
         continue;
       }
@@ -117,12 +133,9 @@ final class MotorBkiVol
       }
     }
 
-    $makeList = array_keys($makes);
-    sort($makeList, SORT_STRING);
-
     return [
       'items' => $out,
-      'makes' => $makeList,
+      'makes' => self::listMakes(),
     ];
   }
 
