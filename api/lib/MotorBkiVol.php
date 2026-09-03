@@ -272,8 +272,10 @@ final class MotorBkiVol
   {
     $aliases = [
       'package_name' => ['packname', 'PACKNAME', 'packageName'],
-      'total_prem_vol' => ['TOTAL_PREM_VOL', 'totalPremVol', 'TotalPremVol'],
+      'total_prem_vol' => ['TOTAL_PREM_VOL', 'totalPremVol', 'TotalPremVol', 'gross_total_vol', 'GROSS_TOTAL_VOL'],
       'gross_prem_vol' => ['GROSS_PREM_VOL', 'grossPremVol', 'GrossPremVol'],
+      'stamp' => ['STAMP', 'stamp_vol', 'STAMP_VOL', 'stampVol'],
+      'vat' => ['VAT', 'vat_vol', 'VAT_VOL', 'vatVol'],
       'pack_no' => ['PACK_NO', 'package_no', 'PACKAGE_NO'],
     ];
     foreach ($aliases as $target => $sources) {
@@ -287,10 +289,114 @@ final class MotorBkiVol
       }
     }
 
+    // Preserve compact sum-insured choices before dropping the large phase list.
+    foreach (['sumins_phase', 'SUMINS_PHASE'] as $phaseKey) {
+      if (!isset($pkg[$phaseKey]) || !is_array($pkg[$phaseKey])) {
+        continue;
+      }
+      $opts = [];
+      foreach ($pkg[$phaseKey] as $value) {
+        if (is_numeric($value) && (float)$value > 0) {
+          $opts[] = (float)$value;
+        }
+      }
+      if ($opts !== []) {
+        $pkg['sumins_options'] = array_values(array_unique($opts));
+      }
+      unset($pkg[$phaseKey]);
+    }
+
+    $amount = self::packagePremiumAmount($pkg);
+    if ($amount !== null) {
+      $pkg['premium_total'] = $amount;
+      if (!isset($pkg['total_prem_vol']) || $pkg['total_prem_vol'] === '' || $pkg['total_prem_vol'] === null
+        || (float)$pkg['total_prem_vol'] <= 0) {
+        $pkg['total_prem_vol'] = $amount;
+      }
+    }
+
     // Keep payload small for browser dataset storage.
-    unset($pkg['sumins_phase'], $pkg['SUMINS_PHASE'], $pkg['ncb_phase'], $pkg['NCB_PHASE']);
+    unset($pkg['ncb_phase'], $pkg['NCB_PHASE']);
 
     return $pkg;
+  }
+
+  /**
+   * Final voluntary premium from a BKI package row (spec: total_prem_vol).
+   *
+   * @param array<string,mixed> $pkg
+   */
+  public static function packagePremiumAmount(array $pkg): ?float
+  {
+    $total = self::pkgField($pkg, [
+      'premium_total', 'total_prem_vol', 'TOTAL_PREM_VOL', 'totalPremVol',
+      'gross_total_vol', 'GROSS_TOTAL_VOL', 'grossTotalVol',
+      'total_prem', 'TOTAL_PREM', 'total_premium', 'TOTAL_PREMIUM',
+    ], null);
+    if ($total !== null && $total !== '' && is_numeric($total) && (float)$total > 0) {
+      return round((float)$total, 2);
+    }
+
+    $gross = self::pkgField($pkg, ['gross_prem_vol', 'GROSS_PREM_VOL', 'grossPremVol', 'premium', 'PREMIUM'], null);
+    if ($gross === null || $gross === '' || !is_numeric($gross) || (float)$gross <= 0) {
+      return null;
+    }
+    $stamp = self::pkgField($pkg, ['stamp_vol', 'STAMP_VOL', 'stamp', 'STAMP'], 0);
+    $vat = self::pkgField($pkg, ['vat_vol', 'VAT_VOL', 'vat', 'VAT'], 0);
+    $stampN = is_numeric($stamp) ? (float)$stamp : 0.0;
+    $vatN = is_numeric($vat) ? (float)$vat : 0.0;
+    return round((float)$gross + $stampN + $vatN, 2);
+  }
+
+  /** @param array<int,array<string,mixed>> $packages */
+  public static function packagesHavePremium(array $packages): bool
+  {
+    foreach ($packages as $pkg) {
+      if (is_array($pkg) && self::packagePremiumAmount($pkg) !== null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Pick nearest allowed sum insured from package sumins_options / sumins_phase.
+   *
+   * @param array<int,array<string,mixed>> $packages
+   */
+  public static function suggestSumInsFromPackages(array $packages, $requested): ?string
+  {
+    $req = is_numeric($requested) ? (float)$requested : 0.0;
+    foreach ($packages as $pkg) {
+      if (!is_array($pkg)) {
+        continue;
+      }
+      $opts = $pkg['sumins_options'] ?? $pkg['sumins_phase'] ?? $pkg['SUMINS_PHASE'] ?? null;
+      if (!is_array($opts) || $opts === []) {
+        continue;
+      }
+      $best = null;
+      $bestDist = null;
+      foreach ($opts as $opt) {
+        if (!is_numeric($opt) || (float)$opt <= 0) {
+          continue;
+        }
+        $value = (float)$opt;
+        $dist = abs($value - $req);
+        if ($bestDist === null || $dist < $bestDist) {
+          $best = $value;
+          $bestDist = $dist;
+        }
+      }
+      if ($best === null) {
+        continue;
+      }
+      $asInt = (string)(int)round($best);
+      if ($asInt !== (string)(int)round($req)) {
+        return $asInt;
+      }
+    }
+    return null;
   }
 
   /** @param array<string,mixed> $body */

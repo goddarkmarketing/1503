@@ -478,6 +478,29 @@ try {
     try {
       $result = MotorWebService::calculateVolPremium($payload);
       $parsed = MotorBkiVol::parsePremiumResponse($result['body']);
+
+      // Some BKI packages return coverage fields but blank premium when sum_ins
+      // is outside the package phase — snap to nearest allowed and retry once.
+      if ($result['ok'] && !MotorBkiVol::packagesHavePremium($parsed['packages'])) {
+        $suggested = MotorBkiVol::suggestSumInsFromPackages(
+          $parsed['packages'],
+          $payload['sum_ins'] ?? ''
+        );
+        // Also try raw body before normalize stripped phases.
+        if ($suggested === null && is_array($result['body'])) {
+          $rawParsed = is_array($result['body']) ? $result['body'] : [];
+          $suggested = MotorBkiVol::suggestSumInsFromPackages(
+            array_values(array_filter($rawParsed, 'is_array')),
+            $payload['sum_ins'] ?? ''
+          );
+        }
+        if ($suggested !== null) {
+          $payload['sum_ins'] = $suggested;
+          $result = MotorWebService::calculateVolPremium($payload);
+          $parsed = MotorBkiVol::parsePremiumResponse($result['body']);
+        }
+      }
+
       $bkiStatus = (int)($result['status'] ?? 0);
       $message = null;
       if (!$result['ok']) {
@@ -491,6 +514,7 @@ try {
           $message = 'ไม่สามารถเชื่อมต่อ BKI ได้';
         }
       }
+      $first = $parsed['packages'][0] ?? null;
       Response::json([
         'ok' => $result['ok'],
         'status' => $bkiStatus,
@@ -498,6 +522,20 @@ try {
         'request' => $payload,
         'parsed' => $parsed,
         'body' => $result['body'],
+        'premium_debug' => is_array($first) ? [
+          'key_count' => count($first),
+          'premium_total' => $first['premium_total'] ?? null,
+          'total_prem_vol' => $first['total_prem_vol'] ?? null,
+          'gross_prem_vol' => $first['gross_prem_vol'] ?? null,
+          'stamp' => $first['stamp'] ?? null,
+          'vat' => $first['vat'] ?? null,
+          'status' => $first['status'] ?? null,
+          'remark' => $first['remark'] ?? null,
+          'packname' => $first['packname'] ?? $first['package_name'] ?? null,
+          'sumins_options' => isset($first['sumins_options']) && is_array($first['sumins_options'])
+            ? count($first['sumins_options'])
+            : 0,
+        ] : null,
       ], 200);
     } catch (Throwable $e) {
       Response::json([

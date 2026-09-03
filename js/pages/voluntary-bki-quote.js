@@ -886,6 +886,10 @@ App.VoluntaryBkiQuote = {
   getPackagePremium(pkg) {
     if (!pkg || typeof pkg !== 'object' || Array.isArray(pkg)) return null;
 
+    // Server-normalized canonical amount (preferred).
+    const canonical = this.parsePremiumNumber(this.pkgValue(pkg, ['premium_total', 'premiumTotal']));
+    if (canonical != null) return canonical;
+
     // Spec: total_prem_vol = final voluntary premium (includes stamp/vat).
     const totalKeys = [
       'total_prem_vol', 'TOTAL_PREM_VOL', 'totalPremVol', 'TotalPremVol',
@@ -918,6 +922,25 @@ App.VoluntaryBkiQuote = {
     if (gross != null) return gross;
 
     return this.findPremiumInObject(pkg);
+  },
+
+  describePackagePremium(pkg) {
+    if (!pkg || typeof pkg !== 'object') return 'no package';
+    const keys = Object.keys(pkg);
+    const pick = (name) => {
+      const raw = this.pkgValue(pkg, [name]);
+      return raw == null || raw === '' ? 'missing' : String(raw);
+    };
+    return [
+      `keys=${keys.length}`,
+      `premium_total=${pick('premium_total')}`,
+      `total_prem_vol=${pick('total_prem_vol')}`,
+      `gross_prem_vol=${pick('gross_prem_vol')}`,
+      `stamp=${pick('stamp')}`,
+      `vat=${pick('vat')}`,
+      `status=${pick('status')}`,
+      `remark=${pick('remark')}`
+    ].join(', ');
   },
 
   parsePremiumNumber(value) {
@@ -1011,7 +1034,16 @@ App.VoluntaryBkiQuote = {
   mapPackagesToPlans(packages) {
     const out = { '2plus': null, '3plus': null, '3': null };
     const assign = (plan, pkg) => {
-      if (plan && !out[plan]) out[plan] = pkg;
+      if (!plan || !pkg) return;
+      const existing = out[plan];
+      if (!existing) {
+        out[plan] = pkg;
+        return;
+      }
+      // Prefer the row that actually carries a readable premium.
+      if (this.getPackagePremium(existing) == null && this.getPackagePremium(pkg) != null) {
+        out[plan] = pkg;
+      }
     };
 
     packages.forEach((pkg) => {
@@ -2193,16 +2225,15 @@ App.VoluntaryBkiQuote = {
     if (errorMessage || !result?.ok || !rawPackages.length) {
       toast?.(errorMessage || result?.parsed?.status_message || 'BKI ตอบกลับแต่ไม่พบแพ็กเกจ — แสดงตารางเปรียบเทียบจากข้อมูลที่กรอก', 'error');
     } else if (premium == null) {
-      const sample = rawPackages[0] && typeof rawPackages[0] === 'object'
-        ? Object.keys(rawPackages[0]).slice(0, 12).join(', ')
-        : '';
+      const dbg = result?.premium_debug;
+      const sample = dbg
+        ? `premium_total=${dbg.premium_total ?? 'null'}, total_prem_vol=${dbg.total_prem_vol ?? 'null'}, gross_prem_vol=${dbg.gross_prem_vol ?? 'null'}, stamp=${dbg.stamp ?? 'null'}, vat=${dbg.vat ?? 'null'}, status=${dbg.status ?? 'null'}, remark=${dbg.remark ?? 'null'}, keys=${dbg.key_count ?? '?'}`
+        : this.describePackagePremium(rawPackages[0]);
       if (noteEl) {
         noteEl.hidden = false;
-        noteEl.textContent = sample
-          ? `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (ฟิลด์ที่ได้: ${sample})`
-          : 'อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI';
+        noteEl.textContent = `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (${sample})`;
       }
-      toast?.('ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนแผนหรือตรวจราคาอีกครั้ง', 'error');
+      toast?.('ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนทุนประกัน/รุ่นรถแล้วตรวจราคาอีกครั้ง', 'error');
     } else {
       toast?.('ตรวจสอบราคาจาก BKI แล้ว');
     }
