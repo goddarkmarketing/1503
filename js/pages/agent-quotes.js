@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="bki-quote-history__row-actions">
               <button type="button" class="btn-secondary btn-sm" data-action="view">ดู</button>
               <button type="button" class="btn-secondary btn-sm" data-action="print">พิมพ์</button>
-              <button type="button" class="btn-secondary btn-sm" data-action="download">ดาวน์โหลด</button>
+              <button type="button" class="btn-secondary btn-sm" data-action="download">ดาวน์โหลด PDF</button>
             </div>
           </td>
         </tr>`;
@@ -161,9 +161,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
       if (action === 'download') {
-        if (App.VoluntaryBkiQuote.downloadQuoteDoc(quote)) {
-          toast('ดาวน์โหลดใบเสนอราคาแล้ว');
-        }
+        await App.VoluntaryBkiQuote.downloadQuoteDoc(quote);
+        toast('ดาวน์โหลดใบเสนอราคา PDF แล้ว');
       }
     } catch (err) {
       toast(err.message || 'ดำเนินการไม่สำเร็จ', 'error');
@@ -177,10 +176,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       toast('กรุณาอนุญาตป๊อปอัปเพื่อพิมพ์', 'error');
     }
   });
-  document.getElementById('btnQuotePreviewDownload')?.addEventListener('click', () => {
+  document.getElementById('btnQuotePreviewDownload')?.addEventListener('click', async (e) => {
     if (!activeQuote) return;
-    if (App.VoluntaryBkiQuote.downloadQuoteDoc(activeQuote)) {
-      toast('ดาวน์โหลดใบเสนอราคาแล้ว');
+    const btn = e.currentTarget;
+    const prev = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'กำลังสร้าง PDF...';
+    try {
+      await App.VoluntaryBkiQuote.downloadQuoteDoc(activeQuote);
+      toast('ดาวน์โหลดใบเสนอราคา PDF แล้ว');
+    } catch (err) {
+      toast(err.message || 'ดาวน์โหลด PDF ไม่สำเร็จ', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = prev;
     }
   });
 

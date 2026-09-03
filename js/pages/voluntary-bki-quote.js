@@ -545,159 +545,210 @@ App.VoluntaryBkiQuote = {
 
     return `
       <div class="bki-issue__head">
-        <div>
-          <h3 class="bki-issue__title">ข้อมูลลูกค้า / ผู้เอาประกัน</h3>
-          <p class="bki-issue__sub">แผน <strong>${this.escapeHtml(planLabel || '—')}</strong> · เบี้ย <strong>${this.escapeHtml(premiumText || '—')}</strong></p>
+          <div>
+            <p class="bki-issue__eyebrow">ขั้นตอนออกกรมธรรม์ BKI</p>
+            <h3 class="bki-issue__title">กรอกข้อมูลลูกค้าและรถยนต์</h3>
+            <p class="bki-issue__sub">ตรวจทานแผนและเบี้ยก่อนยืนยัน — ระบบจะตัดวงเงินเมื่อออกกรมธรรม์สำเร็จ</p>
+          </div>
+          <button type="button" class="bki-issue__back" id="btnBkiIssueBack">กลับไปตาราง</button>
         </div>
-        <button type="button" class="bki-issue__back" id="btnBkiIssueBack">กลับไปตารางเปรียบเทียบ</button>
-      </div>
 
-      <div class="bki-issue__grid">
-        <div class="form-field bki-issue__field">
-          <span class="axa-quote__label">ประเภทผู้เอาประกัน <span class="form-req">*</span></span>
-          <div class="bki-issue__radioRow">
-            <label><input type="radio" name="idType" value="idcard" checked> บุคคลธรรมดา</label>
-            <label><input type="radio" name="idType" value="corporate"> นิติบุคคล</label>
-            <label><input type="radio" name="idType" value="passport"> ต่างชาติ</label>
+        <div class="bki-issue__summary">
+          <div>
+            <span class="bki-issue__summaryLabel">แผนที่เลือก</span>
+            <strong class="bki-issue__summaryValue">${this.escapeHtml(planLabel || '—')}</strong>
+          </div>
+          <div>
+            <span class="bki-issue__summaryLabel">เบี้ยประมาณการ</span>
+            <strong class="bki-issue__summaryValue bki-issue__summaryValue--premium">${this.escapeHtml(premiumText || '—')}</strong>
           </div>
         </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueGender">เพศ <span class="form-req">*</span></label>
-          <select id="issueGender" name="gender" class="form-input" required>
-            <option value="M" selected>ชาย</option>
-            <option value="F">หญิง</option>
-          </select>
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueTitle">คำนำหน้า <span class="form-req">*</span></label>
-          <select id="issueTitle" name="titleTh" class="form-input" required>${titleOpts}</select>
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueFirstName">ชื่อ <span class="form-req">*</span></label>
-          <input type="text" id="issueFirstName" name="firstName" class="form-input" required autocomplete="given-name">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueLastName">นามสกุล <span class="form-req">*</span></label>
-          <input type="text" id="issueLastName" name="lastName" class="form-input" required autocomplete="family-name">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueIdNumber">เลขบัตร / เลขทะเบียนนิติบุคคล <span class="form-req">*</span></label>
-          <input type="text" id="issueIdNumber" name="idNumber" class="form-input" required inputmode="numeric" maxlength="13">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueDob">วันเกิด <span class="form-req">*</span></label>
-          <input type="date" id="issueDob" name="dob" class="form-input" required>
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueOccupation">อาชีพ <span class="form-req">*</span></label>
-          <select id="issueOccupation" name="occupation" class="form-input" required>${occOpts}</select>
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issuePhone">เบอร์โทร <span class="form-req">*</span></label>
-          <input type="tel" id="issuePhone" name="phone" class="form-input" required autocomplete="tel">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueEmail">อีเมล</label>
-          <input type="email" id="issueEmail" name="email" class="form-input" autocomplete="email">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueHomeNumber">บ้านเลขที่ <span class="form-req">*</span></label>
-          <input type="text" id="issueHomeNumber" name="homeNumber" class="form-input" required>
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueMoo">หมู่ที่</label>
-          <input type="text" id="issueMoo" name="moo" class="form-input">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueSoi">ซอย</label>
-          <input type="text" id="issueSoi" name="soi" class="form-input">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueRoad">ถนน</label>
-          <input type="text" id="issueRoad" name="road" class="form-input">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueBuilding">อาคาร / หมู่บ้าน</label>
-          <input type="text" id="issueBuilding" name="building" class="form-input">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueProvince">จังหวัด <span class="form-req">*</span></label>
-          <select id="issueProvince" name="insuredProvinceCode" class="form-input" required>
-            ${provOpts}
-          </select>
-          <input type="hidden" id="issueProvinceName" name="insuredProvince" value="">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueDistrict">อำเภอ / เขต <span class="form-req">*</span></label>
-          <select id="issueDistrict" name="insuredDistrictCode" class="form-input" required disabled>
-            <option value="">เลือกจังหวัดก่อน</option>
-          </select>
-          <input type="hidden" id="issueDistrictName" name="insuredDistrict" value="">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueSubdistrict">ตำบล / แขวง <span class="form-req">*</span></label>
-          <select id="issueSubdistrict" name="insuredSubdistrictCode" class="form-input" required disabled>
-            <option value="">เลือกอำเภอก่อน</option>
-          </select>
-          <input type="hidden" id="issueSubdistrictName" name="insuredSubdistrict" value="">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issuePostal">รหัสไปรษณีย์ <span class="form-req">*</span></label>
-          <input type="text" id="issuePostal" name="insuredPostal" class="form-input" required inputmode="numeric" maxlength="5">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueLicensePlate">ทะเบียนรถ <span class="form-req">*</span></label>
-          <input type="text" id="issueLicensePlate" name="licensePlate" class="form-input" required placeholder="กก 1234">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueLicenseProvince">จังหวัดทะเบียน <span class="form-req">*</span></label>
-          <select id="issueLicenseProvince" name="licenseProvince" class="form-input" required>
-            ${plateOpts}
-          </select>
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueChassis">เลขตัวถัง</label>
-          <input type="text" id="issueChassis" name="chassisNo" class="form-input">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueEngine">เลขเครื่องยนต์</label>
-          <input type="text" id="issueEngine" name="engineNo" class="form-input">
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issueCarColor">สีรถ <span class="form-req">*</span></label>
-          <select id="issueCarColor" name="carColor" class="form-input" required>${colorOpts}</select>
-        </div>
-        <div class="form-field bki-issue__field">
-          <label for="issuePrintCust">วิธีจัดส่งกรมธรรม์</label>
-          <select id="issuePrintCust" name="print_cust" class="form-input">
-            <option value="1" selected>คู่ค้าพิมพ์และจัดส่ง</option>
-            <option value="2">BKI พิมพ์และจัดส่ง</option>
-            <option value="3">BKI ส่ง e-Policy</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="bki-issue__drivers" id="bkiIssueDrivers" hidden>
-        <h4 class="bki-issue__sectionTitle">ผู้ขับขี่ (ระบุชื่อ สูงสุด 5 คน)</h4>
-        <label class="bki-issue__consent">
-          <input type="checkbox" id="consentDrv" name="consent_drv" value="Y">
-          ยินยอมให้ตรวจสอบประวัติการขับขี่ (consent_drv)
-        </label>
-        ${this.buildDriverBlockHtml(1, { required: true })}
-        ${this.buildDriverBlockHtml(2)}
-        ${this.buildDriverBlockHtml(3)}
-        <details class="bki-issue__moreDrivers">
-          <summary>เพิ่มผู้ขับขี่คนที่ 4–5</summary>
-          ${this.buildDriverBlockHtml(4)}
-          ${this.buildDriverBlockHtml(5)}
-        </details>
-      </div>
+        <section class="bki-issue__section">
+          <div class="bki-issue__sectionHead">
+            <h4 class="bki-issue__sectionTitle">ผู้เอาประกัน</h4>
+            <p class="bki-issue__sectionHint">ข้อมูลตามบัตรประชาชนหรือเอกสารนิติบุคคล</p>
+          </div>
+          <div class="bki-issue__grid">
+            <div class="form-field bki-issue__field bki-issue__field--span2">
+              <span class="axa-quote__label">ประเภทผู้เอาประกัน <span class="form-req">*</span></span>
+              <div class="bki-issue__segment" role="radiogroup" aria-label="ประเภทผู้เอาประกัน">
+                <label class="bki-issue__segmentItem">
+                  <input type="radio" name="idType" value="idcard" checked>
+                  <span>บุคคลธรรมดา</span>
+                </label>
+                <label class="bki-issue__segmentItem">
+                  <input type="radio" name="idType" value="corporate">
+                  <span>นิติบุคคล</span>
+                </label>
+                <label class="bki-issue__segmentItem">
+                  <input type="radio" name="idType" value="passport">
+                  <span>ต่างชาติ</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueGender">เพศ <span class="form-req">*</span></label>
+              <select id="issueGender" name="gender" class="form-input" required>
+                <option value="M" selected>ชาย</option>
+                <option value="F">หญิง</option>
+              </select>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueTitle">คำนำหน้า <span class="form-req">*</span></label>
+              <select id="issueTitle" name="titleTh" class="form-input" required>${titleOpts}</select>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueFirstName">ชื่อ <span class="form-req">*</span></label>
+              <input type="text" id="issueFirstName" name="firstName" class="form-input" required autocomplete="given-name">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueLastName">นามสกุล <span class="form-req">*</span></label>
+              <input type="text" id="issueLastName" name="lastName" class="form-input" required autocomplete="family-name">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueIdNumber">เลขบัตร / เลขทะเบียนนิติบุคคล <span class="form-req">*</span></label>
+              <input type="text" id="issueIdNumber" name="idNumber" class="form-input" required inputmode="numeric" maxlength="13">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueDob">วันเกิด <span class="form-req">*</span></label>
+              <input type="date" id="issueDob" name="dob" class="form-input" required>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueOccupation">อาชีพ <span class="form-req">*</span></label>
+              <select id="issueOccupation" name="occupation" class="form-input" required>${occOpts}</select>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issuePhone">เบอร์โทร <span class="form-req">*</span></label>
+              <input type="tel" id="issuePhone" name="phone" class="form-input" required autocomplete="tel">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueEmail">อีเมล</label>
+              <input type="email" id="issueEmail" name="email" class="form-input" autocomplete="email">
+            </div>
+          </div>
+        </section>
 
-      <div class="bki-issue__actions">
-        <button type="button" class="axa-result__btn axa-result__btn--policy" id="btnBkiIssueSubmit">
-          ยืนยันออกกรมธรรม์
-        </button>
-      </div>`;
+        <section class="bki-issue__section">
+          <div class="bki-issue__sectionHead">
+            <h4 class="bki-issue__sectionTitle">ที่อยู่จัดส่ง</h4>
+            <p class="bki-issue__sectionHint">ใช้สำหรับพิมพ์และจัดส่งกรมธรรม์</p>
+          </div>
+          <div class="bki-issue__grid">
+            <div class="form-field bki-issue__field">
+              <label for="issueHomeNumber">บ้านเลขที่ <span class="form-req">*</span></label>
+              <input type="text" id="issueHomeNumber" name="homeNumber" class="form-input" required>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueMoo">หมู่ที่</label>
+              <input type="text" id="issueMoo" name="moo" class="form-input">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueSoi">ซอย</label>
+              <input type="text" id="issueSoi" name="soi" class="form-input">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueRoad">ถนน</label>
+              <input type="text" id="issueRoad" name="road" class="form-input">
+            </div>
+            <div class="form-field bki-issue__field bki-issue__field--span2">
+              <label for="issueBuilding">อาคาร / หมู่บ้าน</label>
+              <input type="text" id="issueBuilding" name="building" class="form-input">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueProvince">จังหวัด <span class="form-req">*</span></label>
+              <select id="issueProvince" name="insuredProvinceCode" class="form-input" required>
+                ${provOpts}
+              </select>
+              <input type="hidden" id="issueProvinceName" name="insuredProvince" value="">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueDistrict">อำเภอ / เขต <span class="form-req">*</span></label>
+              <select id="issueDistrict" name="insuredDistrictCode" class="form-input" required disabled>
+                <option value="">เลือกจังหวัดก่อน</option>
+              </select>
+              <input type="hidden" id="issueDistrictName" name="insuredDistrict" value="">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueSubdistrict">ตำบล / แขวง <span class="form-req">*</span></label>
+              <select id="issueSubdistrict" name="insuredSubdistrictCode" class="form-input" required disabled>
+                <option value="">เลือกอำเภอก่อน</option>
+              </select>
+              <input type="hidden" id="issueSubdistrictName" name="insuredSubdistrict" value="">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issuePostal">รหัสไปรษณีย์ <span class="form-req">*</span></label>
+              <input type="text" id="issuePostal" name="insuredPostal" class="form-input" required inputmode="numeric" maxlength="5">
+            </div>
+            <div class="form-field bki-issue__field bki-issue__field--span2">
+              <label for="issuePrintCust">วิธีจัดส่งกรมธรรม์</label>
+              <select id="issuePrintCust" name="print_cust" class="form-input">
+                <option value="1" selected>คู่ค้าพิมพ์และจัดส่ง</option>
+                <option value="2">BKI พิมพ์และจัดส่ง</option>
+                <option value="3">BKI ส่ง e-Policy</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="bki-issue__section">
+          <div class="bki-issue__sectionHead">
+            <h4 class="bki-issue__sectionTitle">รถยนต์</h4>
+            <p class="bki-issue__sectionHint">ทะเบียนและรายละเอียดรถที่ขอเอาประกัน</p>
+          </div>
+          <div class="bki-issue__grid">
+            <div class="form-field bki-issue__field">
+              <label for="issueLicensePlate">ทะเบียนรถ <span class="form-req">*</span></label>
+              <input type="text" id="issueLicensePlate" name="licensePlate" class="form-input" required placeholder="กก 1234">
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueLicenseProvince">จังหวัดทะเบียน <span class="form-req">*</span></label>
+              <select id="issueLicenseProvince" name="licenseProvince" class="form-input" required>
+                ${plateOpts}
+              </select>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueCarColor">สีรถ <span class="form-req">*</span></label>
+              <select id="issueCarColor" name="carColor" class="form-input" required>${colorOpts}</select>
+            </div>
+            <div class="form-field bki-issue__field">
+              <label for="issueChassis">เลขตัวถัง</label>
+              <input type="text" id="issueChassis" name="chassisNo" class="form-input">
+            </div>
+            <div class="form-field bki-issue__field bki-issue__field--span2">
+              <label for="issueEngine">เลขเครื่องยนต์</label>
+              <input type="text" id="issueEngine" name="engineNo" class="form-input">
+            </div>
+          </div>
+        </section>
+
+        <div class="bki-issue__drivers" id="bkiIssueDrivers" hidden>
+          <section class="bki-issue__section">
+            <div class="bki-issue__sectionHead">
+              <h4 class="bki-issue__sectionTitle">ผู้ขับขี่ที่ระบุชื่อ</h4>
+              <p class="bki-issue__sectionHint">สูงสุด 5 คน ตามสเปก BKI</p>
+            </div>
+            <label class="bki-issue__consent">
+              <input type="checkbox" id="consentDrv" name="consent_drv" value="Y">
+              ยินยอมให้ตรวจสอบประวัติการขับขี่ (consent_drv)
+            </label>
+            ${this.buildDriverBlockHtml(1, { required: true })}
+            ${this.buildDriverBlockHtml(2)}
+            ${this.buildDriverBlockHtml(3)}
+            <details class="bki-issue__moreDrivers">
+              <summary>เพิ่มผู้ขับขี่คนที่ 4–5</summary>
+              ${this.buildDriverBlockHtml(4)}
+              ${this.buildDriverBlockHtml(5)}
+            </details>
+          </section>
+        </div>
+
+        <div class="bki-issue__actions">
+          <button type="button" class="bki-issue__back" id="btnBkiIssueCancel">ยกเลิก</button>
+          <button type="button" class="axa-result__btn axa-result__btn--policy" id="btnBkiIssueSubmit">
+            ยืนยันออกกรมธรรม์
+          </button>
+        </div>`;
   },
 
   buildResultHtml(form) {
@@ -1705,28 +1756,74 @@ App.VoluntaryBkiQuote = {
     return true;
   },
 
-  buildQuoteFileHtml(quote) {
-    return `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
-      <title>${this.escapeHtml(quote.id || 'ใบเสนอราคา')}</title>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
-      <style>${this.quotePrintCss()}</style></head>
-      <body class="bki-quote-print">${this.buildQuoteDocHtml(quote)}</body></html>`;
+  ensureHtml2Pdf() {
+    if (typeof window.html2pdf === 'function') return Promise.resolve(window.html2pdf);
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-html2pdf]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(window.html2pdf));
+        existing.addEventListener('error', () => reject(new Error('โหลดโมดูล PDF ไม่สำเร็จ')));
+        return;
+      }
+      const base = document.body?.dataset?.basePath || '../';
+      const script = document.createElement('script');
+      script.src = `${base}js/vendor/html2pdf.bundle.min.js`;
+      script.dataset.html2pdf = '1';
+      script.onload = () => {
+        if (typeof window.html2pdf === 'function') resolve(window.html2pdf);
+        else reject(new Error('โหลดโมดูล PDF ไม่สำเร็จ'));
+      };
+      script.onerror = () => reject(new Error('โหลดโมดูล PDF ไม่สำเร็จ'));
+      document.head.appendChild(script);
+    });
   },
 
-  downloadQuoteDoc(quote) {
+  async downloadQuoteDoc(quote) {
     if (!quote) return false;
-    const html = this.buildQuoteFileHtml(quote);
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = String(quote.createdAt || '').slice(0, 10).replace(/-/g, '') || 'quote';
-    a.href = url;
-    a.download = `${quote.id || 'QT'}-${stamp}.html`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-    return true;
+    const host = document.createElement('div');
+    host.setAttribute('aria-hidden', 'true');
+    host.style.cssText = 'position:fixed;left:-12000px;top:0;width:210mm;padding:0;margin:0;background:#fff;';
+    const style = document.createElement('style');
+    style.textContent = this.quotePrintCss();
+    host.appendChild(style);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = this.buildQuoteDocHtml(quote);
+    host.appendChild(wrap);
+    document.body.appendChild(host);
+
+    try {
+      await this.ensureHtml2Pdf();
+      await this.waitImages?.(host);
+      const imgs = [...host.querySelectorAll('img')];
+      await Promise.all(imgs.map((img) => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise((resolve) => {
+          const done = () => resolve();
+          img.addEventListener('load', done, { once: true });
+          img.addEventListener('error', done, { once: true });
+          setTimeout(done, 3000);
+        });
+      }));
+
+      const stamp = String(quote.createdAt || '').slice(0, 10).replace(/-/g, '') || 'quote';
+      const target = host.querySelector('.bki-quote-doc') || wrap;
+      await window.html2pdf().set({
+        margin: [12, 12, 12, 12],
+        filename: `${quote.id || 'QT'}-${stamp}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      }).from(target).save();
+      return true;
+    } finally {
+      host.remove();
+    }
   },
 
   showQuoteSuccess(form, quote, { toast } = {}) {
@@ -1746,7 +1843,7 @@ App.VoluntaryBkiQuote = {
         </div>
         <div class="bki-quote-panel__actions">
           <button type="button" class="bki-issue__back" id="btnBkiQuoteBack">ปิด</button>
-          <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnBkiQuoteDownload">ดาวน์โหลด</button>
+          <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnBkiQuoteDownload">ดาวน์โหลด PDF</button>
           <button type="button" class="axa-result__btn axa-result__btn--policy" id="btnBkiQuotePrint">พิมพ์ใบเสนอราคา</button>
         </div>
       </div>
@@ -1760,11 +1857,19 @@ App.VoluntaryBkiQuote = {
         toast?.('กรุณาอนุญาตป๊อปอัปเพื่อพิมพ์ใบเสนอราคา', 'error');
       }
     });
-    panel.querySelector('#btnBkiQuoteDownload')?.addEventListener('click', () => {
-      if (this.downloadQuoteDoc(quote)) {
-        toast?.('ดาวน์โหลดใบเสนอราคาแล้ว');
-      } else {
-        toast?.('ดาวน์โหลดไม่สำเร็จ', 'error');
+    panel.querySelector('#btnBkiQuoteDownload')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const prev = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'กำลังสร้าง PDF...';
+      try {
+        await this.downloadQuoteDoc(quote);
+        toast?.('ดาวน์โหลดใบเสนอราคา PDF แล้ว');
+      } catch (err) {
+        toast?.(err.message || 'ดาวน์โหลด PDF ไม่สำเร็จ', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = prev;
       }
     });
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1935,10 +2040,12 @@ App.VoluntaryBkiQuote = {
     const driversBlock = panel.querySelector('#bkiIssueDrivers');
     if (driversBlock) driversBlock.hidden = driverMode !== 'named';
 
-    panel.querySelector('#btnBkiIssueBack')?.addEventListener('click', () => {
+    const backToCompare = () => {
       this.hidePanel(panel);
       resultHost.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    };
+    panel.querySelector('#btnBkiIssueBack')?.addEventListener('click', backToCompare);
+    panel.querySelector('#btnBkiIssueCancel')?.addEventListener('click', backToCompare);
 
     panel.querySelector('#btnBkiIssueSubmit')?.addEventListener('click', () => {
       this.submitIssuePolicy(form, { toast });
