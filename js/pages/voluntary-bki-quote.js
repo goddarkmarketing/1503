@@ -63,6 +63,8 @@ App.MotorBkiService = {
 App.VoluntaryBkiQuote = {
   _variants: [],
   _lookups: null,
+  _packagesByPlan: {},
+  _premiumsByPlan: {},
 
   CUSTOMER_TITLES: ['นาย', 'นาง', 'นางสาว', 'เด็กชาย', 'เด็กหญิง'],
   CAR_COLORS: [
@@ -871,11 +873,14 @@ App.VoluntaryBkiQuote = {
     if (!pkg || typeof pkg !== 'object') return null;
 
     const keys = [
-      'gross_total_vol', 'GROSS_TOTAL_VOL', 'gross_total', 'GROSS_TOTAL',
-      'total_prem', 'TOTAL_PREM', 'total_premium', 'TOTAL_PREMIUM',
-      'premium_total', 'PREMIUM_TOTAL',
-      'gross_prem_vol', 'GROSS_PREM_VOL', 'net_premium', 'NET_PREMIUM',
-      'premium', 'PREMIUM'
+      'gross_total_vol', 'GROSS_TOTAL_VOL', 'grossTotalVol', 'GrossTotalVol',
+      'gross_total', 'GROSS_TOTAL', 'grossTotal', 'GrossTotal',
+      'total_prem', 'TOTAL_PREM', 'totalPrem', 'TotalPrem',
+      'total_premium', 'TOTAL_PREMIUM', 'totalPremium', 'TotalPremium',
+      'premium_total', 'PREMIUM_TOTAL', 'premiumTotal',
+      'gross_prem_vol', 'GROSS_PREM_VOL', 'grossPremVol', 'GrossPremVol',
+      'net_premium', 'NET_PREMIUM', 'netPremium', 'NetPremium',
+      'premium', 'PREMIUM', 'prem', 'PREM'
     ];
     const raw = this.pkgValue(pkg, keys);
     if (raw != null && raw !== '') {
@@ -883,9 +888,15 @@ App.VoluntaryBkiQuote = {
       if (direct != null) return direct;
     }
 
-    const stamp = this.parsePremiumNumber(this.pkgValue(pkg, ['stamp_vol', 'STAMP_VOL', 'stamp', 'STAMP']));
-    const vat = this.parsePremiumNumber(this.pkgValue(pkg, ['vat_vol', 'VAT_VOL', 'vat', 'VAT']));
-    const gross = this.parsePremiumNumber(this.pkgValue(pkg, ['gross_prem_vol', 'GROSS_PREM_VOL']));
+    const stamp = this.parsePremiumNumber(this.pkgValue(pkg, [
+      'stamp_vol', 'STAMP_VOL', 'stampVol', 'StampVol', 'stamp', 'STAMP'
+    ]));
+    const vat = this.parsePremiumNumber(this.pkgValue(pkg, [
+      'vat_vol', 'VAT_VOL', 'vatVol', 'VatVol', 'vat', 'VAT'
+    ]));
+    const gross = this.parsePremiumNumber(this.pkgValue(pkg, [
+      'gross_prem_vol', 'GROSS_PREM_VOL', 'grossPremVol', 'GrossPremVol'
+    ]));
     if (gross != null && (stamp != null || vat != null)) {
       return gross + (stamp || 0) + (vat || 0);
     }
@@ -910,7 +921,8 @@ App.VoluntaryBkiQuote = {
       return null;
     }
     for (const [key, value] of Object.entries(obj)) {
-      if (/prem|total|gross|net/i.test(key) && (typeof value === 'string' || typeof value === 'number')) {
+      if (/prem|total|gross|net/i.test(key) && !/comp|compulsory|prb|sum|stamp|vat|tax/i.test(key)
+        && (typeof value === 'string' || typeof value === 'number')) {
         const n = this.parsePremiumNumber(value);
         if (n != null) return n;
       }
@@ -935,6 +947,13 @@ App.VoluntaryBkiQuote = {
   },
 
   resolvePlanPremium(form, plan) {
+    if (!plan) return null;
+    const cached = this._premiumsByPlan?.[plan];
+    if (cached != null) {
+      const n = this.parsePremiumNumber(cached);
+      if (n != null) return n;
+    }
+
     const root = form.querySelector('#bkiQuoteResult');
     const packages = this.getPackagesByPlan(form);
     const stored = root?.dataset?.[`premium_${plan}`];
@@ -959,6 +978,21 @@ App.VoluntaryBkiQuote = {
     return null;
   },
 
+  /** Prefer preferred plan; otherwise first plan that has a resolvable premium. */
+  resolvePlanWithPremium(form, preferredPlan) {
+    const order = [preferredPlan, '3plus', '2plus', '3']
+      .filter((plan, idx, arr) => plan && arr.indexOf(plan) === idx);
+    for (const plan of order) {
+      const premium = this.resolvePlanPremium(form, plan);
+      if (premium != null) return { plan, premium };
+    }
+    return null;
+  },
+
+  plansWithPremium(form) {
+    return ['2plus', '3plus', '3'].filter((plan) => this.resolvePlanPremium(form, plan) != null);
+  },
+
   mapPackagesToPlans(packages) {
     const out = { '2plus': null, '3plus': null, '3': null };
     const assign = (plan, pkg) => {
@@ -967,11 +1001,17 @@ App.VoluntaryBkiQuote = {
 
     packages.forEach((pkg) => {
       const text = String(
-        this.pkgValue(pkg, ['package_name', 'plan_name', 'package_code', 'PACKAGE_CODE', 'plan_code']) || ''
+        this.pkgValue(pkg, [
+          'package_name', 'PACKAGE_NAME', 'plan_name', 'PLAN_NAME',
+          'package_code', 'PACKAGE_CODE', 'plan_code', 'PLAN_CODE',
+          'class_type', 'CLASS_TYPE', 'cover_type', 'COVER_TYPE', 'type'
+        ]) || ''
       ).toUpperCase();
-      if (/2\s*\+|CLASS\s*2|TYPE\s*2|ชั้น\s*2/i.test(text)) assign('2plus', pkg);
-      else if (/3\s*\+|CLASS\s*3\s*\+|TYPE\s*3\s*\+|ชั้น\s*3\s*\+/i.test(text)) assign('3plus', pkg);
-      else if (/^3[^+]|CLASS\s*3[^+]|TYPE\s*3[^+]|ชั้น\s*3[^+]/i.test(text)) assign('3', pkg);
+      if (/2\s*\+|CLASS\s*2|TYPE\s*2|ชั้น\s*2|2P\+|02\+/i.test(text)) assign('2plus', pkg);
+      else if (/3\s*\+|CLASS\s*3\s*\+|TYPE\s*3\s*\+|ชั้น\s*3\s*\+|3P\+/i.test(text)) assign('3plus', pkg);
+      else if (/(^|[^+\d])3([^+]|$)|CLASS\s*3([^+]|$)|TYPE\s*3([^+]|$)|ชั้น\s*3([^+]|$)/i.test(text)) {
+        assign('3', pkg);
+      }
     });
 
     const order = ['2plus', '3plus', '3'];
@@ -986,6 +1026,17 @@ App.VoluntaryBkiQuote = {
     });
 
     return out;
+  },
+
+  pickDefaultPlan(packagesByPlan) {
+    const order = ['3plus', '2plus', '3'];
+    for (const plan of order) {
+      if (this.getPackagePremium(packagesByPlan?.[plan]) != null) return plan;
+    }
+    for (const plan of order) {
+      if (packagesByPlan?.[plan]) return plan;
+    }
+    return '3plus';
   },
 
   applyVariantToForm(form, variant) {
@@ -1073,20 +1124,17 @@ App.VoluntaryBkiQuote = {
     const root = form.querySelector('#bkiQuoteResult');
     if (!root || root.hidden) return;
 
-    let packagesByPlan = {};
-    try {
-      packagesByPlan = JSON.parse(root.dataset.packages || '{}');
-    } catch {
-      packagesByPlan = {};
-    }
-
+    let packagesByPlan = this.getPackagesByPlan(form);
     this.syncResultDisplays(form, packagesByPlan);
 
+    const premiums = {};
     ['2plus', '3plus', '3'].forEach((plan) => {
       const premium = this.getPackagePremium(packagesByPlan[plan]);
-      if (root) {
-        if (premium != null) root.dataset[`premium_${plan}`] = String(premium);
-        else delete root.dataset[`premium_${plan}`];
+      if (premium != null) {
+        premiums[plan] = premium;
+        root.dataset[`premium_${plan}`] = String(premium);
+      } else {
+        delete root.dataset[`premium_${plan}`];
       }
       const el = root.querySelector(`[data-price-for="${plan}"]`);
       if (el) {
@@ -1095,16 +1143,31 @@ App.VoluntaryBkiQuote = {
           : `${this.money(premium)} บาท/ปี`;
       }
     });
+    this._premiumsByPlan = premiums;
   },
 
   getPackagesByPlan(form) {
-    const root = form.querySelector('#bkiQuoteResult');
+    if (this._packagesByPlan && Object.keys(this._packagesByPlan).length) {
+      return this._packagesByPlan;
+    }
+    const root = form?.querySelector('#bkiQuoteResult');
     if (!root) return {};
     try {
       return JSON.parse(root.dataset.packages || '{}');
     } catch {
       return {};
     }
+  },
+
+  rememberPackages(packagesByPlan) {
+    this._packagesByPlan = packagesByPlan || {};
+    const premiums = {};
+    ['2plus', '3plus', '3'].forEach((plan) => {
+      const premium = this.getPackagePremium(this._packagesByPlan[plan]);
+      if (premium != null) premiums[plan] = premium;
+    });
+    this._premiumsByPlan = premiums;
+    return this._packagesByPlan;
   },
 
   readCustomerForm(form) {
@@ -1575,18 +1638,24 @@ App.VoluntaryBkiQuote = {
     const panel = form.querySelector('#bkiQuotePanel');
     if (!resultHost || !panel) return;
 
-    const packages = this.getPackagesByPlan(form);
-    const premium = this.resolvePlanPremium(form, plan);
-    if (premium == null) {
-      const hasPackages = Object.values(packages).some(Boolean);
+    const picked = this.resolvePlanWithPremium(form, plan);
+    if (!picked) {
       toast?.(
-        hasPackages
+        this.plansWithPremium(form).length
           ? 'ไม่พบเบี้ยในแผนที่เลือก — คลิกหัวคอลัมน์แผนที่มีราคา หรือกดตรวจสอบราคาอีกครั้ง'
-          : 'กรุณาตรวจสอบราคาและเลือกแผนที่มีเบี้ยก่อนสร้างใบเสนอราคา',
+          : 'กรุณาตรวจสอบราคาให้มีเบี้ยก่อนสร้างใบเสนอราคา',
         'error'
       );
       return;
     }
+
+    if (picked.plan !== plan) {
+      this.setSelectedPlan(resultHost, picked.plan);
+      toast?.(`ใช้แผน ${this.planLabel(picked.plan)} เพราะแผนที่เลือกยังไม่มีเบี้ย`, 'success');
+    }
+
+    plan = picked.plan;
+    const premium = picked.premium;
 
     this.hidePanel(form.querySelector('#bkiIssuePanel'));
     panel.innerHTML = this.buildQuoteFormHtml({
@@ -1610,10 +1679,12 @@ App.VoluntaryBkiQuote = {
 
   async submitCreateQuote(form, { toast } = {}) {
     const panel = form.querySelector('#bkiQuotePanel');
-    const plan = panel?.dataset?.plan || this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
-    const premium = Number(panel?.dataset?.premium || this.resolvePlanPremium(form, plan) || 0);
+    const preferred = panel?.dataset?.plan || this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
+    const picked = this.resolvePlanWithPremium(form, preferred);
+    const plan = picked?.plan || preferred;
+    const premium = Number(panel?.dataset?.premium || picked?.premium || 0);
     if (!plan || !(premium > 0)) {
-      toast?.('กรุณาตรวจสอบราคาและเลือกแผนที่มีเบี้ยก่อนสร้างใบเสนอราคา', 'error');
+      toast?.('กรุณาตรวจสอบราคาให้มีเบี้ยก่อนสร้างใบเสนอราคา', 'error');
       return;
     }
 
@@ -1684,17 +1755,24 @@ App.VoluntaryBkiQuote = {
     await this.ensureLookups();
 
     const packages = this.getPackagesByPlan(form);
-    const premium = this.resolvePlanPremium(form, plan);
-    if (premium == null) {
-      const hasPackages = Object.values(packages).some(Boolean);
+    const picked = this.resolvePlanWithPremium(form, plan);
+    if (!picked) {
       toast?.(
-        hasPackages
+        this.plansWithPremium(form).length || Object.values(packages).some(Boolean)
           ? 'ไม่พบเบี้ยในแผนที่เลือก — คลิกหัวคอลัมน์แผนที่มีราคา หรือกดตรวจสอบราคาอีกครั้ง'
           : 'กรุณาตรวจสอบราคาและเลือกแผนที่มีเบี้ยก่อนสร้างกรมธรรม์',
         'error'
       );
       return;
     }
+
+    if (picked.plan !== plan) {
+      this.setSelectedPlan(resultHost, picked.plan);
+      toast?.(`ใช้แผน ${this.planLabel(picked.plan)} เพราะแผนที่เลือกยังไม่มีเบี้ย`, 'success');
+    }
+
+    plan = picked.plan;
+    const premium = picked.premium;
 
     this.hidePanel(form.querySelector('#bkiQuotePanel'));
 
@@ -1846,16 +1924,27 @@ App.VoluntaryBkiQuote = {
     });
 
     host.addEventListener('change', (e) => {
+      if (e.target?.matches?.('input[name^="buyPrb_"]')) {
+        const match = String(e.target.name || '').match(/^buyPrb_(.+)$/);
+        if (match?.[1] && e.target.checked) {
+          this.setSelectedPlan(host, match[1]);
+        }
+        return;
+      }
       if (e.target?.matches?.('select[data-plan]')) {
         this.syncHiddenFromTable(form);
-        this.syncResultDisplays(form, JSON.parse(host.dataset.packages || '{}'));
+        this.syncResultDisplays(form, this.getPackagesByPlan(form));
       }
     });
 
     const parsed = result?.parsed || {};
     const packages = parsed.packages || [];
-    const packagesByPlan = this.mapPackagesToPlans(packages);
-    host.dataset.packages = JSON.stringify(packagesByPlan);
+    const packagesByPlan = this.rememberPackages(this.mapPackagesToPlans(packages));
+    try {
+      host.dataset.packages = JSON.stringify(packagesByPlan);
+    } catch {
+      host.dataset.packages = '{}';
+    }
 
     const noteEl = host.querySelector('#bkiResultNote');
     const statusMsg = errorMessage || result?.message || parsed.status_message || '';
@@ -1871,10 +1960,10 @@ App.VoluntaryBkiQuote = {
     }
 
     host.hidden = false;
-    const defaultPlan = packagesByPlan['3plus'] ? '3plus'
-      : (packagesByPlan['2plus'] ? '2plus' : '3');
-    const current = host.dataset.selectedPlan || '3plus';
-    this.setSelectedPlan(host, packagesByPlan[current] ? current : defaultPlan);
+    const defaultPlan = this.pickDefaultPlan(packagesByPlan);
+    const current = host.dataset.selectedPlan || defaultPlan;
+    const currentPremium = this.getPackagePremium(packagesByPlan[current]);
+    this.setSelectedPlan(host, currentPremium != null ? current : defaultPlan);
     this.refreshResultPrices(form);
     host.scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
@@ -2000,10 +2089,10 @@ App.VoluntaryBkiQuote = {
 
     this.showResult(form, { toast, result, errorMessage });
 
-    const packagesByPlan = this.mapPackagesToPlans(result?.parsed?.packages || []);
+    const packagesByPlan = this._packagesByPlan || this.mapPackagesToPlans(result?.parsed?.packages || []);
     const selectedPlan = this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
     const pkg = packagesByPlan[selectedPlan] || result?.parsed?.packages?.[0];
-    const premium = this.getPackagePremium(pkg);
+    const premium = this.getPackagePremium(pkg) || this.resolvePlanPremium(form, selectedPlan);
 
     if (premiumEl && premium != null) {
       premiumEl.dataset.premium = String(premium);

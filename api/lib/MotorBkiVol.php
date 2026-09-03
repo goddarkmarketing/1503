@@ -241,16 +241,15 @@ final class MotorBkiVol
       if (isset($body['status_message']) || isset($body['STATUS_MESSAGE']) || isset($body['message'])) {
         $statusMessage = (string)($body['status_message'] ?? $body['STATUS_MESSAGE'] ?? $body['message'] ?? '');
       }
-
-      $list = null;
-      if (isset($body['packages']) && is_array($body['packages'])) {
-        $list = $body['packages'];
-      } elseif (isset($body['data']) && is_array($body['data'])) {
-        $list = $body['data'];
-      } elseif (array_is_list($body)) {
-        $list = $body;
+      if (isset($body['ERR_CODE']) || isset($body['err_code'])) {
+        $statusCode = $statusCode ?: (string)($body['ERR_CODE'] ?? $body['err_code'] ?? '');
+      }
+      if (isset($body['ERR_MSG']) || isset($body['err_msg'])) {
+        $err = $body['ERR_MSG'] ?? $body['err_msg'];
+        $statusMessage = $statusMessage ?: (is_array($err) ? implode(' ', array_map('strval', $err)) : (string)$err);
       }
 
+      $list = self::extractPackageList($body);
       if (is_array($list)) {
         foreach ($list as $row) {
           if (is_array($row)) {
@@ -266,6 +265,59 @@ final class MotorBkiVol
       'packages' => $packages,
       'raw' => $body,
     ];
+  }
+
+  /** @param array<string,mixed> $body */
+  private static function extractPackageList(array $body): ?array
+  {
+    $candidates = [
+      $body['packages'] ?? null,
+      $body['Packages'] ?? null,
+      $body['package'] ?? null,
+      $body['Package'] ?? null,
+      $body['packageList'] ?? null,
+      $body['PackageList'] ?? null,
+      $body['data'] ?? null,
+      $body['Data'] ?? null,
+      $body['result'] ?? null,
+      $body['Result'] ?? null,
+    ];
+
+    foreach ($candidates as $candidate) {
+      if (!is_array($candidate)) {
+        continue;
+      }
+      if ($candidate === []) {
+        continue;
+      }
+      if (array_is_list($candidate)) {
+        return $candidate;
+      }
+      // Nested list under common keys.
+      foreach (['packages', 'Packages', 'packageList', 'PackageList', 'items', 'Items', 'data', 'Data'] as $key) {
+        if (isset($candidate[$key]) && is_array($candidate[$key]) && array_is_list($candidate[$key])) {
+          return $candidate[$key];
+        }
+      }
+      // Single package object with premium-ish fields.
+      if (
+        isset($candidate['gross_total_vol'])
+        || isset($candidate['GROSS_TOTAL_VOL'])
+        || isset($candidate['grossTotalVol'])
+        || isset($candidate['package_code'])
+        || isset($candidate['PACKAGE_CODE'])
+        || isset($candidate['premium'])
+        || isset($candidate['PREMIUM'])
+      ) {
+        return [$candidate];
+      }
+    }
+
+    if (array_is_list($body)) {
+      return $body;
+    }
+
+    return null;
   }
 
   public static function formatEffDate(string $value): string
