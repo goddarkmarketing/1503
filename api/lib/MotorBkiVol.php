@@ -342,6 +342,17 @@ final class MotorBkiVol
           }
         }
       }
+
+      if (($statusMessage === null || $statusMessage === '') && $packages !== []) {
+        $first = $packages[0];
+        $pkgStatus = trim((string)($first['status'] ?? ''));
+        $packname = trim((string)($first['packname'] ?? $first['package_name'] ?? ''));
+        if ($pkgStatus !== '' && $pkgStatus !== '0' && !self::packagesHavePremium($packages)) {
+          $statusMessage = $packname !== ''
+            ? $packname
+            : ('BKI package status=' . $pkgStatus);
+        }
+      }
     }
 
     return [

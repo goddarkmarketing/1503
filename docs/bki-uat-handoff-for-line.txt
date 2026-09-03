@@ -157,7 +157,50 @@ curl -sS -X POST "https://www.kladeebroker.co.th/api/v1/admin/motor-ws/ping" \
 HTTP 403 + HTML CloudFront     → IP ไม่อยู่ whitelist
 HTTP 401 + API000_F_T0001      → ถึง BKI แล้ว แต่ Basic Auth ไม่ผ่าน
 HTTP 400/422 + validation      → Auth ผ่านแล้ว (body ยังไม่ครบ)
-HTTP 200                       → สำเร็จ
+HTTP 200 + packname=
+  "Package is unavailable, please contact our Underwriter"
+  + status=01 / remark=01 / เบี้ย=0
+                         → Auth ผ่านแล้ว แต่ agent ยังไม่มีแพ็กเกจ/เรท
+                           (ต้องให้ Underwriter เปิดผลิตภัณฑ์ให้)
+
+
+--------------------------------------------------------------------------------
+[5.1] ข้อความสำเร็จรูป — เมื่อได้ status=01 (แพ็กเกจยังไม่เปิด)
+--------------------------------------------------------------------------------
+
+เรียนทีม BKI Web Partner / Underwriter
+
+Kladee Broker ทดสอบ vol/premium/calculate บน UAT แล้ว Auth ผ่าน (HTTP 200)
+แต่ทุกรุ่นรถที่ได้ทดลอง ระบบตอบกลับแพ็กเกจแบบนี้:
+
+- packname: Package is unavailable, please contact our Underwriter
+- status: 01
+- remark: 01
+- total_prem_vol / gross_prem_vol: 0
+
+■ Environment: UAT
+■ URL: https://bkiwpapiuat.bangkokinsurance.com/vol/premium/calculate
+■ REST user / user_id: 03477
+■ agent_code: 3477
+■ agent_seq: 00
+
+■ ตัวอย่างรถที่ลองแล้วได้สถานะเดียวกัน
+- TOYOTA TO327-03 ปี 2012 ทุน 350000
+- HONDA HO251-01 ปี 2019 ทุนตาม lookup
+- BMW BM9160-01 ปี 2015 ทุนตาม lookup
+
+■ สิ่งที่ส่งครบตามสเปกแล้ว
+- car_brand / car_code / car_year / car_type / car_use
+- drv_flag=N, consent_drv=N (unnamed)
+- cctv_flag, comp_req, sum_ins, eff_date
+
+รบกวนช่วย
+1. เปิดแพ็กเกจ Motor Voluntary (2+/3+/3) ให้ agent 3477/00 บน UAT
+2. ยืนยันว่ารหัสรถใน lookup VOL ใช้คำนวณเบี้ยกับ agent นี้ได้
+3. แจ้งตัวอย่าง make_code + ปี + ทุน ที่ควรได้เบี้ยจริงบน UAT
+
+ขอบคุณครับ
+Kladee Broker
 
 
 --------------------------------------------------------------------------------

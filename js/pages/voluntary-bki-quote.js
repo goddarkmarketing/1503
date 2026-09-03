@@ -2234,21 +2234,23 @@ App.VoluntaryBkiQuote = {
       toast?.(errorMessage || result?.parsed?.status_message || 'BKI ตอบกลับแต่ไม่พบแพ็กเกจ — แสดงตารางเปรียบเทียบจากข้อมูลที่กรอก', 'error');
     } else if (premium == null) {
       const dbg = result?.premium_debug;
+      const packname = String(dbg?.packname || rawPackages[0]?.packname || rawPackages[0]?.package_name || '').trim();
       const pkgStatus = dbg?.status != null ? String(dbg.status) : '';
+      const unavailable = /unavailable|underwriter|ไม่พร้อม|ไม่มีแพ|ติดต่อ/i.test(packname)
+        || (pkgStatus === '01' && Number(dbg?.total_prem_vol || 0) <= 0);
       const sample = dbg
-        ? `premium_total=${dbg.premium_total ?? 'null'}, total_prem_vol=${dbg.total_prem_vol ?? 'null'}, gross_prem_vol=${dbg.gross_prem_vol ?? 'null'}, stamp=${dbg.stamp ?? 'null'}, vat=${dbg.vat ?? 'null'}, status=${dbg.status ?? 'null'}, remark=${dbg.remark ?? 'null'}, keys=${dbg.key_count ?? '?'}`
+        ? `premium_total=${dbg.premium_total ?? 'null'}, total_prem_vol=${dbg.total_prem_vol ?? 'null'}, status=${dbg.status ?? 'null'}, remark=${dbg.remark ?? 'null'}, packname=${packname || '-'}`
         : this.describePackagePremium(rawPackages[0]);
-      const bkiRejected = pkgStatus !== '' && pkgStatus.toLowerCase() !== 'null'
-        && Number(dbg?.total_prem_vol || 0) <= 0
-        && Number(dbg?.gross_prem_vol || 0) <= 0;
       if (noteEl) {
         noteEl.hidden = false;
-        noteEl.textContent = bkiRejected
-          ? `BKI ส่งแพ็กเกจแต่ยังไม่คำนวณเบี้ย (status=${dbg.status}, remark=${dbg.remark || '-'}) — ระบบได้ส่ง drv_flag/consent_drv ตามสเปกแล้ว ลองเปลี่ยนรุ่นรถ/ทุนประกัน หรือติดต่อ BKI เปิดเรทให้ agent`
+        noteEl.textContent = unavailable
+          ? (packname
+            ? `BKI: ${packname} (status=${pkgStatus || '01'})`
+            : `BKI ยังไม่เปิดแพ็กเกจ/เรทสำหรับ agent นี้ (status=${pkgStatus || '01'})`)
           : `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (${sample})`;
       }
-      toast?.(bkiRejected
-        ? 'BKI ยังไม่คืนเบี้ยสำหรับรถ/เงื่อนไขนี้ (status ' + pkgStatus + ') — ลองเปลี่ยนรุ่นหรือทุนประกัน'
+      toast?.(unavailable
+        ? 'BKI ยังไม่เปิดแพ็กเกจให้ agent นี้ — ต้องให้ทีม Underwriter/BKI เปิดเรทก่อน'
         : 'ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนทุนประกัน/รุ่นรถแล้วตรวจราคาอีกครั้ง', 'error');
     } else {
       toast?.('ตรวจสอบราคาจาก BKI แล้ว');
