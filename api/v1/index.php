@@ -687,6 +687,8 @@ try {
     Quotes::ensureTable($pdo);
     Response::json(Quotes::listForUser($pdo, $user, [
       'agentId' => (string)($_GET['agentId'] ?? ''),
+      'q' => (string)($_GET['q'] ?? ''),
+      'status' => (string)($_GET['status'] ?? ''),
     ]));
   }
 

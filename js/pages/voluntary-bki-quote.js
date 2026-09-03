@@ -55,6 +55,15 @@ App.MotorBkiService = {
     });
   },
 
+  async listQuotes(params = {}) {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value != null && value !== '') qs.set(key, value);
+    });
+    const suffix = qs.toString() ? `?${qs}` : '';
+    return App.API.request(`/motor/bki/vol/quotes${suffix}`);
+  },
+
   async getQuote(quoteId) {
     return App.API.request(`/motor/bki/vol/quotes/${encodeURIComponent(quoteId)}`);
   }
@@ -1696,21 +1705,49 @@ App.VoluntaryBkiQuote = {
     return true;
   },
 
+  buildQuoteFileHtml(quote) {
+    return `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+      <title>${this.escapeHtml(quote.id || 'ใบเสนอราคา')}</title>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+      <style>${this.quotePrintCss()}</style></head>
+      <body class="bki-quote-print">${this.buildQuoteDocHtml(quote)}</body></html>`;
+  },
+
+  downloadQuoteDoc(quote) {
+    if (!quote) return false;
+    const html = this.buildQuoteFileHtml(quote);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = String(quote.createdAt || '').slice(0, 10).replace(/-/g, '') || 'quote';
+    a.href = url;
+    a.download = `${quote.id || 'QT'}-${stamp}.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    return true;
+  },
+
   showQuoteSuccess(form, quote, { toast } = {}) {
     const panel = form.querySelector('#bkiQuotePanel');
     const resultHost = form.querySelector('#bkiQuoteResult');
     if (!panel) return;
     panel.hidden = false;
     panel.dataset.quoteId = quote.id || '';
+    const base = document.body?.dataset?.basePath || '../';
     panel.innerHTML = `
       <div class="bki-quote-panel__toolbar">
         <div>
           <h3 class="bki-issue__title">สร้างใบเสนอราคาแล้ว</h3>
-          <p class="bki-issue__sub">เลขที่ <strong>${this.escapeHtml(quote.id || '—')}</strong> · มีผลถึง ${this.escapeHtml(this.formatThaiDate(quote.validUntil))}</p>
+          <p class="bki-issue__sub">เลขที่ <strong>${this.escapeHtml(quote.id || '—')}</strong> · มีผลถึง ${this.escapeHtml(this.formatThaiDate(quote.validUntil))}
+            · <a class="bki-quote-panel__history-link" href="${this.escapeAttr(base)}agent/quotes">ดูประวัติใบเสนอราคา</a>
+          </p>
         </div>
         <div class="bki-quote-panel__actions">
           <button type="button" class="bki-issue__back" id="btnBkiQuoteBack">ปิด</button>
-          <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnBkiQuotePrint">พิมพ์ใบเสนอราคา</button>
+          <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnBkiQuoteDownload">ดาวน์โหลด</button>
+          <button type="button" class="axa-result__btn axa-result__btn--policy" id="btnBkiQuotePrint">พิมพ์ใบเสนอราคา</button>
         </div>
       </div>
       ${this.buildQuoteDocHtml(quote)}`;
@@ -1721,6 +1758,13 @@ App.VoluntaryBkiQuote = {
     panel.querySelector('#btnBkiQuotePrint')?.addEventListener('click', () => {
       if (!this.printQuoteDoc(quote)) {
         toast?.('กรุณาอนุญาตป๊อปอัปเพื่อพิมพ์ใบเสนอราคา', 'error');
+      }
+    });
+    panel.querySelector('#btnBkiQuoteDownload')?.addEventListener('click', () => {
+      if (this.downloadQuoteDoc(quote)) {
+        toast?.('ดาวน์โหลดใบเสนอราคาแล้ว');
+      } else {
+        toast?.('ดาวน์โหลดไม่สำเร็จ', 'error');
       }
     });
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });

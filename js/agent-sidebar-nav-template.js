@@ -67,6 +67,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
       </ul>
     </li>
     <li class="nav-item"><a href="{{BASE}}agent/inquiry" class="nav-link" data-nav="inquiry"><i data-lucide="search"></i><span class="nav-link-text">สอบถามกรมธรรม์</span></a></li>
+    <li class="nav-item"><a href="{{BASE}}agent/quotes" class="nav-link" data-nav="quotes"><i data-lucide="file-text"></i><span class="nav-link-text">ประวัติใบเสนอราคา</span></a></li>
   </ul>
 </div>
 <div class="nav-group" data-nav-zone="receipt">
@@ -91,7 +92,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   </ul>
 </div>`;
 
-window.AGENT_SIDEBAR_NAV_VERSION = '20260816k';
+window.AGENT_SIDEBAR_NAV_VERSION = '20260903k';
 
 window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-agent-sidebar]');

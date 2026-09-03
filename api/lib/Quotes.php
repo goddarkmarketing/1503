@@ -125,7 +125,27 @@ final class Quotes
       $params[':agent_id'] = $filters['agentId'];
     }
 
-    $sql .= ' ORDER BY q.created_at DESC, q.id DESC LIMIT 100';
+    $q = trim((string)($filters['q'] ?? ''));
+    if ($q !== '') {
+      $sql .= ' AND (
+        q.id LIKE :q
+        OR q.customer_name LIKE :q
+        OR q.customer_phone LIKE :q
+        OR q.plate LIKE :q
+        OR q.vehicle_desc LIKE :q
+        OR q.agent_code LIKE :q
+        OR u.name LIKE :q
+      )';
+      $params[':q'] = '%' . $q . '%';
+    }
+
+    $status = trim((string)($filters['status'] ?? ''));
+    if ($status !== '' && in_array($status, ['open', 'converted', 'expired', 'cancelled'], true)) {
+      $sql .= ' AND q.status = :status';
+      $params[':status'] = $status;
+    }
+
+    $sql .= ' ORDER BY q.created_at DESC, q.id DESC LIMIT 200';
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return array_map([self::class, 'toPublic'], $stmt->fetchAll());

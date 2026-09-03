@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ประวัติใบเสนอราคา — KLADEE BROKER</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css?v=20260903k">
+  <link rel="stylesheet" href="../css/portal.css">
+  <link rel="stylesheet" href="../css/product-key.css?v=20260903m">
+  <script src="../js/vendor/lucide.min.js"></script>
+</head>
+<body data-base-path="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo"><div class="sidebar-logo-icon"><i data-lucide="shield-check"></i></div><a href="index" class="sidebar-logo-text">KLADEE BROKER</a></div>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
+      </div>
+      <nav class="sidebar-nav" data-agent-sidebar></nav>
+      <div class="sidebar-footer"><a href="#" class="nav-link"><i data-lucide="log-out"></i><span class="nav-link-text">ออกจากระบบ</span></a></div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="balance-pill"><div class="balance-pill-text"><span class="balance-label">วงเงินคงเหลือ</span><span class="balance-value"><span class="balance-amount" id="balanceAmount">0</span><span class="balance-currency">บ.</span></span></div></div>
+        <button class="header-icon-btn" aria-label="การแจ้งเตือน"><i data-lucide="bell"></i><span class="notif-badge">0</span></button>
+        <div class="user-profile"><div class="user-avatar">CK</div><span class="user-name">-</span></div>
+      </header>
+      <main class="main-content">
+        <div class="content-card bki-quote-history">
+          <h1 class="admin-page-title">ประวัติใบเสนอราคา</h1>
+          <p class="admin-hint">ดูย้อนหลังใบเสนอราคาที่บันทึกไว้ — ค้นหาตามเลขที่ ลูกค้า ทะเบียน หรือผู้ออกเอกสาร</p>
+          <div class="admin-filter-bar">
+            <div class="form-field form-field--search">
+              <label for="quoteSearch">ค้นหา</label>
+              <input type="search" id="quoteSearch" placeholder="เลขที่, ลูกค้า, ทะเบียน, ผู้ออก...">
+            </div>
+            <div class="form-field bki-quote-history__status">
+              <label for="quoteStatus">สถานะ</label>
+              <select id="quoteStatus" class="admin-select">
+                <option value="">ทั้งหมด</option>
+                <option value="open">เปิดอยู่</option>
+                <option value="expired">หมดอายุ</option>
+                <option value="converted">ออกกรมธรรม์แล้ว</option>
+                <option value="cancelled">ยกเลิก</option>
+              </select>
+            </div>
+            <div class="form-field form-field--action">
+              <label aria-hidden="true">&nbsp;</label>
+              <button type="button" class="btn-primary" id="btnQuoteSearch"><i data-lucide="search"></i> ค้นหา</button>
+            </div>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>เลขที่</th>
+                  <th>วันที่ออก</th>
+                  <th>ผู้ออกเอกสาร</th>
+                  <th>ลูกค้า</th>
+                  <th>ทะเบียน</th>
+                  <th>แผน</th>
+                  <th>เบี้ย</th>
+                  <th>มีผลถึง</th>
+                  <th>สถานะ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="quoteTableBody"></tbody>
+            </table>
+          </div>
+          <div id="quotePagination"></div>
+        </div>
+
+        <div class="content-card bki-quote-history__preview" id="quotePreviewCard" hidden>
+          <div class="bki-quote-panel__toolbar">
+            <div>
+              <h2 class="admin-page-title" style="margin:0;font-size:1.15rem">รายละเอียดใบเสนอราคา</h2>
+              <p class="admin-hint" id="quotePreviewMeta" style="margin:0.25rem 0 0"></p>
+            </div>
+            <div class="bki-quote-panel__actions">
+              <button type="button" class="bki-issue__back" id="btnQuotePreviewClose">ปิด</button>
+              <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnQuotePreviewDownload">ดาวน์โหลด</button>
+              <button type="button" class="axa-result__btn axa-result__btn--policy" id="btnQuotePreviewPrint">พิมพ์</button>
+            </div>
+          </div>
+          <div id="quotePreviewBody"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <div id="adminToastHost" class="admin-toast-host" aria-live="polite"></div>
+  <script src="../js/agent-sidebar-nav-template.js?v=20260903k"></script>
+  <script src="../js/load-agent.js?v=20260821ac"></script>
+  <script src="../js/app.js?v=20260821ac"></script>
+  <script src="../js/pages/voluntary-bki-quote.js?v=20260903k"></script>
+  <script src="../js/pages/agent-quotes.js?v=20260903l"></script>
+</body>
+</html>
