@@ -260,6 +260,12 @@
   }
 
   function updatePremium(form, premiumEl) {
+    // BKI premium comes from Motor Web Service after "ตรวจสอบราคา" — do not overwrite with local calc.
+    if (product.formKind === 'voluntary-bki' || product.formKind === 'voluntary-axa') {
+      return premiumEl?.dataset?.premium
+        ? Number(premiumEl.dataset.premium)
+        : null;
+    }
     const values = readValues(form);
     const premium = catalog.calcPremium(product.formKind, values);
     premiumEl.dataset.premium = premium != null ? String(premium) : '';

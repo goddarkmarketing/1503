@@ -283,6 +283,12 @@ App.VoluntaryBkiQuote = {
 
     const cover = root.closest('form')?.querySelector('#coverType');
     if (cover) cover.value = plan;
+
+    const premiumEl = document.getElementById('productKeyPremium');
+    const premium = this._premiumsByPlan?.[plan] ?? this.getDisplayedPremium(root, plan);
+    if (premiumEl && premium != null) {
+      this.setPremiumBar(premiumEl, premium);
+    }
   },
 
   wireComparisonColumns(host) {
@@ -2061,6 +2067,37 @@ App.VoluntaryBkiQuote = {
     return { ok: true };
   },
 
+  setPremiumBar(premiumEl, premium) {
+    if (!premiumEl) return;
+    const wrap = premiumEl.closest('.product-key__premium');
+    if (premium == null || !(Number(premium) > 0)) {
+      delete premiumEl.dataset.premium;
+      premiumEl.innerHTML = '—';
+      wrap?.classList.remove('is-visible');
+      return;
+    }
+    premiumEl.dataset.premium = String(premium);
+    premiumEl.innerHTML = `${this.money(premium)}<span>บาท/ปี</span>`;
+    wrap?.classList.add('is-visible');
+  },
+
+  clearQuoteState(form, premiumEl) {
+    this._packagesByPlan = {};
+    this._premiumsByPlan = {};
+    const result = form?.querySelector('#bkiQuoteResult');
+    if (result) {
+      result.hidden = true;
+      result.innerHTML = '';
+      delete result.dataset.packages;
+      delete result.dataset.selectedPlan;
+      delete result.dataset.ready;
+      ['2plus', '3plus', '3'].forEach((plan) => delete result.dataset[`premium_${plan}`]);
+    }
+    this.hidePanel(form?.querySelector('#bkiQuotePanel'));
+    this.hidePanel(form?.querySelector('#bkiIssuePanel'));
+    this.setPremiumBar(premiumEl, null);
+  },
+
   async calculate(form, { toast, premiumEl } = {}) {
     const valid = this.validateQuote(form);
     if (valid === false) return null;
@@ -2094,14 +2131,12 @@ App.VoluntaryBkiQuote = {
     const pkg = packagesByPlan[selectedPlan] || result?.parsed?.packages?.[0];
     const premium = this.getPackagePremium(pkg) || this.resolvePlanPremium(form, selectedPlan);
 
-    if (premiumEl && premium != null) {
-      premiumEl.dataset.premium = String(premium);
-      premiumEl.innerHTML = `${this.money(premium)}<span>บาท/ปี</span>`;
-      premiumEl.closest('.product-key__premium')?.classList.add('is-visible');
-    }
+    this.setPremiumBar(premiumEl, premium);
 
     if (errorMessage || !result?.ok || !(result?.parsed?.packages?.length)) {
       toast?.(errorMessage || result?.parsed?.status_message || 'BKI ตอบกลับแต่ไม่พบแพ็กเกจ — แสดงตารางเปรียบเทียบจากข้อมูลที่กรอก', 'error');
+    } else if (premium == null) {
+      toast?.('ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนแผนหรือตรวจราคาอีกครั้ง', 'error');
     } else {
       toast?.('ตรวจสอบราคาจาก BKI แล้ว');
     }
@@ -2144,6 +2179,7 @@ App.VoluntaryBkiQuote = {
     });
 
     form.querySelector('#make')?.addEventListener('change', async (e) => {
+      this.clearQuoteState(form, premiumEl);
       try {
         await this.loadVariants(form, e.target.value);
         this.syncYears(form);
@@ -2153,10 +2189,12 @@ App.VoluntaryBkiQuote = {
     });
 
     form.querySelector('#makeCode')?.addEventListener('change', () => {
+      this.clearQuoteState(form, premiumEl);
       this.syncYears(form);
     });
 
     form.querySelector('#carYear')?.addEventListener('change', () => {
+      this.clearQuoteState(form, premiumEl);
       this.applyVariantToForm(form, this.selectedVariant());
     });
 
