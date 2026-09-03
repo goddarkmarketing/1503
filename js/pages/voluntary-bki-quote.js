@@ -1780,11 +1780,36 @@ App.VoluntaryBkiQuote = {
 
   async downloadQuoteDoc(quote) {
     if (!quote) return false;
+    const prevScrollX = window.scrollX || 0;
+    const prevScrollY = window.scrollY || 0;
+    // ห้าม left ติดลบ — html2canvas จะจับได้หน้าว่าง (ดู wht50-document.js)
     const host = document.createElement('div');
     host.setAttribute('aria-hidden', 'true');
-    host.style.cssText = 'position:fixed;left:-12000px;top:0;width:210mm;padding:0;margin:0;background:#fff;';
+    host.setAttribute('data-bki-quote-export', '1');
+    host.style.cssText = [
+      'position:fixed',
+      'left:0',
+      'top:0',
+      'width:210mm',
+      'margin:0',
+      'padding:0',
+      'background:#fff',
+      'z-index:2147483646',
+      'opacity:0.015',
+      'overflow:visible',
+      'pointer-events:none',
+      'box-sizing:border-box'
+    ].join(';');
     const style = document.createElement('style');
-    style.textContent = this.quotePrintCss();
+    style.textContent = `${this.quotePrintCss()}
+      [data-bki-quote-export] .bki-quote-doc {
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 8mm !important;
+        box-shadow: none !important;
+        background: #fff !important;
+      }`;
     host.appendChild(style);
     const wrap = document.createElement('div');
     wrap.innerHTML = this.buildQuoteDocHtml(quote);
@@ -1793,7 +1818,6 @@ App.VoluntaryBkiQuote = {
 
     try {
       await this.ensureHtml2Pdf();
-      await this.waitImages?.(host);
       const imgs = [...host.querySelectorAll('img')];
       await Promise.all(imgs.map((img) => {
         if (img.complete && img.naturalWidth > 0) return Promise.resolve();
@@ -1804,25 +1828,48 @@ App.VoluntaryBkiQuote = {
           setTimeout(done, 3000);
         });
       }));
+      if (document.fonts?.ready) {
+        try { await document.fonts.ready; } catch (_) { /* ignore */ }
+      }
+      await new Promise((r) => setTimeout(r, 120));
 
       const stamp = String(quote.createdAt || '').slice(0, 10).replace(/-/g, '') || 'quote';
-      const target = host.querySelector('.bki-quote-doc') || wrap;
+      // จับทั้ง host เพื่อให้ <style> อยู่ใน clone (ถ้าจับแค่ .bki-quote-doc สไตล์พี่น้องจะหาย)
+      const width = Math.ceil(host.getBoundingClientRect().width) || host.offsetWidth || 794;
+      const height = Math.ceil(host.getBoundingClientRect().height) || host.offsetHeight || 1123;
       await window.html2pdf().set({
-        margin: [12, 12, 12, 12],
+        margin: [8, 8, 8, 8],
         filename: `${quote.id || 'QT'}-${stamp}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
+          allowTaint: true,
           logging: false,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          x: 0,
+          y: 0,
+          width,
+          height,
+          windowWidth: width,
+          windowHeight: height,
+          onclone: (clonedDoc) => {
+            const root = clonedDoc.querySelector('[data-bki-quote-export]');
+            if (root) {
+              root.style.opacity = '1';
+              root.style.zIndex = '1';
+            }
+          }
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
-      }).from(target).save();
+      }).from(host).save();
       return true;
     } finally {
       host.remove();
+      window.scrollTo(prevScrollX, prevScrollY);
     }
   },
 
