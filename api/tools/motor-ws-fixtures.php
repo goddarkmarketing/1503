@@ -24,6 +24,8 @@ final class MotorWsFixtures
       'car_use' => '1',
       'make' => 'TOYOTA',
       'make_code' => 'TO327-03',
+      'car_brand' => 'TOYOTA',
+      'car_code' => 'TO327-03',
       'car_year' => '2012',
       'cc' => '2500',
       'seat' => '5',
@@ -34,6 +36,9 @@ final class MotorWsFixtures
       'deduct_lib' => '0',
       'comp_req' => 'N',
       'sum_ins' => '350000',
+      'cctv_flag' => 'N',
+      'drv_flag' => 'N',
+      'consent_drv' => 'N',
       'agent_ref_no' => 'TEST-' . date('Ymd-His'),
     ];
   }

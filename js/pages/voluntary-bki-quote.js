@@ -237,10 +237,10 @@ App.VoluntaryBkiQuote = {
     ).join('');
   },
 
-  garageOptionsHtml(selected = 'garage') {
+  garageOptionsHtml(selected = 'G') {
     return [
-      { value: 'garage', label: 'ซ่อมอู่' },
-      { value: 'dealer', label: 'ซ่อมห้าง' }
+      { value: 'G', label: 'ซ่อมอู่' },
+      { value: 'D', label: 'ซ่อมห้าง' }
     ].map((o) =>
       `<option value="${o.value}" ${selected === o.value ? 'selected' : ''}>${o.label}</option>`
     ).join('');
@@ -743,8 +743,8 @@ App.VoluntaryBkiQuote = {
             </tr>
             <tr>
               <th scope="row">ประเภทอู่ซ่อมรถ</th>
-              <td>${sel('2plus', 'garageType', this.garageOptionsHtml('garage'))}</td>
-              <td>${sel('3plus', 'garageType', this.garageOptionsHtml('garage'))}</td>
+              <td>${sel('2plus', 'garageType', this.garageOptionsHtml('G'))}</td>
+              <td>${sel('3plus', 'garageType', this.garageOptionsHtml('G'))}</td>
               <td>${dash}</td>
             </tr>
 
@@ -839,6 +839,14 @@ App.VoluntaryBkiQuote = {
     values.buyPrb = buyPrb;
     values.comp_req = buyPrb ? 'Y' : 'N';
     values.coverType = plan;
+    values.driverMode = form.querySelector('#driverMode')?.value || values.driverMode || 'unnamed';
+    values.drv_flag = values.driverMode === 'named' ? 'Y' : 'N';
+    values.consent_drv = values.consent_drv === 'Y' ? 'Y' : 'N';
+    const garageEl = form.querySelector(`#bkiQuoteResult select[data-plan="${plan}"][data-field="garageType"]`);
+    if (garageEl?.value) {
+      values.garage = garageEl.value;
+      values.garageType = garageEl.value;
+    }
     return values;
   },
 
@@ -2226,14 +2234,22 @@ App.VoluntaryBkiQuote = {
       toast?.(errorMessage || result?.parsed?.status_message || 'BKI ตอบกลับแต่ไม่พบแพ็กเกจ — แสดงตารางเปรียบเทียบจากข้อมูลที่กรอก', 'error');
     } else if (premium == null) {
       const dbg = result?.premium_debug;
+      const pkgStatus = dbg?.status != null ? String(dbg.status) : '';
       const sample = dbg
         ? `premium_total=${dbg.premium_total ?? 'null'}, total_prem_vol=${dbg.total_prem_vol ?? 'null'}, gross_prem_vol=${dbg.gross_prem_vol ?? 'null'}, stamp=${dbg.stamp ?? 'null'}, vat=${dbg.vat ?? 'null'}, status=${dbg.status ?? 'null'}, remark=${dbg.remark ?? 'null'}, keys=${dbg.key_count ?? '?'}`
         : this.describePackagePremium(rawPackages[0]);
+      const bkiRejected = pkgStatus !== '' && pkgStatus.toLowerCase() !== 'null'
+        && Number(dbg?.total_prem_vol || 0) <= 0
+        && Number(dbg?.gross_prem_vol || 0) <= 0;
       if (noteEl) {
         noteEl.hidden = false;
-        noteEl.textContent = `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (${sample})`;
+        noteEl.textContent = bkiRejected
+          ? `BKI ส่งแพ็กเกจแต่ยังไม่คำนวณเบี้ย (status=${dbg.status}, remark=${dbg.remark || '-'}) — ระบบได้ส่ง drv_flag/consent_drv ตามสเปกแล้ว ลองเปลี่ยนรุ่นรถ/ทุนประกัน หรือติดต่อ BKI เปิดเรทให้ agent`
+          : `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (${sample})`;
       }
-      toast?.('ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนทุนประกัน/รุ่นรถแล้วตรวจราคาอีกครั้ง', 'error');
+      toast?.(bkiRejected
+        ? 'BKI ยังไม่คืนเบี้ยสำหรับรถ/เงื่อนไขนี้ (status ' + pkgStatus + ') — ลองเปลี่ยนรุ่นหรือทุนประกัน'
+        : 'ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนทุนประกัน/รุ่นรถแล้วตรวจราคาอีกครั้ง', 'error');
     } else {
       toast?.('ตรวจสอบราคาจาก BKI แล้ว');
     }

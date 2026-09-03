@@ -159,6 +159,9 @@ final class MotorBkiVol
   /**
    * Build BKI vol/premium/calculate body (legacy + v1.4 field names).
    *
+   * Spec v1.4 requires consent_drv + drv_flag on every premium request.
+   * Named-driver fields (drv_year / drv1_*) are conditional when drv_flag=Y.
+   *
    * @param array<string,mixed> $input
    * @return array<string,mixed>
    */
@@ -190,10 +193,31 @@ final class MotorBkiVol
       $carUse = '1';
     }
 
+    $named = strtolower(trim((string)($input['driverMode'] ?? $input['driver_mode'] ?? ''))) === 'named'
+      || strtoupper(trim((string)($input['drv_flag'] ?? ''))) === 'Y';
+    $consentDrv = strtoupper(trim((string)($input['consent_drv'] ?? 'N')));
+    if ($consentDrv !== 'Y') {
+      $consentDrv = 'N';
+    }
+    // Quote-time premium calc usually has no driver IDs yet — use unnamed rates.
+    $hasDriverId = trim((string)($input['drv1_id'] ?? $input['driver1_id'] ?? '')) !== '';
+    if ($named && !$hasDriverId) {
+      $named = false;
+    }
+
+    $garage = self::normalizeGarageCode((string)($input['garage'] ?? $input['garageType'] ?? ''));
+    $plateJw = trim((string)($input['plate_jw'] ?? ''));
+    if ($plateJw === '') {
+      $province = trim((string)($input['regProvince'] ?? $input['licenseProvince'] ?? ''));
+      if ($province !== '') {
+        $plateJw = self::resolveProvincePlate($province)['plate_jw'] ?? '';
+      }
+    }
+
     $body = [
       'eff_date' => $effDate,
       'risk' => trim((string)($input['risk'] ?? '1')),
-      'garage' => trim((string)($input['garage'] ?? '')),
+      'garage' => $garage,
       'car_type' => $carType,
       'car_use' => $carUse,
       'make' => $make,
@@ -213,7 +237,38 @@ final class MotorBkiVol
       ))),
       'sum_ins' => $sumIns,
       'agent_ref_no' => $agentRef,
+      'cctv_flag' => strtoupper(trim((string)($input['cctv_flag'] ?? $input['dashcam'] ?? 'N'))) === 'Y' ? 'Y' : 'N',
+      'drv_flag' => $named ? 'Y' : 'N',
+      'consent_drv' => $named ? $consentDrv : 'N',
+      'plate_jw' => $plateJw,
     ];
+
+    if ($named) {
+      $drvYear = trim((string)($input['drv_year'] ?? $input['driverYear'] ?? ''));
+      if ($drvYear === '' && !empty($input['drv1_dob'])) {
+        $dob = (string)$input['drv1_dob'];
+        if (preg_match('/(\d{4})/', $dob, $m)) {
+          $drvYear = $m[1];
+        }
+      }
+      if ($drvYear !== '') {
+        $body['drv_year'] = $drvYear;
+      }
+      foreach ([1, 2, 3, 4, 5] as $i) {
+        $id = trim((string)($input["drv{$i}_id"] ?? $input["driver{$i}_id"] ?? ''));
+        $lc = trim((string)($input["drv{$i}_lc"] ?? $input["drv{$i}_license_no"] ?? $input["driver{$i}_license"] ?? ''));
+        $score = trim((string)($input["drv{$i}_score"] ?? ''));
+        if ($id !== '') {
+          $body["drv{$i}_id"] = $id;
+        }
+        if ($lc !== '') {
+          $body["drv{$i}_lc"] = $lc;
+        }
+        if ($score !== '') {
+          $body["drv{$i}_score"] = $score;
+        }
+      }
+    }
 
     foreach ($body as $key => $value) {
       if ($value === '') {
@@ -222,6 +277,36 @@ final class MotorBkiVol
     }
 
     return $body;
+  }
+
+  /** Map UI garage labels to BKI codes: D=dealer, G=general. */
+  public static function normalizeGarageCode(string $value): string
+  {
+    $raw = trim($value);
+    if ($raw === '') {
+      return '';
+    }
+    $upper = strtoupper($raw);
+    if ($upper === 'D' || $upper === 'DG') {
+      return 'D';
+    }
+    if ($upper === 'G' || $upper === 'GG') {
+      return 'G';
+    }
+    $lower = strtolower($raw);
+    if (in_array($lower, ['dealer', 'dealership', 'showroom'], true)) {
+      return 'D';
+    }
+    if (in_array($lower, ['garage', 'general', 'อู่', 'ซ่อมอู่'], true)) {
+      return 'G';
+    }
+    if (mb_strpos($raw, 'ห้าง') !== false) {
+      return 'D';
+    }
+    if (mb_strpos($raw, 'อู่') !== false) {
+      return 'G';
+    }
+    return '';
   }
 
   /**
