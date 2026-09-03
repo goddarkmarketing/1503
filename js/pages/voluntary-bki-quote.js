@@ -868,30 +868,37 @@ App.VoluntaryBkiQuote = {
   },
 
   pkgValue(pkg, keys) {
-    if (!pkg) return null;
+    if (!pkg || typeof pkg !== 'object' || Array.isArray(pkg)) return null;
     for (const key of keys) {
       if (pkg[key] != null && pkg[key] !== '') return pkg[key];
+    }
+    const lowerMap = {};
+    Object.keys(pkg).forEach((key) => {
+      lowerMap[String(key).toLowerCase()] = pkg[key];
+    });
+    for (const key of keys) {
+      const value = lowerMap[String(key).toLowerCase()];
+      if (value != null && value !== '') return value;
     }
     return null;
   },
 
   getPackagePremium(pkg) {
-    if (!pkg || typeof pkg !== 'object') return null;
+    if (!pkg || typeof pkg !== 'object' || Array.isArray(pkg)) return null;
 
-    const keys = [
+    // Spec: total_prem_vol = final voluntary premium (includes stamp/vat).
+    const totalKeys = [
+      'total_prem_vol', 'TOTAL_PREM_VOL', 'totalPremVol', 'TotalPremVol',
       'gross_total_vol', 'GROSS_TOTAL_VOL', 'grossTotalVol', 'GrossTotalVol',
       'gross_total', 'GROSS_TOTAL', 'grossTotal', 'GrossTotal',
       'total_prem', 'TOTAL_PREM', 'totalPrem', 'TotalPrem',
       'total_premium', 'TOTAL_PREMIUM', 'totalPremium', 'TotalPremium',
-      'premium_total', 'PREMIUM_TOTAL', 'premiumTotal',
-      'gross_prem_vol', 'GROSS_PREM_VOL', 'grossPremVol', 'GrossPremVol',
-      'net_premium', 'NET_PREMIUM', 'netPremium', 'NetPremium',
-      'premium', 'PREMIUM', 'prem', 'PREM'
+      'premium_total', 'PREMIUM_TOTAL', 'premiumTotal'
     ];
-    const raw = this.pkgValue(pkg, keys);
-    if (raw != null && raw !== '') {
-      const direct = this.parsePremiumNumber(raw);
-      if (direct != null) return direct;
+    const totalRaw = this.pkgValue(pkg, totalKeys);
+    if (totalRaw != null && totalRaw !== '') {
+      const total = this.parsePremiumNumber(totalRaw);
+      if (total != null) return total;
     }
 
     const stamp = this.parsePremiumNumber(this.pkgValue(pkg, [
@@ -901,7 +908,9 @@ App.VoluntaryBkiQuote = {
       'vat_vol', 'VAT_VOL', 'vatVol', 'VatVol', 'vat', 'VAT'
     ]));
     const gross = this.parsePremiumNumber(this.pkgValue(pkg, [
-      'gross_prem_vol', 'GROSS_PREM_VOL', 'grossPremVol', 'GrossPremVol'
+      'gross_prem_vol', 'GROSS_PREM_VOL', 'grossPremVol', 'GrossPremVol',
+      'net_premium', 'NET_PREMIUM', 'netPremium', 'NetPremium',
+      'premium', 'PREMIUM', 'prem', 'PREM'
     ]));
     if (gross != null && (stamp != null || vat != null)) {
       return gross + (stamp || 0) + (vat || 0);
@@ -1006,18 +1015,7 @@ App.VoluntaryBkiQuote = {
     };
 
     packages.forEach((pkg) => {
-      const text = String(
-        this.pkgValue(pkg, [
-          'package_name', 'PACKAGE_NAME', 'plan_name', 'PLAN_NAME',
-          'package_code', 'PACKAGE_CODE', 'plan_code', 'PLAN_CODE',
-          'class_type', 'CLASS_TYPE', 'cover_type', 'COVER_TYPE', 'type'
-        ]) || ''
-      ).toUpperCase();
-      if (/2\s*\+|CLASS\s*2|TYPE\s*2|ชั้น\s*2|2P\+|02\+/i.test(text)) assign('2plus', pkg);
-      else if (/3\s*\+|CLASS\s*3\s*\+|TYPE\s*3\s*\+|ชั้น\s*3\s*\+|3P\+/i.test(text)) assign('3plus', pkg);
-      else if (/(^|[^+\d])3([^+]|$)|CLASS\s*3([^+]|$)|TYPE\s*3([^+]|$)|ชั้น\s*3([^+]|$)/i.test(text)) {
-        assign('3', pkg);
-      }
+      assign(this.classifyPackagePlan(pkg), pkg);
     });
 
     const order = ['2plus', '3plus', '3'];
@@ -1032,6 +1030,32 @@ App.VoluntaryBkiQuote = {
     });
 
     return out;
+  },
+
+  classifyPackagePlan(pkg) {
+    if (!pkg || typeof pkg !== 'object') return null;
+    const name = String(this.pkgValue(pkg, [
+      'packname', 'PACKNAME', 'package_name', 'PACKAGE_NAME', 'plan_name', 'PLAN_NAME'
+    ]) || '');
+    const planSeq = String(this.pkgValue(pkg, ['plan_seq', 'PLAN_SEQ']) || '').trim();
+    const subPlan = String(this.pkgValue(pkg, ['sub_plan', 'SUB_PLAN']) || '').trim();
+    const garage = String(this.pkgValue(pkg, ['garage', 'GARAGE']) || '');
+    const text = `${name} ${garage}`.toUpperCase();
+
+    if (/2\s*\+|2P\+|ชั้น\s*2\s*\+|TYPE\s*2\s*\+|CLASS\s*2\s*\+/i.test(text)) return '2plus';
+    if (/3\s*\+|3P\+|ชั้น\s*3\s*\+|TYPE\s*3\s*\+|CLASS\s*3\s*\+/i.test(text)) return '3plus';
+    if (/ชั้น\s*3(?!\s*\+)|TYPE\s*3(?!\s*\+)|CLASS\s*3(?!\s*\+)/i.test(text)) return '3';
+
+    // BKI sample: plan_seq "2" + sub_plan "20" ≈ 2+
+    if (subPlan === '20' || subPlan === '2+' || /^2\d$/.test(subPlan)) return '2plus';
+    if (subPlan === '30' || subPlan === '3+' || /^3\d$/.test(subPlan)) return '3plus';
+    if (subPlan === '3' || subPlan === '03' || subPlan === '01') return '3';
+
+    if (planSeq === '2') return '2plus';
+    if (planSeq === '3') return '3plus';
+    if (planSeq === '4' || planSeq === '1') return planSeq === '1' ? '2plus' : '3';
+
+    return null;
   },
 
   pickDefaultPlan(packagesByPlan) {
@@ -1104,26 +1128,35 @@ App.VoluntaryBkiQuote = {
       const planNature = Number(
         root.querySelector(`select[data-plan="${plan}"][data-field="natureSum"]`)?.value || planSum
       );
-      const own = this.pkgValue(pkg, ['sum_ins', 'sum_insured', 'SUM_INS', 'own_damage']) ?? planSum;
-      const tpPerson = this.pkgValue(pkg, ['tp_person', 'TP_PERSON', 'liab_person']);
-      const tpEvent = this.pkgValue(pkg, ['tp_event', 'TP_EVENT', 'liab_event']);
-      const tpProperty = this.pkgValue(pkg, ['tp_property', 'TP_PROPERTY', 'liab_property']);
+      const own = this.pkgValue(pkg, [
+        'sum_ins_own_damage', 'SUM_INS_OWN_DAMAGE', 'sum_ins', 'sum_insured', 'SUM_INS', 'own_damage'
+      ]) ?? planSum;
+      const fire = this.pkgValue(pkg, [
+        'sum_ins_fire_theft', 'SUM_INS_FIRE_THEFT', 'fire_sum', 'sum_fire'
+      ]) ?? own;
+      const nature = this.pkgValue(pkg, [
+        'natural_sum_ins', 'NATURAL_SUM_INS', 'nature_sum', 'sum_nature'
+      ]) ?? (pkg?.att_sumins ? this.pkgValue(pkg.att_sumins, ['natural_sum_ins', 'NATURAL_SUM_INS']) : null) ?? planNature;
+      const tpPerson = this.pkgValue(pkg, ['tpbi_per', 'TPBI_PER', 'tp_person', 'TP_PERSON', 'liab_person']);
+      const tpEvent = this.pkgValue(pkg, ['tpbi_acc', 'TPBI_ACC', 'tp_event', 'TP_EVENT', 'liab_event']);
+      const tpProperty = this.pkgValue(pkg, ['tppd', 'TPPD', 'tp_property', 'TP_PROPERTY', 'liab_property']);
 
       set(`${plan}-sum`, this.money(own));
-      set(`${plan}-fire`, this.money(this.pkgValue(pkg, ['fire_sum', 'sum_fire']) ?? own));
-      set(`${plan}-nature`, this.money(this.pkgValue(pkg, ['nature_sum', 'sum_nature']) ?? planNature));
+      set(`${plan}-fire`, this.money(fire));
+      set(`${plan}-nature`, this.money(nature));
       set(`${plan}-tp-person`, tpPerson != null ? this.money(tpPerson) : '—');
       set(`${plan}-tp-event`, tpEvent != null ? this.money(tpEvent) : '—');
       set(`${plan}-tp-property`, tpProperty != null ? this.money(tpProperty) : '—');
     });
 
     const pkg3 = packagesByPlan?.['3'];
-    set('3-tp-person', this.pkgValue(pkg3, ['tp_person', 'TP_PERSON']) != null
-      ? this.money(this.pkgValue(pkg3, ['tp_person', 'TP_PERSON'])) : '—');
-    set('3-tp-event', this.pkgValue(pkg3, ['tp_event', 'TP_EVENT']) != null
-      ? this.money(this.pkgValue(pkg3, ['tp_event', 'TP_EVENT'])) : '—');
-    set('3-tp-property', this.pkgValue(pkg3, ['tp_property', 'TP_PROPERTY']) != null
-      ? this.money(this.pkgValue(pkg3, ['tp_property', 'TP_PROPERTY'])) : '—');
+    const tp3 = (keys) => this.pkgValue(pkg3, keys);
+    set('3-tp-person', tp3(['tpbi_per', 'TPBI_PER', 'tp_person', 'TP_PERSON']) != null
+      ? this.money(tp3(['tpbi_per', 'TPBI_PER', 'tp_person', 'TP_PERSON'])) : '—');
+    set('3-tp-event', tp3(['tpbi_acc', 'TPBI_ACC', 'tp_event', 'TP_EVENT']) != null
+      ? this.money(tp3(['tpbi_acc', 'TPBI_ACC', 'tp_event', 'TP_EVENT'])) : '—');
+    set('3-tp-property', tp3(['tppd', 'TPPD', 'tp_property', 'TP_PROPERTY']) != null
+      ? this.money(tp3(['tppd', 'TPPD', 'tp_property', 'TP_PROPERTY'])) : '—');
   },
 
   refreshResultPrices(form) {
@@ -1166,7 +1199,11 @@ App.VoluntaryBkiQuote = {
   },
 
   rememberPackages(packagesByPlan) {
-    this._packagesByPlan = packagesByPlan || {};
+    const slim = {};
+    Object.entries(packagesByPlan || {}).forEach(([plan, pkg]) => {
+      slim[plan] = pkg ? this.slimPackage(pkg) : null;
+    });
+    this._packagesByPlan = slim;
     const premiums = {};
     ['2plus', '3plus', '3'].forEach((plan) => {
       const premium = this.getPackagePremium(this._packagesByPlan[plan]);
@@ -1174,6 +1211,16 @@ App.VoluntaryBkiQuote = {
     });
     this._premiumsByPlan = premiums;
     return this._packagesByPlan;
+  },
+
+  slimPackage(pkg) {
+    if (!pkg || typeof pkg !== 'object') return pkg;
+    const out = { ...pkg };
+    delete out.sumins_phase;
+    delete out.ncb_phase;
+    delete out.SUMINS_PHASE;
+    delete out.NCB_PHASE;
+    return out;
   },
 
   readCustomerForm(form) {
@@ -2128,14 +2175,33 @@ App.VoluntaryBkiQuote = {
 
     const packagesByPlan = this._packagesByPlan || this.mapPackagesToPlans(result?.parsed?.packages || []);
     const selectedPlan = this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
-    const pkg = packagesByPlan[selectedPlan] || result?.parsed?.packages?.[0];
-    const premium = this.getPackagePremium(pkg) || this.resolvePlanPremium(form, selectedPlan);
+    const rawPackages = result?.parsed?.packages || [];
+    const pkg = packagesByPlan[selectedPlan]
+      || rawPackages.find((row) => this.getPackagePremium(row) != null)
+      || rawPackages[0];
+    let premium = this.getPackagePremium(pkg) || this.resolvePlanPremium(form, selectedPlan);
+    if (premium == null) {
+      for (const row of rawPackages) {
+        premium = this.getPackagePremium(row);
+        if (premium != null) break;
+      }
+    }
 
     this.setPremiumBar(premiumEl, premium);
 
-    if (errorMessage || !result?.ok || !(result?.parsed?.packages?.length)) {
+    const noteEl = form.querySelector('#bkiResultNote');
+    if (errorMessage || !result?.ok || !rawPackages.length) {
       toast?.(errorMessage || result?.parsed?.status_message || 'BKI ตอบกลับแต่ไม่พบแพ็กเกจ — แสดงตารางเปรียบเทียบจากข้อมูลที่กรอก', 'error');
     } else if (premium == null) {
+      const sample = rawPackages[0] && typeof rawPackages[0] === 'object'
+        ? Object.keys(rawPackages[0]).slice(0, 12).join(', ')
+        : '';
+      if (noteEl) {
+        noteEl.hidden = false;
+        noteEl.textContent = sample
+          ? `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (ฟิลด์ที่ได้: ${sample})`
+          : 'อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI';
+      }
       toast?.('ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนแผนหรือตรวจราคาอีกครั้ง', 'error');
     } else {
       toast?.('ตรวจสอบราคาจาก BKI แล้ว');

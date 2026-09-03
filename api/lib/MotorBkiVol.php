@@ -252,8 +252,8 @@ final class MotorBkiVol
       $list = self::extractPackageList($body);
       if (is_array($list)) {
         foreach ($list as $row) {
-          if (is_array($row)) {
-            $packages[] = $row;
+          if (is_array($row) && !array_is_list($row)) {
+            $packages[] = self::normalizePremiumPackage($row);
           }
         }
       }
@@ -267,9 +267,43 @@ final class MotorBkiVol
     ];
   }
 
+  /** @param array<string,mixed> $pkg */
+  private static function normalizePremiumPackage(array $pkg): array
+  {
+    $aliases = [
+      'package_name' => ['packname', 'PACKNAME', 'packageName'],
+      'total_prem_vol' => ['TOTAL_PREM_VOL', 'totalPremVol', 'TotalPremVol'],
+      'gross_prem_vol' => ['GROSS_PREM_VOL', 'grossPremVol', 'GrossPremVol'],
+      'pack_no' => ['PACK_NO', 'package_no', 'PACKAGE_NO'],
+    ];
+    foreach ($aliases as $target => $sources) {
+      if (!isset($pkg[$target]) || $pkg[$target] === '' || $pkg[$target] === null) {
+        foreach ($sources as $source) {
+          if (isset($pkg[$source]) && $pkg[$source] !== '' && $pkg[$source] !== null) {
+            $pkg[$target] = $pkg[$source];
+            break;
+          }
+        }
+      }
+    }
+
+    // Keep payload small for browser dataset storage.
+    unset($pkg['sumins_phase'], $pkg['SUMINS_PHASE'], $pkg['ncb_phase'], $pkg['NCB_PHASE']);
+
+    return $pkg;
+  }
+
   /** @param array<string,mixed> $body */
   private static function extractPackageList(array $body): ?array
   {
+    $isPackageList = static function ($candidate): bool {
+      if (!is_array($candidate) || $candidate === [] || !array_is_list($candidate)) {
+        return false;
+      }
+      $first = $candidate[0] ?? null;
+      return is_array($first) && $first !== [] && !array_is_list($first);
+    };
+
     $candidates = [
       $body['packages'] ?? null,
       $body['Packages'] ?? null,
@@ -284,26 +318,28 @@ final class MotorBkiVol
     ];
 
     foreach ($candidates as $candidate) {
-      if (!is_array($candidate)) {
+      if (!is_array($candidate) || $candidate === []) {
         continue;
       }
-      if ($candidate === []) {
-        continue;
-      }
-      if (array_is_list($candidate)) {
+      if ($isPackageList($candidate)) {
         return $candidate;
       }
       // Nested list under common keys.
       foreach (['packages', 'Packages', 'packageList', 'PackageList', 'items', 'Items', 'data', 'Data'] as $key) {
-        if (isset($candidate[$key]) && is_array($candidate[$key]) && array_is_list($candidate[$key])) {
+        if (isset($candidate[$key]) && $isPackageList($candidate[$key])) {
           return $candidate[$key];
         }
       }
       // Single package object with premium-ish fields.
       if (
-        isset($candidate['gross_total_vol'])
+        isset($candidate['gross_prem_vol'])
+        || isset($candidate['GROSS_PREM_VOL'])
+        || isset($candidate['total_prem_vol'])
+        || isset($candidate['TOTAL_PREM_VOL'])
+        || isset($candidate['gross_total_vol'])
         || isset($candidate['GROSS_TOTAL_VOL'])
         || isset($candidate['grossTotalVol'])
+        || isset($candidate['packname'])
         || isset($candidate['package_code'])
         || isset($candidate['PACKAGE_CODE'])
         || isset($candidate['premium'])
@@ -313,8 +349,21 @@ final class MotorBkiVol
       }
     }
 
-    if (array_is_list($body)) {
+    if ($isPackageList($body)) {
       return $body;
+    }
+
+    // Single top-level package object (rare, but supported).
+    if (
+      isset($body['gross_prem_vol'])
+      || isset($body['GROSS_PREM_VOL'])
+      || isset($body['total_prem_vol'])
+      || isset($body['TOTAL_PREM_VOL'])
+      || isset($body['packname'])
+      || isset($body['package_code'])
+      || isset($body['PACKAGE_CODE'])
+    ) {
+      return [$body];
     }
 
     return null;
@@ -455,10 +504,10 @@ final class MotorBkiVol
     $idType = (string)($customer['idType'] ?? 'idcard');
     $dob = self::formatEffDate((string)($customer['dob'] ?? ''));
 
-    $grossPrem = self::pkgField($package, ['gross_prem_vol', 'premium', 'PREMIUM', 'net_premium', 'NET_PREMIUM', 'gross_total_vol'], 0);
+    $grossPrem = self::pkgField($package, ['gross_prem_vol', 'GROSS_PREM_VOL', 'premium', 'PREMIUM', 'net_premium', 'NET_PREMIUM', 'gross_total_vol', 'total_prem_vol'], 0);
     $stamp = self::pkgField($package, ['stamp_vol', 'stamp', 'STAMP'], 0);
     $vat = self::pkgField($package, ['vat_vol', 'vat', 'VAT'], 0);
-    $total = self::pkgField($package, ['gross_total_vol', 'total_premium', 'premium_total', 'TOTAL_PREMIUM'], 0);
+    $total = self::pkgField($package, ['total_prem_vol', 'gross_total_vol', 'total_premium', 'premium_total', 'TOTAL_PREMIUM'], 0);
     if (!$total && $grossPrem) {
       $total = (float)$grossPrem + (float)$stamp + (float)$vat;
     }
