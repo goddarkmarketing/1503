@@ -208,7 +208,9 @@ final class MotorBkiVol
       'ncb' => trim((string)($input['ncb'] ?? '0')),
       'deduct' => trim((string)($input['deduct'] ?? '0')),
       'deduct_lib' => trim((string)($input['deduct_lib'] ?? '0')),
-      'comp_req' => trim((string)($input['comp_req'] ?? 'N')),
+      'comp_req' => trim((string)($input['comp_req'] ?? (
+        !empty($input['buyPrb']) || strtoupper(trim((string)($input['comp_flag'] ?? ''))) === 'Y' ? 'Y' : 'N'
+      ))),
       'sum_ins' => $sumIns,
       'agent_ref_no' => $agentRef,
     ];
@@ -342,8 +344,13 @@ final class MotorBkiVol
     $map = [
       'idcard' => 'C',
       'passport' => 'P',
-      'corporate' => 'R',
+      'corporate' => 'B',
       'government' => 'G',
+      'c' => 'C',
+      'p' => 'P',
+      'b' => 'B',
+      'r' => 'B',
+      'g' => 'G',
     ];
     $key = strtolower(trim($idType));
     return $map[$key] ?? 'C';
@@ -404,7 +411,44 @@ final class MotorBkiVol
       $total = (float)$grossPrem + (float)$stamp + (float)$vat;
     }
 
-    $buyComp = !empty($input['buyPrb']) || !empty($input['comp_req']) && strtoupper((string)$input['comp_req']) === 'Y';
+    $buyComp = !empty($input['buyPrb'])
+      || strtoupper(trim((string)($input['comp_req'] ?? $input['comp_flag'] ?? ''))) === 'Y';
+
+    $compPrem = self::pkgField($package, ['gross_prem_comp', 'GROSS_PREM_COMP', 'comp_premium'], '');
+    $compStamp = self::pkgField($package, ['stamp_comp', 'STAMP_COMP'], '');
+    $compVat = self::pkgField($package, ['vat_comp', 'VAT_COMP'], '');
+    $compTotal = self::pkgField($package, ['gross_total_comp', 'GROSS_TOTAL_COMP', 'total_prem_comp'], '');
+    if ($buyComp && $compTotal === '' && $compPrem !== '') {
+      $compTotal = (string)((float)$compPrem + (float)$compStamp + (float)$compVat);
+    }
+
+    $provCode = trim((string)($customer['insuredProvinceCode'] ?? ''));
+    if ($provCode === '') {
+      $provCode = MotorBkiLookup::resolveProvinceCode($insuredProvince);
+    }
+    $amphCode = trim((string)($customer['insuredDistrictCode'] ?? $customer['insuredDistrict'] ?? ''));
+    if ($amphCode !== '' && !preg_match('/^\d{1,2}$/', $amphCode)) {
+      $amphCode = MotorBkiLookup::resolveAmphurCode($provCode, $amphCode);
+    } elseif (preg_match('/^\d{1,2}$/', $amphCode)) {
+      $amphCode = str_pad($amphCode, 2, '0', STR_PAD_LEFT);
+    }
+    $tambolRaw = trim((string)($customer['insuredSubdistrictCode'] ?? $customer['insuredSubdistrict'] ?? ''));
+    $tambol = MotorBkiLookup::resolveTambol($provCode, $amphCode, $tambolRaw);
+    $zip = trim((string)($customer['insuredPostal'] ?? $tambol['zipcode'] ?? ''));
+
+    $homeNo = trim((string)($customer['homeNumber'] ?? $customer['address'] ?? ''));
+    $moo = trim((string)($customer['moo'] ?? ''));
+    $soi = trim((string)($customer['soi'] ?? ''));
+    $road = trim((string)($customer['road'] ?? ''));
+    $building = trim((string)($customer['building'] ?? ''));
+
+    $foreign = strtolower($idType) === 'passport' ? 'Y' : 'N';
+    $driverMode = trim((string)($input['driverMode'] ?? 'unnamed'));
+    $named = $driverMode === 'named';
+    $consentDrv = strtoupper(trim((string)($input['consent_drv'] ?? $customer['consent_drv'] ?? 'N')));
+    if ($consentDrv !== 'Y') {
+      $consentDrv = 'N';
+    }
 
     $payload = array_merge($base, [
       'date_fr' => $dateFr,
@@ -423,47 +467,97 @@ final class MotorBkiVol
       'stamp_vol' => (string)$stamp,
       'vat_vol' => (string)$vat,
       'gross_total_vol' => (string)$total,
-      'total_prem' => (string)$total,
+      'total_prem' => (string)($buyComp && $compTotal !== ''
+        ? ((float)$total + (float)$compTotal)
+        : $total),
+      'comp_req' => $buyComp ? 'Y' : 'N',
       'comp_flag' => $buyComp ? 'Y' : 'N',
+      'gross_prem_comp' => $buyComp ? (string)$compPrem : '',
+      'stamp_comp' => $buyComp ? (string)$compStamp : '',
+      'vat_comp' => $buyComp ? (string)$compVat : '',
+      'gross_total_comp' => $buyComp ? (string)$compTotal : '',
       'plate_no' => trim((string)($customer['licensePlate'] ?? '')),
       'plate_jw' => $plateInfo['plate_jw'],
       'chassis' => trim((string)($customer['chassisNo'] ?? '')),
       'engine' => trim((string)($customer['engineNo'] ?? '')),
       'color_code' => trim((string)($customer['carColor'] ?? '01')),
-      'body_code' => trim((string)($input['body_code'] ?? '001')),
+      'body_code' => trim((string)($input['body_code'] ?? $customer['body_code'] ?? '001')),
       'make_model' => trim((string)($input['car_submodel'] ?? $input['make_model'] ?? '')),
-      'accessory_flag' => 'N',
+      'accessory_flag' => trim((string)($customer['accessory_flag'] ?? 'N')) ?: 'N',
+      'drv_flag' => $named ? 'Y' : 'N',
+      'consent_drv' => $named ? $consentDrv : 'N',
       'cust1_type' => self::mapCustType($idType),
-      'cust1_foreign_flag' => 'N',
+      'cust1_foreign_flag' => $foreign,
       'cust1_id_type' => self::mapIdType($idType),
       'cust1_id' => trim((string)($customer['idNumber'] ?? '')),
       'cust1_tax_id' => strtolower($idType) === 'corporate' ? trim((string)($customer['idNumber'] ?? '')) : '',
       'cust1_gender' => trim((string)($customer['gender'] ?? 'M')),
       'cust1_title' => trim((string)($customer['titleTh'] ?? '')),
       'cust1_name' => $fullName,
-      'cust1_occupation' => trim((string)($customer['occupation'] ?? '001')),
+      'cust1_occupation' => trim((string)($customer['occupation'] ?? '1011')),
       'cust1_dob' => $dob,
-      'cust1_home_number' => trim((string)($customer['address'] ?? '')),
-      'cust1_tambol' => trim((string)($customer['insuredSubdistrict'] ?? '')),
-      'cust1_amphur_code' => trim((string)($customer['insuredDistrict'] ?? '')),
-      'cust1_province_code' => $insuredPlate['province'],
-      'cust1_zipcode' => trim((string)($customer['insuredPostal'] ?? '')),
+      'cust1_nationality_name' => trim((string)($customer['nationality'] ?? ($foreign === 'Y' ? '' : 'ไทย'))),
+      'cust1_home_number' => $homeNo,
+      'cust1_building' => $building,
+      'cust1_moo' => $moo,
+      'cust1_soi' => $soi,
+      'cust1_road' => $road,
+      'cust1_tambol' => $tambol['name'] !== '' ? $tambol['name'] : $tambolRaw,
+      'cust1_amphur_code' => $amphCode,
+      'cust1_province_code' => $provCode !== '' ? $provCode : $insuredPlate['province'],
+      'cust1_zipcode' => $zip,
       'cust1_mobile_tel' => trim((string)($customer['phone'] ?? '')),
       'cust1_email' => trim((string)($customer['email'] ?? '')),
+      'print_cust' => trim((string)($customer['print_cust'] ?? '1')),
     ]);
 
     $drivers = is_array($input['drivers'] ?? null) ? $input['drivers'] : [];
-    $driverMode = trim((string)($input['driverMode'] ?? 'unnamed'));
-    if ($driverMode === 'named' && $drivers !== []) {
+    if ($named && $drivers !== []) {
       foreach (array_slice($drivers, 0, 5) as $idx => $driver) {
         if (!is_array($driver)) {
           continue;
         }
         $n = $idx + 1;
-        $payload["driver{$n}_name"] = trim((string)(($driver['firstName'] ?? '') . ' ' . ($driver['lastName'] ?? '')));
-        $payload["driver{$n}_id"] = trim((string)($driver['idNumber'] ?? ''));
-        $payload["driver{$n}_license"] = trim((string)($driver['licenseNo'] ?? ''));
-        $payload["driver{$n}_dob"] = self::formatEffDate((string)($driver['dob'] ?? ''));
+        $drvName = trim((string)($driver['name'] ?? ''));
+        if ($drvName === '') {
+          $drvName = trim((string)(($driver['firstName'] ?? '') . ' ' . ($driver['lastName'] ?? '')));
+        }
+        $payload["drv{$n}_title"] = trim((string)($driver['title'] ?? $driver['titleTh'] ?? ''));
+        $payload["drv{$n}_name"] = $drvName;
+        $payload["drv{$n}_id"] = trim((string)($driver['idNumber'] ?? $driver['id'] ?? ''));
+        $payload["drv{$n}_license_no"] = trim((string)($driver['licenseNo'] ?? $driver['license_no'] ?? ''));
+        $payload["drv{$n}_license_type"] = trim((string)($driver['licenseType'] ?? $driver['license_type'] ?? '02'));
+        $licExpire = trim((string)($driver['licenseExpire'] ?? $driver['license_expire'] ?? ''));
+        if ($licExpire !== '') {
+          $payload["drv{$n}_license_expire"] = self::formatEffDate($licExpire);
+        }
+        $drvDob = trim((string)($driver['dob'] ?? ''));
+        if ($drvDob !== '') {
+          $payload["drv{$n}_dob"] = self::formatEffDate($drvDob);
+        }
+        if ($consentDrv === 'Y') {
+          $payload["drv{$n}_score"] = trim((string)($driver['score'] ?? '0'));
+        }
+        $natType = trim((string)($driver['nationalityType'] ?? ''));
+        $natName = trim((string)($driver['nationality'] ?? ''));
+        if ($natType !== '') {
+          $payload["drv{$n}_nationality_type"] = $natType;
+        }
+        if ($natName !== '') {
+          $payload["drv{$n}_nationality_name"] = $natName;
+        }
+      }
+    }
+
+    // Optional accessories 1..5
+    if (($payload['accessory_flag'] ?? 'N') === 'Y') {
+      $accessories = is_array($input['accessories'] ?? null) ? $input['accessories'] : [];
+      foreach (array_slice($accessories, 0, 5) as $idx => $acc) {
+        if (!is_array($acc)) continue;
+        $n = $idx + 1;
+        $payload["accessory{$n}_code"] = trim((string)($acc['code'] ?? ''));
+        $payload["accessory{$n}_detail"] = trim((string)($acc['detail'] ?? ''));
+        $payload["accessory{$n}_price"] = trim((string)($acc['price'] ?? ''));
       }
     }
 
@@ -488,41 +582,48 @@ final class MotorBkiVol
 
   /**
    * @param mixed $body
-   * @return array{status_code:?string,status_message:?string,policy_no:?string,raw:mixed}
+   * @return array{
+   *   status_code:?string,
+   *   status_message:?string,
+   *   policy_no:?string,
+   *   link_policy:?string,
+   *   comp_policy_no:?string,
+   *   link_comp_policy:?string,
+   *   raw:mixed
+   * }
    */
   public static function parseTransferResponse($body): array
   {
     $statusCode = null;
     $statusMessage = null;
     $policyNo = null;
+    $linkPolicy = null;
+    $compPolicyNo = null;
+    $linkCompPolicy = null;
+
+    $pick = static function (array $src, array $keys): ?string {
+      foreach ($keys as $key) {
+        if (isset($src[$key]) && $src[$key] !== '' && $src[$key] !== null) {
+          $val = $src[$key];
+          return is_array($val) ? implode(' ', array_map('strval', $val)) : (string)$val;
+        }
+      }
+      return null;
+    };
 
     if (is_array($body)) {
-      foreach (['status', 'STATUS', 'ERR_CODE', 'err_code'] as $key) {
-        if (isset($body[$key]) && $body[$key] !== '') {
-          $statusCode = (string)$body[$key];
-          break;
-        }
-      }
-      foreach (['status_message', 'STATUS_MESSAGE', 'message', 'ERR_MSG', 'err_msg'] as $key) {
-        if (isset($body[$key]) && $body[$key] !== '') {
-          $val = $body[$key];
-          $statusMessage = is_array($val) ? implode(' ', array_map('strval', $val)) : (string)$val;
-          break;
-        }
-      }
-      foreach (['policy_no', 'POLICY_NO', 'pol_no', 'POL_NO', 'vol_policy_no'] as $key) {
-        if (isset($body[$key]) && $body[$key] !== '') {
-          $policyNo = (string)$body[$key];
-          break;
-        }
-      }
-      if ($policyNo === null && isset($body['data']) && is_array($body['data'])) {
-        foreach (['policy_no', 'POLICY_NO', 'pol_no'] as $key) {
-          if (!empty($body['data'][$key])) {
-            $policyNo = (string)$body['data'][$key];
-            break;
-          }
-        }
+      $statusCode = $pick($body, ['status', 'STATUS', 'ERR_CODE', 'err_code']);
+      $statusMessage = $pick($body, ['status_message', 'STATUS_MESSAGE', 'message', 'ERR_MSG', 'err_msg']);
+      $policyNo = $pick($body, ['policyNo', 'policy_no', 'POLICY_NO', 'pol_no', 'POL_NO', 'vol_policy_no']);
+      $linkPolicy = $pick($body, ['linkPolicy', 'link_policy', 'LINK_POLICY']);
+      $compPolicyNo = $pick($body, ['compPolicyNo', 'comp_policy_no', 'COMP_POLICY_NO']);
+      $linkCompPolicy = $pick($body, ['linkCompPolicy', 'link_comp_policy', 'LINK_COMP_POLICY']);
+
+      if (isset($body['data']) && is_array($body['data'])) {
+        $policyNo = $policyNo ?: $pick($body['data'], ['policyNo', 'policy_no', 'POLICY_NO', 'pol_no']);
+        $linkPolicy = $linkPolicy ?: $pick($body['data'], ['linkPolicy', 'link_policy']);
+        $compPolicyNo = $compPolicyNo ?: $pick($body['data'], ['compPolicyNo', 'comp_policy_no']);
+        $linkCompPolicy = $linkCompPolicy ?: $pick($body['data'], ['linkCompPolicy', 'link_comp_policy']);
       }
     }
 
@@ -530,6 +631,9 @@ final class MotorBkiVol
       'status_code' => $statusCode,
       'status_message' => $statusMessage,
       'policy_no' => $policyNo,
+      'link_policy' => $linkPolicy,
+      'comp_policy_no' => $compPolicyNo,
+      'link_comp_policy' => $linkCompPolicy,
       'raw' => $body,
     ];
   }

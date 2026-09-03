@@ -270,8 +270,9 @@
   }
 
   function toast(msg, type) {
-    if (window.App?.TableUI?.showToast) {
-      App.TableUI.showToast(msg, type || 'success');
+    const show = App.AdminUtils?.showToast || App.TableUI?.showToast;
+    if (typeof show === 'function') {
+      show.call(App.AdminUtils || App.TableUI, msg, type || 'success');
       return;
     }
     let box = document.getElementById('productKeyToast');

@@ -121,10 +121,11 @@ App.AdminUtils = {
     el.textContent = message;
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('is-show'));
+    const hold = type === 'error' ? 4500 : 3200;
     window.setTimeout(() => {
       el.classList.remove('is-show');
       window.setTimeout(() => el.remove(), 320);
-    }, 3200);
+    }, hold);
   }
 };
 

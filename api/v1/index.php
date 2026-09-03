@@ -435,6 +435,39 @@ try {
     Response::json($search);
   }
 
+  if ($method === 'GET' && $path === '/motor/bki/vol/lookups') {
+    Auth::requireUser($pdo);
+    Response::json(MotorBkiLookup::catalogs());
+  }
+
+  if ($method === 'GET' && $path === '/motor/bki/vol/lookups/amphurs') {
+    Auth::requireUser($pdo);
+    $provinceCode = (string)($_GET['province_code'] ?? $_GET['province'] ?? '');
+    if ($provinceCode === '') {
+      Response::error('กรุณาระบุ province_code', 422, 'VALIDATION');
+    }
+    if (!preg_match('/^\d{1,2}$/', $provinceCode)) {
+      $provinceCode = MotorBkiLookup::resolveProvinceCode($provinceCode);
+    }
+    Response::json(['items' => MotorBkiLookup::amphurs($provinceCode)]);
+  }
+
+  if ($method === 'GET' && $path === '/motor/bki/vol/lookups/tambols') {
+    Auth::requireUser($pdo);
+    $provinceCode = (string)($_GET['province_code'] ?? $_GET['province'] ?? '');
+    $amphurCode = (string)($_GET['amphur_code'] ?? $_GET['amphur'] ?? '');
+    if ($provinceCode === '' || $amphurCode === '') {
+      Response::error('กรุณาระบุ province_code และ amphur_code', 422, 'VALIDATION');
+    }
+    if (!preg_match('/^\d{1,2}$/', $provinceCode)) {
+      $provinceCode = MotorBkiLookup::resolveProvinceCode($provinceCode);
+    }
+    if (!preg_match('/^\d{1,2}$/', $amphurCode)) {
+      $amphurCode = MotorBkiLookup::resolveAmphurCode($provinceCode, $amphurCode);
+    }
+    Response::json(['items' => MotorBkiLookup::tambols($provinceCode, $amphurCode)]);
+  }
+
   if ($method === 'POST' && $path === '/motor/bki/vol/premium/calculate') {
     Auth::requireUser($pdo);
     if (!MotorWebService::isReady()) {
@@ -567,7 +600,13 @@ try {
         'externalStatus' => (string)($parsed['status_code'] ?? ''),
         'externalMessage' => (string)($parsed['status_message'] ?? ''),
         'requestJson' => $payload,
-        'responseJson' => $result['body'],
+        'responseJson' => [
+          'body' => $result['body'],
+          'parsed' => $parsed,
+          'linkPolicy' => $parsed['link_policy'] ?? null,
+          'compPolicyNo' => $parsed['comp_policy_no'] ?? null,
+          'linkCompPolicy' => $parsed['link_comp_policy'] ?? null,
+        ],
         'status' => 'active',
       ];
 
@@ -581,6 +620,10 @@ try {
         'message' => 'ออกกรมธรรม์สำเร็จ',
         'policy' => $policy,
         'parsed' => $parsed,
+        'links' => [
+          'policy' => $parsed['link_policy'] ?? null,
+          'compPolicy' => $parsed['link_comp_policy'] ?? null,
+        ],
         'balance' => isset($balanceRow['balance']) ? (float)$balanceRow['balance'] : null,
         'body' => $result['body'],
       ], 200);
@@ -592,6 +635,37 @@ try {
         'request' => $payload,
       ], 502);
     }
+  }
+
+  if ($method === 'POST' && $path === '/motor/bki/vol/quotes') {
+    $user = Auth::requireUser($pdo);
+    $ctx = Policies::requireAgent($pdo, $user);
+    $quote = Quotes::create($pdo, $ctx['agent'], $user, api_json_body());
+    Response::json(['ok' => true, 'quote' => $quote], 201);
+  }
+
+  if ($method === 'GET' && $path === '/motor/bki/vol/quotes') {
+    $user = Auth::requireUser($pdo);
+    Quotes::ensureTable($pdo);
+    Response::json(Quotes::listForUser($pdo, $user, [
+      'agentId' => (string)($_GET['agentId'] ?? ''),
+    ]));
+  }
+
+  if (preg_match('#^/motor/bki/vol/quotes/([^/]+)$#', $path, $m) && $method === 'GET') {
+    $user = Auth::requireUser($pdo);
+    Quotes::ensureTable($pdo);
+    $quote = Quotes::fetchOne($pdo, urldecode($m[1]));
+    if (!$quote) {
+      Response::error('ไม่พบใบเสนอราคา', 404, 'NOT_FOUND');
+    }
+    if (($user['role'] ?? '') === 'agent') {
+      $ctx = Policies::requireAgent($pdo, $user);
+      if (($quote['agentId'] ?? '') !== ($ctx['agent']['id'] ?? '')) {
+        Response::error('Forbidden', 403, 'FORBIDDEN');
+      }
+    }
+    Response::json($quote);
   }
 
   if ($method === 'GET' && $path === '/policies') {

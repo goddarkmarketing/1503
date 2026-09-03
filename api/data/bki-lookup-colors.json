@@ -1,0 +1,438 @@
+{
+    "source": "color_code.xlsx",
+    "exported_at": "2026-09-03T01:34:32+00:00",
+    "items": [
+        {
+            "value": "00",
+            "label": "00 — ไม่ระบุ",
+            "name": "ไม่ระบุ",
+            "name_en": "UNSPECIFY"
+        },
+        {
+            "value": "01",
+            "label": "01 — ขาว",
+            "name": "ขาว",
+            "name_en": "WHITE"
+        },
+        {
+            "value": "02",
+            "label": "02 — เขียว",
+            "name": "เขียว",
+            "name_en": "GREEN"
+        },
+        {
+            "value": "03",
+            "label": "03 — ชมพู",
+            "name": "ชมพู",
+            "name_en": "PINK"
+        },
+        {
+            "value": "04",
+            "label": "04 — ดำ",
+            "name": "ดำ",
+            "name_en": "BLACK"
+        },
+        {
+            "value": "05",
+            "label": "05 — แดง",
+            "name": "แดง",
+            "name_en": "RED"
+        },
+        {
+            "value": "06",
+            "label": "06 — ทอง",
+            "name": "ทอง",
+            "name_en": "GOLD"
+        },
+        {
+            "value": "07",
+            "label": "07 — เทา",
+            "name": "เทา",
+            "name_en": "GREY"
+        },
+        {
+            "value": "08",
+            "label": "08 — น้ำเงิน",
+            "name": "น้ำเงิน",
+            "name_en": "BLUE"
+        },
+        {
+            "value": "09",
+            "label": "09 — น้ำตาล",
+            "name": "น้ำตาล",
+            "name_en": "BROWN"
+        },
+        {
+            "value": "10",
+            "label": "10 — บรอนซ์",
+            "name": "บรอนซ์",
+            "name_en": "BRONZE"
+        },
+        {
+            "value": "11",
+            "label": "11 — ฟ้า",
+            "name": "ฟ้า",
+            "name_en": "SKY BLUE"
+        },
+        {
+            "value": "12",
+            "label": "12 — ม่วง",
+            "name": "ม่วง",
+            "name_en": "VIOLET"
+        },
+        {
+            "value": "13",
+            "label": "13 — ส้ม",
+            "name": "ส้ม",
+            "name_en": "ORANGE"
+        },
+        {
+            "value": "14",
+            "label": "14 — เหลือง",
+            "name": "เหลือง",
+            "name_en": "YELLOW"
+        },
+        {
+            "value": "15",
+            "label": "15 — เงิน",
+            "name": "เงิน",
+            "name_en": "SILVER"
+        },
+        {
+            "value": "16",
+            "label": "16 — ตะกั่ว",
+            "name": "ตะกั่ว",
+            "name_en": "LEAD"
+        },
+        {
+            "value": "17",
+            "label": "17 — ครีม",
+            "name": "ครีม",
+            "name_en": "CREAM"
+        },
+        {
+            "value": "18",
+            "label": "18 — ขาว แดง",
+            "name": "ขาว แดง",
+            "name_en": "White Red"
+        },
+        {
+            "value": "19",
+            "label": "19 — แดง ส้ม ชมพู",
+            "name": "แดง ส้ม ชมพู",
+            "name_en": "red orange pink"
+        },
+        {
+            "value": "20",
+            "label": "20 — ขาว แดง หลายสี",
+            "name": "ขาว แดง หลายสี",
+            "name_en": "White Red Multicolor"
+        },
+        {
+            "value": "21",
+            "label": "21 — หลายสี",
+            "name": "หลายสี",
+            "name_en": "Multicolor"
+        },
+        {
+            "value": "22",
+            "label": "22 — ขาว เทา ฟ้า น้ำเงิน",
+            "name": "ขาว เทา ฟ้า น้ำเงิน",
+            "name_en": ""
+        },
+        {
+            "value": "23",
+            "label": "23 — ฟ้า ไม้ ชะแล็ก",
+            "name": "ฟ้า ไม้ ชะแล็ก",
+            "name_en": ""
+        },
+        {
+            "value": "24",
+            "label": "24 — ฟ้า น้ำตาล",
+            "name": "ฟ้า น้ำตาล",
+            "name_en": ""
+        },
+        {
+            "value": "25",
+            "label": "25 — ขาว แดง น้ำเงิน",
+            "name": "ขาว แดง น้ำเงิน",
+            "name_en": "WHITE RED BLUE"
+        },
+        {
+            "value": "26",
+            "label": "26 — ขาว ส้ม",
+            "name": "ขาว ส้ม",
+            "name_en": "WHITE ORANGE"
+        },
+        {
+            "value": "27",
+            "label": "27 — ดำ แดง",
+            "name": "ดำ แดง",
+            "name_en": "BLACK RED"
+        },
+        {
+            "value": "28",
+            "label": "28 — น้ำเงิน แดง",
+            "name": "น้ำเงิน แดง",
+            "name_en": "BLUE RED"
+        },
+        {
+            "value": "29",
+            "label": "29 — น้ำเงิน เทา",
+            "name": "น้ำเงิน เทา",
+            "name_en": "BLUE GRAY"
+        },
+        {
+            "value": "30",
+            "label": "30 — ฟ้า เขียว",
+            "name": "ฟ้า เขียว",
+            "name_en": "BLUE GREEN"
+        },
+        {
+            "value": "31",
+            "label": "31 — น้ำเงิน ดำ",
+            "name": "น้ำเงิน ดำ",
+            "name_en": "BLUE BLACK"
+        },
+        {
+            "value": "32",
+            "label": "32 — เหลือง เทา",
+            "name": "เหลือง เทา",
+            "name_en": "YELLOW GRAY"
+        },
+        {
+            "value": "33",
+            "label": "33 — ขาว เหลือง เขียว",
+            "name": "ขาว เหลือง เขียว",
+            "name_en": "WHITE YELLOW GREEN"
+        },
+        {
+            "value": "34",
+            "label": "34 — ดำ เทา",
+            "name": "ดำ เทา",
+            "name_en": "BLACK GRAY"
+        },
+        {
+            "value": "35",
+            "label": "35 — ขาว ดำ",
+            "name": "ขาว ดำ",
+            "name_en": "WHITE BLACK"
+        },
+        {
+            "value": "36",
+            "label": "36 — ฟ้า ขาว",
+            "name": "ฟ้า ขาว",
+            "name_en": "BLUE WHITE"
+        },
+        {
+            "value": "37",
+            "label": "37 — เหลือง ดำ",
+            "name": "เหลือง ดำ",
+            "name_en": "YELLOW BLACK"
+        },
+        {
+            "value": "38",
+            "label": "38 — ขาว อลูมิเนียม",
+            "name": "ขาว อลูมิเนียม",
+            "name_en": "WHITE ALUMINUM"
+        },
+        {
+            "value": "39",
+            "label": "39 — ขาว ม่วง",
+            "name": "ขาว ม่วง",
+            "name_en": "WHITE PURPLE"
+        },
+        {
+            "value": "40",
+            "label": "40 — ขาว ชมพู",
+            "name": "ขาว ชมพู",
+            "name_en": "WHITE PINK"
+        },
+        {
+            "value": "41",
+            "label": "41 — ขาว น้ำเงิน",
+            "name": "ขาว น้ำเงิน",
+            "name_en": "WHITE BLUE"
+        },
+        {
+            "value": "42",
+            "label": "42 — เขียว แดง",
+            "name": "เขียว แดง",
+            "name_en": "GREEN RED"
+        },
+        {
+            "value": "43",
+            "label": "43 — เขียว ดำ",
+            "name": "เขียว ดำ",
+            "name_en": "GREEN BLACK"
+        },
+        {
+            "value": "44",
+            "label": "44 — ขาว เขียว",
+            "name": "ขาว เขียว",
+            "name_en": "WHITE GREEN"
+        },
+        {
+            "value": "45",
+            "label": "45 — เขียว เหลือง",
+            "name": "เขียว เหลือง",
+            "name_en": "GREEN YELLOW"
+        },
+        {
+            "value": "46",
+            "label": "46 — ขาว เทา",
+            "name": "ขาว เทา",
+            "name_en": "WHITE GRAY"
+        },
+        {
+            "value": "47",
+            "label": "47 — น้ำตาล เทา",
+            "name": "น้ำตาล เทา",
+            "name_en": "BROWN GRAY"
+        },
+        {
+            "value": "48",
+            "label": "48 — แดง น้ำตาล",
+            "name": "แดง น้ำตาล",
+            "name_en": "RED BROWN"
+        },
+        {
+            "value": "49",
+            "label": "49 — ม่วง ดำ",
+            "name": "ม่วง ดำ",
+            "name_en": "PURPLE BLACK"
+        },
+        {
+            "value": "50",
+            "label": "50 — ฟ้า ดำ",
+            "name": "ฟ้า ดำ",
+            "name_en": "LIGHT BLUE BLACK"
+        },
+        {
+            "value": "51",
+            "label": "51 — ส้ม ขาว",
+            "name": "ส้ม ขาว",
+            "name_en": "ORANGE WHITE"
+        },
+        {
+            "value": "52",
+            "label": "52 — เขียว น้ำตาล",
+            "name": "เขียว น้ำตาล",
+            "name_en": "GREEN BROWN"
+        },
+        {
+            "value": "53",
+            "label": "53 — น้ำตาล ไม้",
+            "name": "น้ำตาล ไม้",
+            "name_en": "BROWN WOOD"
+        },
+        {
+            "value": "54",
+            "label": "54 — แดง เทา",
+            "name": "แดง เทา",
+            "name_en": "RED GRAY"
+        },
+        {
+            "value": "55",
+            "label": "55 — ส้ม ดำ",
+            "name": "ส้ม ดำ",
+            "name_en": "ORANGE BLACK"
+        },
+        {
+            "value": "56",
+            "label": "56 — ดำ ขาว แดง",
+            "name": "ดำ ขาว แดง",
+            "name_en": "BLACK WHITE RED"
+        },
+        {
+            "value": "57",
+            "label": "57 — ขาว ดำ เขียว",
+            "name": "ขาว ดำ เขียว",
+            "name_en": ""
+        },
+        {
+            "value": "58",
+            "label": "58 — เหลือง ไม้",
+            "name": "เหลือง ไม้",
+            "name_en": "YELLOW WOOD"
+        },
+        {
+            "value": "59",
+            "label": "59 — ดำ น้ำตาล",
+            "name": "ดำ น้ำตาล",
+            "name_en": "BLACK BROWN"
+        },
+        {
+            "value": "60",
+            "label": "60 — ขาว น้ำตาล",
+            "name": "ขาว น้ำตาล",
+            "name_en": "WHITE BROWN"
+        },
+        {
+            "value": "61",
+            "label": "61 — เขียว เทา",
+            "name": "เขียว เทา",
+            "name_en": "GREEN GRAY"
+        },
+        {
+            "value": "62",
+            "label": "62 — ฟ้า เทา",
+            "name": "ฟ้า เทา",
+            "name_en": "BLUE GRAY"
+        },
+        {
+            "value": "63",
+            "label": "63 — ไม่ระบุ",
+            "name": "ไม่ระบุ",
+            "name_en": "UNDEFINE"
+        },
+        {
+            "value": "64",
+            "label": "64 — ดํา ขาว เหลือง",
+            "name": "ดํา ขาว เหลือง",
+            "name_en": "Black White Yellow"
+        },
+        {
+            "value": "65",
+            "label": "65 — แดง ส้ม ชมพู",
+            "name": "แดง ส้ม ชมพู",
+            "name_en": "red orange pink"
+        },
+        {
+            "value": "66",
+            "label": "66 — ขาว แดง หลายสี",
+            "name": "ขาว แดง หลายสี",
+            "name_en": "White Red Multicolor"
+        },
+        {
+            "value": "67",
+            "label": "67 — ขาว เทา ฟ้า น้ำเงิน",
+            "name": "ขาว เทา ฟ้า น้ำเงิน",
+            "name_en": ""
+        },
+        {
+            "value": "68",
+            "label": "68 — ดำ เหลือง",
+            "name": "ดำ เหลือง",
+            "name_en": "black-yellow"
+        },
+        {
+            "value": "69",
+            "label": "69 — เหลือง แดง",
+            "name": "เหลือง แดง",
+            "name_en": "yellow-red"
+        },
+        {
+            "value": "70",
+            "label": "70 — ชมพู คาดเขียว",
+            "name": "ชมพู คาดเขียว",
+            "name_en": "pink on green"
+        },
+        {
+            "value": "71",
+            "label": "71 — ชมพู น้ำเงิน",
+            "name": "ชมพู น้ำเงิน",
+            "name_en": "pink-blue"
+        }
+    ]
+}

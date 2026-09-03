@@ -10,6 +10,23 @@ App.MotorBkiService = {
     return App.API.request(`/motor/bki/vol/car-codes${qs ? `?${qs}` : ''}`);
   },
 
+  async getLookups() {
+    return App.API.request('/motor/bki/vol/lookups');
+  },
+
+  async getAmphurs(provinceCode) {
+    const qs = new URLSearchParams({ province_code: provinceCode }).toString();
+    return App.API.request(`/motor/bki/vol/lookups/amphurs?${qs}`);
+  },
+
+  async getTambols(provinceCode, amphurCode) {
+    const qs = new URLSearchParams({
+      province_code: provinceCode,
+      amphur_code: amphurCode
+    }).toString();
+    return App.API.request(`/motor/bki/vol/lookups/tambols?${qs}`);
+  },
+
   async calculatePremium(payload) {
     return App.API.request('/motor/bki/vol/premium/calculate', {
       method: 'POST',
@@ -29,25 +46,33 @@ App.MotorBkiService = {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+  },
+
+  async createQuote(payload) {
+    return App.API.request('/motor/bki/vol/quotes', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async getQuote(quoteId) {
+    return App.API.request(`/motor/bki/vol/quotes/${encodeURIComponent(quoteId)}`);
   }
 };
 
 App.VoluntaryBkiQuote = {
   _variants: [],
-  _issueGeoReady: false,
+  _lookups: null,
 
-  CUSTOMER_TITLES: ['นาย', 'นาง', 'นางสาว', 'ด.ช.', 'ด.ญ.'],
+  CUSTOMER_TITLES: ['นาย', 'นาง', 'นางสาว', 'เด็กชาย', 'เด็กหญิง'],
   CAR_COLORS: [
-    { value: '01', label: 'ขาว' },
-    { value: '02', label: 'ดำ' },
-    { value: '03', label: 'เทา' },
-    { value: '04', label: 'เงิน' },
-    { value: '05', label: 'แดง' },
-    { value: '06', label: 'น้ำเงิน' },
-    { value: '07', label: 'เขียว' },
-    { value: '08', label: 'เหลือง' },
-    { value: '09', label: 'ส้ม' },
-    { value: '10', label: 'อื่นๆ' }
+    { value: '01', label: '01 — ขาว' },
+    { value: '04', label: '04 — ดำ' },
+    { value: '07', label: '07 — เทา' },
+    { value: '05', label: '05 — แดง' },
+    { value: '08', label: '08 — น้ำเงิน' },
+    { value: '02', label: '02 — เขียว' },
+    { value: '00', label: '00 — ไม่ระบุ' }
   ],
 
   BKK_AREA: new Set([
@@ -135,6 +160,27 @@ App.VoluntaryBkiQuote = {
   money(n) {
     if (n == null || n === '' || Number.isNaN(Number(n))) return '—';
     return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  },
+
+  formatThaiDate(value) {
+    const raw = String(value || '').slice(0, 10);
+    const [y, m, d] = raw.split('-').map(Number);
+    if (!y || !m || !d) return value ? String(value).slice(0, 10) : '—';
+    return `${this.pad2(d)}/${this.pad2(m)}/${y + 543}`;
+  },
+
+  optionLabel(el) {
+    if (!el) return '';
+    return el.selectedOptions?.[0]?.textContent?.trim() || el.value || '';
+  },
+
+  absAsset(path) {
+    const base = document.body?.dataset?.basePath || '../';
+    try {
+      return new URL(path, new URL(base, window.location.href)).href;
+    } catch {
+      return `${base}${path}`;
+    }
   },
 
   deductLabel(value) {
@@ -396,13 +442,90 @@ App.VoluntaryBkiQuote = {
         </div>
 
         <div class="axa-result" id="bkiQuoteResult" hidden></div>
+        <div class="bki-issue" id="bkiQuotePanel" hidden aria-live="polite"></div>
         <div class="bki-issue" id="bkiIssuePanel" hidden aria-live="polite"></div>
       </div>`;
   },
 
+  buildDriverBlockHtml(n, { required = false } = {}) {
+    const req = required ? ' required' : '';
+    const star = required ? ' <span class="form-req">*</span>' : '';
+    const titleOpts = this.optionsHtml(
+      (this._lookups?.titles || this.CUSTOMER_TITLES.map((t) => ({ value: t, label: t }))).slice(0, 80),
+      { placeholder: 'เลือก' }
+    );
+    const licenseOpts = this.optionsHtml(
+      this._lookups?.license_types || [
+        { value: '02', label: '02 — ใบขับขี่ประเภทส่วนบุคคล' },
+        { value: '00', label: '00 — ไม่มีใบขับขี่' }
+      ],
+      { selected: '02' }
+    );
+    return `
+      <div class="bki-issue__driverCard" data-driver="${n}">
+        <h5 class="bki-issue__driverHead">ผู้ขับขี่คนที่ ${n}${required ? '' : ' (ถ้ามี)'}</h5>
+        <div class="bki-issue__grid">
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}Title">คำนำหน้า${star}</label>
+            <select id="driver${n}Title" name="driver${n}Title" class="form-input"${req}>${titleOpts}</select>
+          </div>
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}FirstName">ชื่อ${star}</label>
+            <input type="text" id="driver${n}FirstName" name="driver${n}FirstName" class="form-input"${req}>
+          </div>
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}LastName">นามสกุล${star}</label>
+            <input type="text" id="driver${n}LastName" name="driver${n}LastName" class="form-input"${req}>
+          </div>
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}Id">เลขบัตร${star}</label>
+            <input type="text" id="driver${n}Id" name="driver${n}IdNumber" class="form-input" maxlength="13"${req}>
+          </div>
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}Dob">วันเกิด${star}</label>
+            <input type="date" id="driver${n}Dob" name="driver${n}Dob" class="form-input"${req}>
+          </div>
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}LicenseType">ประเภทใบขับขี่${star}</label>
+            <select id="driver${n}LicenseType" name="driver${n}LicenseType" class="form-input"${req}>${licenseOpts}</select>
+          </div>
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}License">เลขใบขับขี่${star}</label>
+            <input type="text" id="driver${n}License" name="driver${n}LicenseNo" class="form-input"${req}>
+          </div>
+          <div class="form-field bki-issue__field">
+            <label for="driver${n}LicenseExpire">วันหมดอายุใบขับขี่</label>
+            <input type="date" id="driver${n}LicenseExpire" name="driver${n}LicenseExpire" class="form-input">
+          </div>
+        </div>
+      </div>`;
+  },
+
   buildIssuePanelHtml({ planLabel, premiumText } = {}) {
-    const titleOpts = this.optionsHtml(this.CUSTOMER_TITLES.map((t) => ({ value: t, label: t })), { placeholder: 'เลือก' });
-    const colorOpts = this.optionsHtml(this.CAR_COLORS, { selected: '01' });
+    const titles = this._lookups?.titles?.length
+      ? this._lookups.titles
+      : this.CUSTOMER_TITLES.map((t) => ({ value: t, label: t }));
+    const colors = this._lookups?.colors?.length ? this._lookups.colors : this.CAR_COLORS;
+    const occupations = this._lookups?.occupations || [];
+    const provinces = this._lookups?.provinces || [];
+    const plateProvinces = this._lookups?.provinces_plate || this.PROVINCES.map((p) => ({ value: p, label: p }));
+
+    const titleOpts = this.optionsHtml(titles.slice(0, 120), { placeholder: 'เลือก', selected: 'นาย' });
+    const colorOpts = this.optionsHtml(colors, { selected: '01' });
+    const occOpts = this.optionsHtml(
+      occupations.length ? occupations : [{ value: '1011', label: '1011 — เจ้าของกิจการ / พนักงานทั่วไป' }],
+      { selected: occupations[0]?.value || '1011' }
+    );
+    const provOpts = this.optionsHtml(
+      provinces.length ? provinces : this.PROVINCES.map((p) => ({ value: p, label: p })),
+      { placeholder: 'โปรดเลือก' }
+    );
+    const plateOpts = this.optionsHtml(plateProvinces, {
+      placeholder: 'โปรดเลือก',
+      selected: plateProvinces.find((p) => /กรุงเทพ|กทม/.test(p.value || p.label || ''))?.value
+        || 'กรุงเทพมหานคร'
+    });
+
     return `
       <div class="bki-issue__head">
         <div>
@@ -420,6 +543,13 @@ App.VoluntaryBkiQuote = {
             <label><input type="radio" name="idType" value="corporate"> นิติบุคคล</label>
             <label><input type="radio" name="idType" value="passport"> ต่างชาติ</label>
           </div>
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="issueGender">เพศ <span class="form-req">*</span></label>
+          <select id="issueGender" name="gender" class="form-input" required>
+            <option value="M" selected>ชาย</option>
+            <option value="F">หญิง</option>
+          </select>
         </div>
         <div class="form-field bki-issue__field">
           <label for="issueTitle">คำนำหน้า <span class="form-req">*</span></label>
@@ -442,6 +572,10 @@ App.VoluntaryBkiQuote = {
           <input type="date" id="issueDob" name="dob" class="form-input" required>
         </div>
         <div class="form-field bki-issue__field">
+          <label for="issueOccupation">อาชีพ <span class="form-req">*</span></label>
+          <select id="issueOccupation" name="occupation" class="form-input" required>${occOpts}</select>
+        </div>
+        <div class="form-field bki-issue__field">
           <label for="issuePhone">เบอร์โทร <span class="form-req">*</span></label>
           <input type="tel" id="issuePhone" name="phone" class="form-input" required autocomplete="tel">
         </div>
@@ -449,27 +583,46 @@ App.VoluntaryBkiQuote = {
           <label for="issueEmail">อีเมล</label>
           <input type="email" id="issueEmail" name="email" class="form-input" autocomplete="email">
         </div>
-        <div class="form-field bki-issue__field bki-issue__field--full">
-          <label for="issueAddress">ที่อยู่ <span class="form-req">*</span></label>
-          <input type="text" id="issueAddress" name="address" class="form-input" required placeholder="บ้านเลขที่ หมู่ ซอย ถนน">
+        <div class="form-field bki-issue__field">
+          <label for="issueHomeNumber">บ้านเลขที่ <span class="form-req">*</span></label>
+          <input type="text" id="issueHomeNumber" name="homeNumber" class="form-input" required>
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="issueMoo">หมู่ที่</label>
+          <input type="text" id="issueMoo" name="moo" class="form-input">
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="issueSoi">ซอย</label>
+          <input type="text" id="issueSoi" name="soi" class="form-input">
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="issueRoad">ถนน</label>
+          <input type="text" id="issueRoad" name="road" class="form-input">
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="issueBuilding">อาคาร / หมู่บ้าน</label>
+          <input type="text" id="issueBuilding" name="building" class="form-input">
         </div>
         <div class="form-field bki-issue__field">
           <label for="issueProvince">จังหวัด <span class="form-req">*</span></label>
-          <select id="issueProvince" name="insuredProvince" class="form-input" required>
-            ${this.optionsHtml(this.PROVINCES, { placeholder: 'โปรดเลือก' })}
+          <select id="issueProvince" name="insuredProvinceCode" class="form-input" required>
+            ${provOpts}
           </select>
+          <input type="hidden" id="issueProvinceName" name="insuredProvince" value="">
         </div>
         <div class="form-field bki-issue__field">
           <label for="issueDistrict">อำเภอ / เขต <span class="form-req">*</span></label>
-          <select id="issueDistrict" name="insuredDistrict" class="form-input" required disabled>
+          <select id="issueDistrict" name="insuredDistrictCode" class="form-input" required disabled>
             <option value="">เลือกจังหวัดก่อน</option>
           </select>
+          <input type="hidden" id="issueDistrictName" name="insuredDistrict" value="">
         </div>
         <div class="form-field bki-issue__field">
           <label for="issueSubdistrict">ตำบล / แขวง <span class="form-req">*</span></label>
-          <select id="issueSubdistrict" name="insuredSubdistrict" class="form-input" required disabled>
+          <select id="issueSubdistrict" name="insuredSubdistrictCode" class="form-input" required disabled>
             <option value="">เลือกอำเภอก่อน</option>
           </select>
+          <input type="hidden" id="issueSubdistrictName" name="insuredSubdistrict" value="">
         </div>
         <div class="form-field bki-issue__field">
           <label for="issuePostal">รหัสไปรษณีย์ <span class="form-req">*</span></label>
@@ -482,7 +635,7 @@ App.VoluntaryBkiQuote = {
         <div class="form-field bki-issue__field">
           <label for="issueLicenseProvince">จังหวัดทะเบียน <span class="form-req">*</span></label>
           <select id="issueLicenseProvince" name="licenseProvince" class="form-input" required>
-            ${this.optionsHtml(this.PROVINCES, { placeholder: 'โปรดเลือก', selected: 'กรุงเทพมหานคร' })}
+            ${plateOpts}
           </select>
         </div>
         <div class="form-field bki-issue__field">
@@ -497,28 +650,30 @@ App.VoluntaryBkiQuote = {
           <label for="issueCarColor">สีรถ <span class="form-req">*</span></label>
           <select id="issueCarColor" name="carColor" class="form-input" required>${colorOpts}</select>
         </div>
+        <div class="form-field bki-issue__field">
+          <label for="issuePrintCust">วิธีจัดส่งกรมธรรม์</label>
+          <select id="issuePrintCust" name="print_cust" class="form-input">
+            <option value="1" selected>คู่ค้าพิมพ์และจัดส่ง</option>
+            <option value="2">BKI พิมพ์และจัดส่ง</option>
+            <option value="3">BKI ส่ง e-Policy</option>
+          </select>
+        </div>
       </div>
 
       <div class="bki-issue__drivers" id="bkiIssueDrivers" hidden>
-        <h4 class="bki-issue__sectionTitle">ผู้ขับขี่ (ระบุชื่อ)</h4>
-        <div class="bki-issue__grid">
-          <div class="form-field bki-issue__field">
-            <label for="driver1FirstName">ชื่อผู้ขับขี่ 1</label>
-            <input type="text" id="driver1FirstName" name="driver1FirstName" class="form-input">
-          </div>
-          <div class="form-field bki-issue__field">
-            <label for="driver1LastName">นามสกุลผู้ขับขี่ 1</label>
-            <input type="text" id="driver1LastName" name="driver1LastName" class="form-input">
-          </div>
-          <div class="form-field bki-issue__field">
-            <label for="driver1Id">เลขบัตรผู้ขับขี่ 1</label>
-            <input type="text" id="driver1Id" name="driver1IdNumber" class="form-input" maxlength="13">
-          </div>
-          <div class="form-field bki-issue__field">
-            <label for="driver1License">เลขใบขับขี่ 1</label>
-            <input type="text" id="driver1License" name="driver1LicenseNo" class="form-input">
-          </div>
-        </div>
+        <h4 class="bki-issue__sectionTitle">ผู้ขับขี่ (ระบุชื่อ สูงสุด 5 คน)</h4>
+        <label class="bki-issue__consent">
+          <input type="checkbox" id="consentDrv" name="consent_drv" value="Y">
+          ยินยอมให้ตรวจสอบประวัติการขับขี่ (consent_drv)
+        </label>
+        ${this.buildDriverBlockHtml(1, { required: true })}
+        ${this.buildDriverBlockHtml(2)}
+        ${this.buildDriverBlockHtml(3)}
+        <details class="bki-issue__moreDrivers">
+          <summary>เพิ่มผู้ขับขี่คนที่ 4–5</summary>
+          ${this.buildDriverBlockHtml(4)}
+          ${this.buildDriverBlockHtml(5)}
+        </details>
       </div>
 
       <div class="bki-issue__actions">
@@ -670,6 +825,12 @@ App.VoluntaryBkiQuote = {
     const fd = new FormData(form);
     const values = Object.fromEntries(fd.entries());
     values.zone_use = form.querySelector('#zoneUse')?.value || this.resolveZone(values.regProvince);
+    const plan = this.getSelectedPlan(form.querySelector('#bkiQuoteResult')) || values.coverType || '3plus';
+    const buyPrb = !!form.querySelector(`#bkiQuoteResult input[name="buyPrb_${plan}"]`)?.checked
+      || !!form.querySelector(`input[name="buyPrb_${plan}"]`)?.checked;
+    values.buyPrb = buyPrb;
+    values.comp_req = buyPrb ? 'Y' : 'N';
+    values.coverType = plan;
     return values;
   },
 
@@ -953,6 +1114,23 @@ App.VoluntaryBkiQuote = {
     const values = Object.fromEntries(fd.entries());
     const idTypeEl = panel.querySelector('input[name="idType"]:checked');
     values.idType = idTypeEl?.value || 'idcard';
+    values.consent_drv = panel.querySelector('#consentDrv')?.checked ? 'Y' : 'N';
+    // Prefer Thai names for display fields while codes go in *Code fields.
+    values.insuredProvince = panel.querySelector('#issueProvinceName')?.value
+      || panel.querySelector('#issueProvince')?.selectedOptions?.[0]?.textContent?.trim()
+      || values.insuredProvince
+      || '';
+    values.insuredDistrict = panel.querySelector('#issueDistrictName')?.value
+      || panel.querySelector('#issueDistrict')?.selectedOptions?.[0]?.textContent?.trim()
+      || values.insuredDistrict
+      || '';
+    values.insuredSubdistrict = panel.querySelector('#issueSubdistrictName')?.value
+      || panel.querySelector('#issueSubdistrict')?.selectedOptions?.[0]?.textContent?.trim()
+      || values.insuredSubdistrict
+      || '';
+    values.address = [values.homeNumber, values.moo ? `ม.${values.moo}` : '', values.soi, values.road]
+      .filter(Boolean)
+      .join(' ');
     return values;
   },
 
@@ -961,6 +1139,9 @@ App.VoluntaryBkiQuote = {
     if (!panel) return { ok: false, message: 'ไม่พบฟอร์มลูกค้า' };
     const required = panel.querySelectorAll('[required]');
     for (const el of required) {
+      if (el.closest('#bkiIssueDrivers') && panel.querySelector('#bkiIssueDrivers')?.hidden) {
+        continue;
+      }
       if (!el.value || !String(el.value).trim()) {
         el.focus();
         return { ok: false, message: 'กรุณากรอกข้อมูลลูกค้าให้ครบถ้วน' };
@@ -970,8 +1151,11 @@ App.VoluntaryBkiQuote = {
     if (driverMode === 'named') {
       const first = panel.querySelector('#driver1FirstName')?.value?.trim();
       const last = panel.querySelector('#driver1LastName')?.value?.trim();
-      if (!first || !last) {
-        return { ok: false, message: 'กรุณาระบุชื่อผู้ขับขี่อย่างน้อย 1 คน' };
+      const id = panel.querySelector('#driver1Id')?.value?.trim();
+      const dob = panel.querySelector('#driver1Dob')?.value?.trim();
+      const license = panel.querySelector('#driver1License')?.value?.trim();
+      if (!first || !last || !id || !dob || !license) {
+        return { ok: false, message: 'กรุณากรอกข้อมูลผู้ขับขี่คนที่ 1 ให้ครบ (ชื่อ, บัตร, วันเกิด, ใบขับขี่)' };
       }
     }
     return { ok: true };
@@ -981,102 +1165,523 @@ App.VoluntaryBkiQuote = {
     const panel = form.querySelector('#bkiIssuePanel');
     const driverMode = form.querySelector('#driverMode')?.value || 'unnamed';
     if (driverMode !== 'named' || !panel) return [];
-    const first = panel.querySelector('#driver1FirstName')?.value?.trim();
-    const last = panel.querySelector('#driver1LastName')?.value?.trim();
-    if (!first && !last) return [];
-    return [{
-      firstName: first || '',
-      lastName: last || '',
-      idNumber: panel.querySelector('#driver1IdNumber')?.value?.trim() || '',
-      licenseNo: panel.querySelector('#driver1LicenseNo')?.value?.trim() || ''
-    }];
+    const drivers = [];
+    for (let n = 1; n <= 5; n += 1) {
+      const firstName = panel.querySelector(`#driver${n}FirstName`)?.value?.trim() || '';
+      const lastName = panel.querySelector(`#driver${n}LastName`)?.value?.trim() || '';
+      if (!firstName && !lastName) continue;
+      drivers.push({
+        title: panel.querySelector(`#driver${n}Title`)?.value?.trim() || '',
+        firstName,
+        lastName,
+        name: `${firstName} ${lastName}`.trim(),
+        idNumber: panel.querySelector(`#driver${n}Id`)?.value?.trim() || '',
+        dob: panel.querySelector(`#driver${n}Dob`)?.value?.trim() || '',
+        licenseNo: panel.querySelector(`#driver${n}License`)?.value?.trim() || '',
+        licenseType: panel.querySelector(`#driver${n}LicenseType`)?.value?.trim() || '02',
+        licenseExpire: panel.querySelector(`#driver${n}LicenseExpire`)?.value?.trim() || ''
+      });
+    }
+    return drivers;
+  },
+
+  async ensureLookups() {
+    if (this._lookups) return this._lookups;
+    try {
+      this._lookups = await App.MotorBkiService.getLookups();
+    } catch (err) {
+      console.warn('[bki] lookup load failed', err);
+      this._lookups = {
+        titles: this.CUSTOMER_TITLES.map((t) => ({ value: t, label: t })),
+        colors: this.CAR_COLORS,
+        occupations: [],
+        license_types: [],
+        provinces: [],
+        provinces_plate: this.PROVINCES.map((p) => ({ value: p, label: p }))
+      };
+    }
+    return this._lookups;
   },
 
   async initIssueGeo(form) {
     const panel = form.querySelector('#bkiIssuePanel');
-    if (!panel || typeof GeoTH === 'undefined') return;
+    if (!panel) return;
 
     const provinceEl = panel.querySelector('#issueProvince');
     const districtEl = panel.querySelector('#issueDistrict');
     const subEl = panel.querySelector('#issueSubdistrict');
     const postalEl = panel.querySelector('#issuePostal');
+    const provNameEl = panel.querySelector('#issueProvinceName');
+    const distNameEl = panel.querySelector('#issueDistrictName');
+    const subNameEl = panel.querySelector('#issueSubdistrictName');
     if (!provinceEl || !districtEl || !subEl) return;
-
-    if (panel.dataset.geoBound === '1') {
-      return;
-    }
+    if (panel.dataset.geoBound === '1') return;
     panel.dataset.geoBound = '1';
 
-    try {
-      const provinces = await GeoTH.getProvinces();
-      provinceEl.innerHTML = this.optionsHtml(
-        provinces.map((p) => ({ value: p.name, label: p.name })),
-        { placeholder: 'โปรดเลือก' }
-      );
+    const syncSelectedName = (selectEl, hiddenEl) => {
+      if (!selectEl || !hiddenEl) return;
+      hiddenEl.value = selectEl.selectedOptions?.[0]?.textContent?.trim() || '';
+    };
 
-      const loadDistricts = async (provinceName) => {
-        districtEl.innerHTML = '<option value="">กำลังโหลด...</option>';
-        districtEl.disabled = true;
-        subEl.innerHTML = '<option value="">เลือกอำเภอก่อน</option>';
-        subEl.disabled = true;
-        if (postalEl) postalEl.value = '';
-        const province = provinces.find((p) => p.name === provinceName);
-        if (!province) {
-          districtEl.innerHTML = '<option value="">เลือกจังหวัดก่อน</option>';
-          return;
-        }
-        const districts = await GeoTH.getDistricts(province.id);
-        panel._districts = districts;
-        districtEl.innerHTML = this.optionsHtml(
-          districts.map((d) => ({ value: d.name, label: d.name })),
-          { placeholder: 'โปรดเลือก' }
-        );
-        districtEl.disabled = false;
-      };
-
-      const loadSubdistricts = async (districtName) => {
-        subEl.innerHTML = '<option value="">กำลังโหลด...</option>';
-        subEl.disabled = true;
-        if (postalEl) postalEl.value = '';
-        const district = (panel._districts || []).find((d) => d.name === districtName);
-        if (!district) {
-          subEl.innerHTML = '<option value="">เลือกอำเภอก่อน</option>';
-          return;
-        }
-        const subs = await GeoTH.getSubdistricts(district.id);
-        panel._subdistricts = subs;
-        subEl.innerHTML = this.optionsHtml(
-          subs.map((s) => ({ value: s.name, label: s.name })),
-          { placeholder: 'โปรดเลือก' }
-        );
-        subEl.disabled = false;
-      };
-
-      provinceEl.addEventListener('change', () => {
-        loadDistricts(provinceEl.value).catch(() => {});
-      });
-      districtEl.addEventListener('change', () => {
-        loadSubdistricts(districtEl.value).catch(() => {});
-      });
-      subEl.addEventListener('change', () => {
-        const sub = (panel._subdistricts || []).find((s) => s.name === subEl.value);
-        if (sub?.zip && postalEl) postalEl.value = String(sub.zip);
-      });
-
-      const regProvince = form.querySelector('#regProvince')?.value;
-      if (regProvince) {
-        provinceEl.value = regProvince;
-        await loadDistricts(regProvince);
+    const loadAmphurs = async (provinceCode) => {
+      districtEl.innerHTML = '<option value="">กำลังโหลด...</option>';
+      districtEl.disabled = true;
+      subEl.innerHTML = '<option value="">เลือกอำเภอก่อน</option>';
+      subEl.disabled = true;
+      if (postalEl) postalEl.value = '';
+      syncSelectedName(provinceEl, provNameEl);
+      if (!provinceCode) {
+        districtEl.innerHTML = '<option value="">เลือกจังหวัดก่อน</option>';
+        return;
       }
-    } catch (err) {
-      console.warn('[bki-issue] geo init failed', err);
+      try {
+        const data = await App.MotorBkiService.getAmphurs(provinceCode);
+        const items = data.items || [];
+        districtEl.innerHTML = this.optionsHtml(items, { placeholder: 'โปรดเลือก' });
+        districtEl.disabled = false;
+      } catch (err) {
+        districtEl.innerHTML = '<option value="">โหลดอำเภอไม่สำเร็จ</option>';
+        console.warn(err);
+      }
+    };
+
+    const loadTambols = async (provinceCode, amphurCode) => {
+      subEl.innerHTML = '<option value="">กำลังโหลด...</option>';
+      subEl.disabled = true;
+      if (postalEl) postalEl.value = '';
+      syncSelectedName(districtEl, distNameEl);
+      if (!provinceCode || !amphurCode) {
+        subEl.innerHTML = '<option value="">เลือกอำเภอก่อน</option>';
+        return;
+      }
+      try {
+        const data = await App.MotorBkiService.getTambols(provinceCode, amphurCode);
+        const items = data.items || [];
+        panel._tambols = items;
+        subEl.innerHTML = this.optionsHtml(items, { placeholder: 'โปรดเลือก' });
+        subEl.disabled = false;
+      } catch (err) {
+        subEl.innerHTML = '<option value="">โหลดตำบลไม่สำเร็จ</option>';
+        console.warn(err);
+      }
+    };
+
+    provinceEl.addEventListener('change', () => {
+      loadAmphurs(provinceEl.value).catch(() => {});
+    });
+    districtEl.addEventListener('change', () => {
+      loadTambols(provinceEl.value, districtEl.value).catch(() => {});
+    });
+    subEl.addEventListener('change', () => {
+      syncSelectedName(subEl, subNameEl);
+      const item = (panel._tambols || []).find((t) => String(t.value) === String(subEl.value));
+      if (item?.zipcode && postalEl) postalEl.value = String(item.zipcode);
+    });
+
+    // Prefer matching registration province from quote form.
+    const regProvince = form.querySelector('#regProvince')?.value || '';
+    if (regProvince && provinceEl.options.length) {
+      const match = [...provinceEl.options].find((o) =>
+        o.textContent.includes(regProvince.replace('กรุงเทพมหานคร', 'กทม'))
+        || (regProvince.includes('กรุงเทพ') && o.textContent.includes('กทม'))
+      );
+      if (match) {
+        provinceEl.value = match.value;
+        await loadAmphurs(match.value);
+      }
     }
   },
 
-  showIssuePanel(form, { plan, toast } = {}) {
+  hidePanel(panel) {
+    if (!panel) return;
+    panel.hidden = true;
+    panel.innerHTML = '';
+    delete panel.dataset.plan;
+    delete panel.dataset.premium;
+  },
+
+  collectQuoteSnapshot(form, plan) {
+    this.refreshResultPrices(form);
+    const root = form.querySelector('#bkiQuoteResult');
+    const packages = this.getPackagesByPlan(form);
+    const pkg = packages[plan] || {};
+    const user = App.Session?.getUser?.();
+    const company = App.Config?.COMPANY || {};
+    const makeEl = form.querySelector('#make');
+    const codeEl = form.querySelector('#makeCode');
+    const yearEl = form.querySelector('#carYear');
+    const subEl = form.querySelector('#carSubmodel');
+    const make = this.optionLabel(makeEl);
+    const model = this.optionLabel(codeEl);
+    const year = yearEl?.value || '';
+    const submodel = this.optionLabel(subEl);
+    const desc = [make, submodel || model, year ? `ปี ${year}` : ''].filter(Boolean).join(' ');
+    const sumEl = root?.querySelector(`select[data-plan="${plan}"][data-field="sumInsured"]`);
+    const natureEl = root?.querySelector(`select[data-plan="${plan}"][data-field="natureSum"]`);
+    const deductEl = root?.querySelector(`select[data-plan="${plan}"][data-field="deductible"]`);
+    const garageEl = root?.querySelector(`select[data-plan="${plan}"][data-field="garageType"]`);
+    const display = (key) => root?.querySelector(`[data-display="${key}"]`)?.textContent?.trim() || '—';
+    const premium = this.resolvePlanPremium(form, plan);
+    const driverMode = form.querySelector('#driverMode')?.value || 'unnamed';
+
+    return {
+      company,
+      agent: {
+        code: user?.agentCode || user?.username || '',
+        name: user?.name || '',
+        label: this.agentLabel(user)
+      },
+      plan,
+      planLabel: this.planLabel(plan),
+      premium,
+      breakdown: {
+        net: this.parsePremiumNumber(this.pkgValue(pkg, ['gross_prem_vol', 'GROSS_PREM_VOL'])),
+        stamp: this.parsePremiumNumber(this.pkgValue(pkg, ['stamp_vol', 'STAMP_VOL', 'stamp'])),
+        vat: this.parsePremiumNumber(this.pkgValue(pkg, ['vat_vol', 'VAT_VOL', 'vat'])),
+        total: premium
+      },
+      buyPrb: !!root?.querySelector(`input[name="buyPrb_${plan}"]`)?.checked,
+      driverMode,
+      driverLabel: driverMode === 'named' ? 'ระบุชื่อผู้ขับขี่' : 'ไม่ระบุชื่อผู้ขับขี่ (Unnamed)',
+      coverageStart: form.querySelector('#coverageStart')?.value || '',
+      coverageEnd: form.querySelector('#coverageEnd')?.value || '',
+      vehicle: {
+        make,
+        model,
+        makeCode: codeEl?.value || '',
+        year,
+        submodel,
+        desc,
+        cc: form.querySelector('#cc')?.value || '',
+        seat: form.querySelector('#seat')?.value || '',
+        regType: this.optionLabel(form.querySelector('#regType')),
+        usage: this.optionLabel(form.querySelector('#usageType')),
+        province: this.optionLabel(form.querySelector('#regProvince')),
+        dashcam: this.optionLabel(form.querySelector('#dashcam')),
+        sumInsured: this.optionLabel(sumEl),
+        natureSum: this.optionLabel(natureEl),
+        deductible: this.optionLabel(deductEl),
+        garage: this.optionLabel(garageEl)
+      },
+      coverage: {
+        ownDamage: display(`${plan}-sum`),
+        fire: display(`${plan}-fire`),
+        nature: display(`${plan}-nature`),
+        tpPerson: display(`${plan}-tp-person`),
+        tpEvent: display(`${plan}-tp-event`),
+        tpProperty: display(`${plan}-tp-property`)
+      }
+    };
+  },
+
+  buildQuoteFormHtml({ planLabel, premiumText } = {}) {
+    return `
+      <div class="bki-issue__head">
+        <div>
+          <h3 class="bki-issue__title">สร้างใบเสนอราคา</h3>
+          <p class="bki-issue__sub">แผน <strong>${this.escapeHtml(planLabel || '—')}</strong> · เบี้ย <strong>${this.escapeHtml(premiumText || '—')}</strong> · ไม่ตัดวงเงิน</p>
+        </div>
+        <button type="button" class="bki-issue__back" id="btnBkiQuoteBack">กลับไปตารางเปรียบเทียบ</button>
+      </div>
+      <div class="bki-issue__grid">
+        <div class="form-field bki-issue__field">
+          <label for="quoteCustomerName">ชื่อลูกค้า <span class="form-req">*</span></label>
+          <input type="text" id="quoteCustomerName" name="quoteCustomerName" class="form-input" required autocomplete="name">
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="quoteCustomerPhone">เบอร์โทร</label>
+          <input type="tel" id="quoteCustomerPhone" name="quoteCustomerPhone" class="form-input" autocomplete="tel">
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="quotePlate">ทะเบียนรถ</label>
+          <input type="text" id="quotePlate" name="quotePlate" class="form-input" placeholder="กก 1234">
+        </div>
+        <div class="form-field bki-issue__field">
+          <label for="quoteNote">หมายเหตุ</label>
+          <input type="text" id="quoteNote" name="quoteNote" class="form-input" maxlength="200">
+        </div>
+      </div>
+      <div class="bki-issue__actions">
+        <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnBkiQuoteSubmit">
+          ยืนยันสร้างใบเสนอราคา
+        </button>
+      </div>`;
+  },
+
+  buildQuoteDocHtml(quote) {
+    const snap = quote.snapshot || {};
+    const vehicle = snap.vehicle || {};
+    const coverage = snap.coverage || {};
+    const company = snap.company || App.Config?.COMPANY || {};
+    const agentLabel = snap.agent?.label || this.agentLabel(App.Session?.getUser?.());
+    const planLabel = quote.planLabel || snap.planLabel || this.planLabel(quote.planCode);
+    const premium = quote.premiumTotal ?? quote.premium ?? snap.premium;
+    const breakdown = snap.breakdown || {};
+    const logoKladee = this.absAsset('images/logo-kladee-icon.png');
+    const logoBki = this.absAsset('images/partners/bangkok-insurance.jpg');
+    const coverageRows = [
+      ['ทุนประกันภัยรถยนต์ (เสียหายต่อรถยนต์)', coverage.ownDamage || vehicle.sumInsured || '—'],
+      ['สูญหาย / ไฟไหม้', coverage.fire || '—'],
+      ['ภัยธรรมชาติ', coverage.nature || vehicle.natureSum || '—'],
+      ['บุคคลภายนอก บาดเจ็บ/เสียชีวิต ต่อคน', coverage.tpPerson || '—'],
+      ['บุคคลภายนอก บาดเจ็บ/เสียชีวิต ต่อครั้ง', coverage.tpEvent || '—'],
+      ['ทรัพย์สินบุคคลภายนอก ต่อครั้ง', coverage.tpProperty || '—'],
+      ['ค่าเสียหายส่วนแรก', vehicle.deductible || '—'],
+      ['ประเภทอู่ซ่อม', vehicle.garage || '—'],
+      ['ผู้ขับขี่', snap.driverLabel || '—'],
+      ['ซื้อ พ.ร.บ.', snap.buyPrb ? 'รวมเสนอซื้อ พ.ร.บ.' : 'ไม่รวม พ.ร.บ.']
+    ];
+    const extraPrem = [];
+    if (breakdown.net != null) extraPrem.push(`เบี้ยสุทธิ ${this.money(breakdown.net)}`);
+    if (breakdown.stamp != null) extraPrem.push(`อากร ${this.money(breakdown.stamp)}`);
+    if (breakdown.vat != null) extraPrem.push(`VAT ${this.money(breakdown.vat)}`);
+
+    return `
+      <article class="bki-quote-doc">
+        <header class="bki-quote-doc__head">
+          <div class="bki-quote-doc__brand">
+            <img src="${this.escapeAttr(logoKladee)}" alt="KLADEE BROKER" class="bki-quote-doc__logo">
+            <div>
+              <p class="bki-quote-doc__company">${this.escapeHtml(company.name || 'KLADEE BROKER')}</p>
+              <p class="bki-quote-doc__addr">${this.escapeHtml(company.address || '')}</p>
+            </div>
+          </div>
+          <div class="bki-quote-doc__insurer">
+            <img src="${this.escapeAttr(logoBki)}" alt="BKI" class="bki-quote-doc__bki">
+            <p>BKI กรุงเทพประกันภัย</p>
+          </div>
+        </header>
+        <h1 class="bki-quote-doc__title">ใบเสนอราคาประกันภัยรถยนต์ภาคสมัครใจ</h1>
+        <dl class="bki-quote-doc__meta">
+          <div><dt>เลขที่</dt><dd>${this.escapeHtml(quote.id || '—')}</dd></div>
+          <div><dt>วันที่ออก</dt><dd>${this.escapeHtml(this.formatThaiDate(quote.createdAt))}</dd></div>
+          <div><dt>มีผลถึง</dt><dd>${this.escapeHtml(this.formatThaiDate(quote.validUntil))}</dd></div>
+        </dl>
+        <section class="bki-quote-doc__grid">
+          <div>
+            <h2>ข้อมูลลูกค้า / นายหน้า</h2>
+            <p>ลูกค้า: <strong>${this.escapeHtml(quote.customerName || '—')}</strong></p>
+            <p>โทร: ${this.escapeHtml(quote.customerPhone || '—')}</p>
+            <p>นายหน้า: ${this.escapeHtml(agentLabel)}</p>
+          </div>
+          <div>
+            <h2>รถยนต์</h2>
+            <p><strong>${this.escapeHtml(vehicle.desc || quote.vehicleDesc || '—')}</strong></p>
+            <p>ทะเบียน: ${this.escapeHtml(quote.plate || quote.licensePlate || '—')}</p>
+            <p>จดทะเบียน: ${this.escapeHtml(vehicle.province || '—')} · ${this.escapeHtml(vehicle.regType || '—')}</p>
+            <p>${this.escapeHtml(vehicle.usage || '')}${vehicle.dashcam ? ` · กล้อง: ${this.escapeHtml(vehicle.dashcam)}` : ''}</p>
+          </div>
+        </section>
+        <p class="bki-quote-doc__plan">แผน ${this.escapeHtml(planLabel)} · ความคุ้มครอง ${this.escapeHtml(this.formatThaiDate(quote.coverageStart || snap.coverageStart))} – ${this.escapeHtml(this.formatThaiDate(quote.coverageEnd || snap.coverageEnd))}</p>
+        <table class="bki-quote-doc__table">
+          <tbody>${coverageRows.map(([label, value]) =>
+            `<tr><th>${this.escapeHtml(label)}</th><td>${this.escapeHtml(value)}</td></tr>`
+          ).join('')}</tbody>
+        </table>
+        <div class="bki-quote-doc__premium">
+          <span>เบี้ยประกันภัยรวม (โดยประมาณ)</span>
+          <strong>${this.money(premium)} บาท/ปี</strong>
+          ${extraPrem.length ? `<small>${this.escapeHtml(extraPrem.join(' · '))}</small>` : ''}
+        </div>
+        ${quote.note ? `<p class="bki-quote-doc__note">หมายเหตุ: ${this.escapeHtml(quote.note)}</p>` : ''}
+        <p class="bki-quote-doc__foot">เอกสารนี้เป็นใบเสนอราคาของนายหน้า ไม่ใช่กรมธรรม์ ราคาและเงื่อนไขอาจเปลี่ยนแปลงตามหลักเกณฑ์ของบริษัทประกันภัย จนกว่าจะออกกรมธรรม์สำเร็จ ใบเสนอราคามีผล 15 วันนับจากวันที่ออก</p>
+      </article>`;
+  },
+
+  quotePrintCss() {
+    return `
+      @page { size: A4; margin: 14mm 12mm; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #fff; color: #0f172a; font-family: 'Sarabun', 'TH Sarabun New', sans-serif; }
+      .bki-quote-doc { max-width: 190mm; margin: 0 auto; color: #0f172a; }
+      .bki-quote-doc__head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; border-bottom: 2px solid #0f766e; padding-bottom: 10px; }
+      .bki-quote-doc__brand { display: flex; gap: 10px; align-items: center; }
+      .bki-quote-doc__logo { width: 48px; height: 48px; object-fit: contain; }
+      .bki-quote-doc__bki { width: 72px; height: 36px; object-fit: contain; }
+      .bki-quote-doc__company { margin: 0; font-size: 16px; font-weight: 700; }
+      .bki-quote-doc__addr { margin: 2px 0 0; font-size: 12px; color: #475569; }
+      .bki-quote-doc__insurer { text-align: right; font-size: 12px; font-weight: 600; color: #0f766e; }
+      .bki-quote-doc__insurer p { margin: 4px 0 0; }
+      .bki-quote-doc__title { margin: 14px 0 10px; font-size: 20px; text-align: center; }
+      .bki-quote-doc__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 14px; }
+      .bki-quote-doc__meta div { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; }
+      .bki-quote-doc__meta dt { margin: 0; font-size: 11px; color: #64748b; }
+      .bki-quote-doc__meta dd { margin: 2px 0 0; font-weight: 700; font-size: 14px; }
+      .bki-quote-doc__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+      .bki-quote-doc__grid h2 { margin: 0 0 6px; font-size: 13px; color: #0f766e; }
+      .bki-quote-doc__grid p { margin: 0 0 4px; font-size: 13px; }
+      .bki-quote-doc__plan { margin: 0 0 10px; font-weight: 700; font-size: 14px; }
+      .bki-quote-doc__table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .bki-quote-doc__table th, .bki-quote-doc__table td { border: 1px solid #cbd5e1; padding: 7px 10px; }
+      .bki-quote-doc__table th { text-align: left; font-weight: 600; width: 62%; background: #f8fafc; }
+      .bki-quote-doc__premium { margin-top: 14px; padding: 12px 14px; background: #f0fdfa; border: 1px solid #99f6e4; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+      .bki-quote-doc__premium span { font-size: 13px; }
+      .bki-quote-doc__premium strong { font-size: 22px; color: #0f766e; }
+      .bki-quote-doc__premium small { font-size: 12px; color: #475569; }
+      .bki-quote-doc__note, .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; }
+      @media print { .bki-quote-doc__premium { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    `;
+  },
+
+  printQuoteDoc(quote) {
+    const html = this.buildQuoteDocHtml(quote);
+    const win = window.open('', '_blank', 'noopener,width=900,height=1200');
+    if (!win) return false;
+    win.document.open();
+    win.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>${this.escapeHtml(quote.id || 'ใบเสนอราคา')}</title>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+      <style>${this.quotePrintCss()}</style></head>
+      <body class="bki-quote-print">${html}</body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => {
+      try { win.print(); } catch (_) { /* ignore */ }
+    }, 250);
+    return true;
+  },
+
+  showQuoteSuccess(form, quote, { toast } = {}) {
+    const panel = form.querySelector('#bkiQuotePanel');
+    const resultHost = form.querySelector('#bkiQuoteResult');
+    if (!panel) return;
+    panel.hidden = false;
+    panel.dataset.quoteId = quote.id || '';
+    panel.innerHTML = `
+      <div class="bki-quote-panel__toolbar">
+        <div>
+          <h3 class="bki-issue__title">สร้างใบเสนอราคาแล้ว</h3>
+          <p class="bki-issue__sub">เลขที่ <strong>${this.escapeHtml(quote.id || '—')}</strong> · มีผลถึง ${this.escapeHtml(this.formatThaiDate(quote.validUntil))}</p>
+        </div>
+        <div class="bki-quote-panel__actions">
+          <button type="button" class="bki-issue__back" id="btnBkiQuoteBack">ปิด</button>
+          <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnBkiQuotePrint">พิมพ์ใบเสนอราคา</button>
+        </div>
+      </div>
+      ${this.buildQuoteDocHtml(quote)}`;
+    panel.querySelector('#btnBkiQuoteBack')?.addEventListener('click', () => {
+      this.hidePanel(panel);
+      resultHost?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    panel.querySelector('#btnBkiQuotePrint')?.addEventListener('click', () => {
+      if (!this.printQuoteDoc(quote)) {
+        toast?.('กรุณาอนุญาตป๊อปอัปเพื่อพิมพ์ใบเสนอราคา', 'error');
+      }
+    });
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+
+  async showQuotePanel(form, { plan, toast } = {}) {
+    const resultHost = form.querySelector('#bkiQuoteResult');
+    const panel = form.querySelector('#bkiQuotePanel');
+    if (!resultHost || !panel) return;
+
+    const packages = this.getPackagesByPlan(form);
+    const premium = this.resolvePlanPremium(form, plan);
+    if (premium == null) {
+      const hasPackages = Object.values(packages).some(Boolean);
+      toast?.(
+        hasPackages
+          ? 'ไม่พบเบี้ยในแผนที่เลือก — คลิกหัวคอลัมน์แผนที่มีราคา หรือกดตรวจสอบราคาอีกครั้ง'
+          : 'กรุณาตรวจสอบราคาและเลือกแผนที่มีเบี้ยก่อนสร้างใบเสนอราคา',
+        'error'
+      );
+      return;
+    }
+
+    this.hidePanel(form.querySelector('#bkiIssuePanel'));
+    panel.innerHTML = this.buildQuoteFormHtml({
+      planLabel: this.planLabel(plan),
+      premiumText: `${this.money(premium)} บาท/ปี`
+    });
+    panel.hidden = false;
+    panel.dataset.plan = plan;
+    panel.dataset.premium = String(premium);
+
+    panel.querySelector('#btnBkiQuoteBack')?.addEventListener('click', () => {
+      this.hidePanel(panel);
+      resultHost.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    panel.querySelector('#btnBkiQuoteSubmit')?.addEventListener('click', () => {
+      this.submitCreateQuote(form, { toast });
+    });
+    panel.querySelector('#quoteCustomerName')?.focus();
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+
+  async submitCreateQuote(form, { toast } = {}) {
+    const panel = form.querySelector('#bkiQuotePanel');
+    const plan = panel?.dataset?.plan || this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
+    const premium = Number(panel?.dataset?.premium || this.resolvePlanPremium(form, plan) || 0);
+    if (!plan || !(premium > 0)) {
+      toast?.('กรุณาตรวจสอบราคาและเลือกแผนที่มีเบี้ยก่อนสร้างใบเสนอราคา', 'error');
+      return;
+    }
+
+    const customerName = panel.querySelector('#quoteCustomerName')?.value?.trim() || '';
+    const customerPhone = panel.querySelector('#quoteCustomerPhone')?.value?.trim() || '';
+    const plate = panel.querySelector('#quotePlate')?.value?.trim() || '';
+    const note = panel.querySelector('#quoteNote')?.value?.trim() || '';
+    if (!customerName) {
+      toast?.('กรุณากรอกชื่อลูกค้า', 'error');
+      panel.querySelector('#quoteCustomerName')?.focus();
+      return;
+    }
+    if (customerPhone && !/^0\d{8,9}$/.test(customerPhone.replace(/[-\s]/g, ''))) {
+      toast?.('เบอร์โทรไม่ถูกต้อง', 'error');
+      panel.querySelector('#quoteCustomerPhone')?.focus();
+      return;
+    }
+
+    const snapshot = this.collectQuoteSnapshot(form, plan);
+    const payload = {
+      customerName,
+      customerPhone: customerPhone.replace(/[-\s]/g, ''),
+      licensePlate: plate,
+      note,
+      planCode: plan,
+      planLabel: this.planLabel(plan),
+      premiumTotal: premium,
+      coverageStart: snapshot.coverageStart,
+      coverageEnd: snapshot.coverageEnd,
+      vehicleDesc: snapshot.vehicle?.desc || '',
+      insurer: 'BKI กรุงเทพ',
+      insurerCode: 'bki',
+      productId: 'voluntary-bki',
+      productName: '2+ / 3+',
+      snapshot
+    };
+
+    const btn = panel.querySelector('#btnBkiQuoteSubmit');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'กำลังบันทึก...';
+    }
+
+    try {
+      const result = await App.MotorBkiService.createQuote(payload);
+      const quote = result.quote || result;
+      if (!result?.ok && !quote?.id) {
+        toast?.(result?.message || 'บันทึกใบเสนอราคาไม่สำเร็จ', 'error');
+        return;
+      }
+      toast?.(`สร้างใบเสนอราคา ${quote.id} แล้ว`);
+      this.showQuoteSuccess(form, quote, { toast });
+    } catch (err) {
+      toast?.(err?.message || 'บันทึกใบเสนอราคาไม่สำเร็จ', 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'ยืนยันสร้างใบเสนอราคา';
+      }
+    }
+  },
+
+  async showIssuePanel(form, { plan, toast } = {}) {
     const resultHost = form.querySelector('#bkiQuoteResult');
     const panel = form.querySelector('#bkiIssuePanel');
     if (!resultHost || !panel) return;
+
+    await this.ensureLookups();
 
     const packages = this.getPackagesByPlan(form);
     const premium = this.resolvePlanPremium(form, plan);
@@ -1091,10 +1696,11 @@ App.VoluntaryBkiQuote = {
       return;
     }
 
-    const pkg = packages[plan] || packages['3plus'] || packages['2plus'] || packages['3'] || {};
+    this.hidePanel(form.querySelector('#bkiQuotePanel'));
 
     const planLabel = this.planLabel(plan);
     const premiumText = `${this.money(premium)} บาท/ปี`;
+    panel.dataset.geoBound = '';
     panel.innerHTML = this.buildIssuePanelHtml({ planLabel, premiumText });
     panel.hidden = false;
     panel.dataset.plan = plan;
@@ -1103,15 +1709,19 @@ App.VoluntaryBkiQuote = {
 
     const licenseProvince = form.querySelector('#regProvince')?.value || 'กรุงเทพมหานคร';
     const licenseEl = panel.querySelector('#issueLicenseProvince');
-    if (licenseEl && licenseProvince) licenseEl.value = licenseProvince;
+    if (licenseEl && licenseProvince) {
+      const match = [...licenseEl.options].find((o) =>
+        o.value === licenseProvince || o.textContent.includes(licenseProvince.replace('กรุงเทพมหานคร', 'กทม'))
+      );
+      if (match) licenseEl.value = match.value;
+    }
 
     const driverMode = form.querySelector('#driverMode')?.value || 'unnamed';
     const driversBlock = panel.querySelector('#bkiIssueDrivers');
     if (driversBlock) driversBlock.hidden = driverMode !== 'named';
 
     panel.querySelector('#btnBkiIssueBack')?.addEventListener('click', () => {
-      panel.hidden = true;
-      panel.innerHTML = '';
+      this.hidePanel(panel);
       resultHost.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
@@ -1159,6 +1769,9 @@ App.VoluntaryBkiQuote = {
       package: pkg || {},
       premiumTotal: premium,
       buyPrb,
+      comp_req: buyPrb ? 'Y' : 'N',
+      consent_drv: customer.consent_drv || 'N',
+      driverMode: form.querySelector('#driverMode')?.value || 'unnamed',
       customer,
       drivers: this.buildDrivers(form)
     };
@@ -1177,17 +1790,33 @@ App.VoluntaryBkiQuote = {
       }
 
       const policy = result.policy || {};
-      const policyNo = policy.bkiPolicyNo || policy.id || '';
+      const parsed = result.parsed || {};
+      const links = result.links || {};
+      const policyNo = policy.bkiPolicyNo || parsed.policy_no || policy.id || '';
+      const linkPolicy = links.policy || parsed.link_policy || '';
+      const compNo = parsed.comp_policy_no || '';
+      const linkComp = links.compPolicy || parsed.link_comp_policy || '';
       toast?.(`ออกกรมธรรม์สำเร็จ ${policyNo}`.trim());
       this.updateBalanceDisplay(result.balance);
+
+      const printBtns = [
+        linkPolicy
+          ? `<a class="axa-result__btn axa-result__btn--policy" href="${this.escapeAttr(linkPolicy)}" target="_blank" rel="noopener">พิมพ์กรมธรรม์ภาคสมัครใจ</a>`
+          : '',
+        linkComp
+          ? `<a class="axa-result__btn axa-result__btn--quote" href="${this.escapeAttr(linkComp)}" target="_blank" rel="noopener">พิมพ์ พ.ร.บ.</a>`
+          : ''
+      ].filter(Boolean).join('');
 
       panel.innerHTML = `
         <div class="bki-issue__success">
           <h3 class="bki-issue__title">ออกกรมธรรม์สำเร็จ</h3>
           <p>เลขที่ระบบ: <strong>${this.escapeHtml(policy.id || '—')}</strong></p>
-          ${policy.bkiPolicyNo ? `<p>เลขกรมธรรม์ BKI: <strong>${this.escapeHtml(policy.bkiPolicyNo)}</strong></p>` : ''}
+          ${policyNo ? `<p>เลขกรมธรรม์ BKI: <strong>${this.escapeHtml(policyNo)}</strong></p>` : ''}
+          ${compNo ? `<p>เลข พ.ร.บ.: <strong>${this.escapeHtml(compNo)}</strong></p>` : ''}
           <p>ทะเบียน: <strong>${this.escapeHtml(policy.plate || customer.licensePlate || '—')}</strong></p>
           <p>เบี้ย: <strong>${this.money(policy.premium || premium)} บาท</strong></p>
+          ${printBtns ? `<div class="bki-issue__printActions">${printBtns}</div>` : '<p class="bki-issue__printHint">ยังไม่มีลิงก์พิมพ์จาก BKI — ใช้เลขกรมธรรม์ด้านบนติดตามกับบริษัท</p>'}
         </div>`;
     } catch (err) {
       toast?.(err?.message || 'ออกกรมธรรม์ไม่สำเร็จ', 'error');
@@ -1209,10 +1838,7 @@ App.VoluntaryBkiQuote = {
 
     host.querySelector('#btnBkiCreateQuote')?.addEventListener('click', () => {
       const plan = this.getSelectedPlan(host);
-      const packages = JSON.parse(host.dataset.packages || '{}');
-      const premium = this.getPackagePremium(packages[plan]);
-      const price = premium == null ? '—' : `${this.money(premium)} บาท/ปี`;
-      toast?.(`สร้างใบเสนอราคา ${this.planLabel(plan)} · ${price}`);
+      this.showQuotePanel(form, { plan, toast });
     });
     host.querySelector('#btnBkiCreatePolicy')?.addEventListener('click', () => {
       const plan = this.getSelectedPlan(host);
@@ -1405,6 +2031,7 @@ App.VoluntaryBkiQuote = {
     this.syncCoverageEnd(form);
     this.syncZoneFromProvince(form);
 
+    this.ensureLookups().catch(() => {});
     this.loadMakes(form).catch((err) => {
       toast?.(err.message || 'โหลดข้อมูลรถไม่สำเร็จ', 'error');
     });

@@ -1237,26 +1237,28 @@
 
 .product-key-toast {
   position: fixed;
-  right: 1rem;
-  bottom: 1rem;
+  top: 50%;
+  left: 50%;
   z-index: 9999;
-  max-width: min(420px, calc(100vw - 2rem));
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
+  max-width: min(440px, calc(100vw - 2rem));
+  padding: 0.85rem 1.15rem;
+  border-radius: 12px;
   background: #0f766e;
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   line-height: 1.45;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
   opacity: 0;
-  transform: translateY(8px);
+  transform: translate(-50%, calc(-50% - 12px)) scale(0.96);
   transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
 }
 
 .product-key-toast.is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .product-key-toast[data-type="error"] {
@@ -1373,6 +1375,55 @@
   color: #334155;
 }
 
+.bki-issue__printActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.bki-issue__printHint {
+  margin-top: 0.75rem;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.bki-issue__consent {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.85rem;
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+.bki-issue__driverCard {
+  margin-bottom: 0.9rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #d7e8ea;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.bki-issue__driverHead {
+  margin: 0 0 0.65rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.bki-issue__moreDrivers {
+  margin-top: 0.5rem;
+}
+
+.bki-issue__moreDrivers summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #0f766e;
+  font-weight: 600;
+  margin-bottom: 0.65rem;
+}
+
 @media (max-width: 1100px) {
   .bki-issue__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1385,6 +1436,197 @@
   }
 
   .bki-issue__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bki-quote-panel__toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.bki-quote-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.bki-quote-doc {
+  margin-top: 0.15rem;
+  padding: 1.2rem 1.15rem 1.05rem;
+  background: #fff;
+  border: 1px solid #d7e8ea;
+  border-radius: 8px;
+  color: #0f172a;
+}
+
+.bki-quote-doc__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #0f766e;
+}
+
+.bki-quote-doc__brand {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.bki-quote-doc__logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.bki-quote-doc__bki {
+  width: 72px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.bki-quote-doc__company {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.bki-quote-doc__addr {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.bki-quote-doc__insurer {
+  text-align: right;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.bki-quote-doc__insurer p {
+  margin: 0.25rem 0 0;
+}
+
+.bki-quote-doc__title {
+  margin: 0.9rem 0 0.75rem;
+  font-size: 1.12rem;
+  text-align: center;
+}
+
+.bki-quote-doc__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0 0 0.9rem;
+}
+
+.bki-quote-doc__meta div {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.65rem;
+}
+
+.bki-quote-doc__meta dt {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.bki-quote-doc__meta dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.bki-quote-doc__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 0.8rem;
+}
+
+.bki-quote-doc__grid h2 {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  color: #0f766e;
+}
+
+.bki-quote-doc__grid p {
+  margin: 0 0 0.25rem;
+  font-size: 0.84rem;
+}
+
+.bki-quote-doc__plan {
+  margin: 0 0 0.65rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.bki-quote-doc__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.bki-quote-doc__table th,
+.bki-quote-doc__table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.45rem 0.65rem;
+}
+
+.bki-quote-doc__table th {
+  text-align: left;
+  font-weight: 600;
+  width: 62%;
+  background: #f8fafc;
+}
+
+.bki-quote-doc__premium {
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.bki-quote-doc__premium span {
+  font-size: 0.82rem;
+}
+
+.bki-quote-doc__premium strong {
+  font-size: 1.3rem;
+  color: #0f766e;
+}
+
+.bki-quote-doc__premium small {
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.bki-quote-doc__note,
+.bki-quote-doc__foot {
+  font-size: 0.75rem;
+  color: #475569;
+  margin: 0.75rem 0 0;
+}
+
+@media (max-width: 720px) {
+  .bki-quote-panel__toolbar {
+    flex-direction: column;
+  }
+
+  .bki-quote-doc__meta,
+  .bki-quote-doc__grid {
     grid-template-columns: 1fr;
   }
 }

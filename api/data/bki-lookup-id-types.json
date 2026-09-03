@@ -1,0 +1,30 @@
+{
+    "source": "cust_id_type.xlsx",
+    "exported_at": "2026-09-03T01:34:32+00:00",
+    "items": [
+        {
+            "value": "C",
+            "label": "C — บัตรประชาชน",
+            "name": "บัตรประชาชน",
+            "description": "ID card"
+        },
+        {
+            "value": "G",
+            "label": "G — บัตรข้าราชการ",
+            "name": "บัตรข้าราชการ",
+            "description": "Government card"
+        },
+        {
+            "value": "P",
+            "label": "P — Passport",
+            "name": "Passport",
+            "description": "Passport"
+        },
+        {
+            "value": "R",
+            "label": "R — เลขจดทะเบียนบริษัท",
+            "name": "เลขจดทะเบียนบริษัท",
+            "description": "The company register No."
+        }
+    ]
+}
