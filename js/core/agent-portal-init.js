@@ -32,5 +32,6 @@
     }
 
     await App.AgentOnboarding.enforce({ basePath });
+    App.QuoteNavBadge?.render?.();
   });
 })();

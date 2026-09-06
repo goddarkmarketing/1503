@@ -2,6 +2,8 @@
  * Agent quote history — list / view / print / download BKI quotations.
  */
 document.addEventListener('DOMContentLoaded', async () => {
+  App.QuoteNavBadge?.clear?.();
+
   let page = 1;
   let cache = [];
   let activeQuote = null;

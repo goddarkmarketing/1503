@@ -1756,6 +1756,81 @@ App.VoluntaryBkiQuote = {
     return true;
   },
 
+  quoteExportCss() {
+    // เลย์เอาต์แบบ flex/table — หลีกเลี่ยง CSS grid ที่ html2canvas มักเรนเดอร์พลาด/ว่าง
+    return `
+      * { box-sizing: border-box; }
+      .bki-quote-doc {
+        width: 100%;
+        max-width: 190mm;
+        margin: 0;
+        padding: 0;
+        color: #0f172a;
+        background: #fff;
+        font-family: 'Sarabun', 'TH Sarabun New', Tahoma, sans-serif;
+      }
+      .bki-quote-doc__head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        border-bottom: 2px solid #0f766e;
+        padding-bottom: 10px;
+      }
+      .bki-quote-doc__brand { display: flex; gap: 10px; align-items: center; }
+      .bki-quote-doc__logo { width: 48px; height: 48px; object-fit: contain; }
+      .bki-quote-doc__bki { width: 72px; height: 36px; object-fit: contain; }
+      .bki-quote-doc__company { margin: 0; font-size: 16px; font-weight: 700; }
+      .bki-quote-doc__addr { margin: 2px 0 0; font-size: 12px; color: #475569; }
+      .bki-quote-doc__insurer { text-align: right; font-size: 12px; font-weight: 600; color: #0f766e; }
+      .bki-quote-doc__insurer p { margin: 4px 0 0; }
+      .bki-quote-doc__title { margin: 14px 0 10px; font-size: 20px; text-align: center; }
+      .bki-quote-doc__meta {
+        display: flex;
+        gap: 8px;
+        margin: 0 0 14px;
+      }
+      .bki-quote-doc__meta > div {
+        flex: 1;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 8px 10px;
+      }
+      .bki-quote-doc__meta dt { margin: 0; font-size: 11px; color: #64748b; }
+      .bki-quote-doc__meta dd { margin: 2px 0 0; font-weight: 700; font-size: 14px; }
+      .bki-quote-doc__grid {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .bki-quote-doc__grid > section { flex: 1; }
+      .bki-quote-doc__grid h2 { margin: 0 0 6px; font-size: 13px; color: #0f766e; }
+      .bki-quote-doc__grid p { margin: 0 0 4px; font-size: 13px; }
+      .bki-quote-doc__plan { margin: 0 0 10px; font-weight: 700; font-size: 14px; }
+      .bki-quote-doc__table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .bki-quote-doc__table th,
+      .bki-quote-doc__table td { border: 1px solid #cbd5e1; padding: 7px 10px; }
+      .bki-quote-doc__table th {
+        text-align: left;
+        font-weight: 600;
+        width: 62%;
+        background: #f8fafc;
+      }
+      .bki-quote-doc__premium {
+        margin-top: 14px;
+        padding: 12px 14px;
+        background: #f0fdfa;
+        border: 1px solid #99f6e4;
+        text-align: right;
+      }
+      .bki-quote-doc__premium span { display: block; font-size: 13px; }
+      .bki-quote-doc__premium strong { display: block; font-size: 22px; color: #0f766e; }
+      .bki-quote-doc__premium small { display: block; font-size: 12px; color: #475569; }
+      .bki-quote-doc__note,
+      .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; }
+    `;
+  },
+
   ensureHtml2Pdf() {
     if (typeof window.html2pdf === 'function') return Promise.resolve(window.html2pdf);
     return new Promise((resolve, reject) => {
@@ -1778,97 +1853,83 @@ App.VoluntaryBkiQuote = {
     });
   },
 
+  async waitQuoteExportReady(root) {
+    const imgs = [...(root.querySelectorAll?.('img') || [])];
+    await Promise.all(imgs.map((img) => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise((resolve) => {
+        const done = () => resolve();
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+        setTimeout(done, 2500);
+      });
+    }));
+    if (document.fonts?.ready) {
+      try { await document.fonts.ready; } catch (_) { /* ignore */ }
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  },
+
   async downloadQuoteDoc(quote) {
     if (!quote) return false;
     const prevScrollX = window.scrollX || 0;
     const prevScrollY = window.scrollY || 0;
-    // ห้าม left ติดลบ — html2canvas จะจับได้หน้าว่าง (ดู wht50-document.js)
+    const stamp = String(quote.createdAt || '').slice(0, 10).replace(/-/g, '') || 'quote';
+    const filename = `${quote.id || 'QT'}-${stamp}.pdf`;
+
+    await this.ensureHtml2Pdf();
+
+    // สร้างเอกสารทึบที่ (0,0) เสมอ — ห้าม opacity ต่ำ / left ติดลบ (ได้หน้าขาว)
+    // และใช้ flex แทน grid เพื่อให้ html2canvas เรนเดอร์ครบ
+    const headStyle = document.createElement('style');
+    headStyle.setAttribute('data-bki-quote-pdf-style', '1');
+    headStyle.textContent = this.quoteExportCss();
+    document.head.appendChild(headStyle);
+
     const host = document.createElement('div');
     host.setAttribute('aria-hidden', 'true');
-    host.setAttribute('data-bki-quote-export', '1');
+    host.setAttribute('data-bki-quote-pdf-host', '1');
     host.style.cssText = [
       'position:fixed',
       'left:0',
       'top:0',
-      'width:210mm',
+      'width:794px',
+      'padding:16px',
       'margin:0',
-      'padding:0',
       'background:#fff',
-      'z-index:2147483646',
-      'opacity:0.015',
-      'overflow:visible',
+      'opacity:1',
+      'z-index:2147483647',
       'pointer-events:none',
       'box-sizing:border-box'
     ].join(';');
-    const style = document.createElement('style');
-    style.textContent = `${this.quotePrintCss()}
-      [data-bki-quote-export] .bki-quote-doc {
-        max-width: none !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 8mm !important;
-        box-shadow: none !important;
-        background: #fff !important;
-      }`;
-    host.appendChild(style);
-    const wrap = document.createElement('div');
-    wrap.innerHTML = this.buildQuoteDocHtml(quote);
-    host.appendChild(wrap);
+    host.innerHTML = this.buildQuoteDocHtml(quote);
     document.body.appendChild(host);
 
     try {
-      await this.ensureHtml2Pdf();
-      const imgs = [...host.querySelectorAll('img')];
-      await Promise.all(imgs.map((img) => {
-        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-        return new Promise((resolve) => {
-          const done = () => resolve();
-          img.addEventListener('load', done, { once: true });
-          img.addEventListener('error', done, { once: true });
-          setTimeout(done, 3000);
-        });
-      }));
-      if (document.fonts?.ready) {
-        try { await document.fonts.ready; } catch (_) { /* ignore */ }
+      const target = host.querySelector('.bki-quote-doc') || host;
+      if (!String(target.textContent || '').trim()) {
+        throw new Error('ไม่พบเนื้อหาใบเสนอราคาสำหรับสร้าง PDF');
       }
-      await new Promise((r) => setTimeout(r, 120));
+      await this.waitQuoteExportReady(host);
 
-      const stamp = String(quote.createdAt || '').slice(0, 10).replace(/-/g, '') || 'quote';
-      // จับทั้ง host เพื่อให้ <style> อยู่ใน clone (ถ้าจับแค่ .bki-quote-doc สไตล์พี่น้องจะหาย)
-      const width = Math.ceil(host.getBoundingClientRect().width) || host.offsetWidth || 794;
-      const height = Math.ceil(host.getBoundingClientRect().height) || host.offsetHeight || 1123;
       await window.html2pdf().set({
-        margin: [8, 8, 8, 8],
-        filename: `${quote.id || 'QT'}-${stamp}.pdf`,
+        margin: [10, 10, 10, 10],
+        filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
-          allowTaint: true,
           logging: false,
           backgroundColor: '#ffffff',
           scrollX: 0,
-          scrollY: 0,
-          x: 0,
-          y: 0,
-          width,
-          height,
-          windowWidth: width,
-          windowHeight: height,
-          onclone: (clonedDoc) => {
-            const root = clonedDoc.querySelector('[data-bki-quote-export]');
-            if (root) {
-              root.style.opacity = '1';
-              root.style.zIndex = '1';
-            }
-          }
+          scrollY: -window.scrollY
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-      }).from(host).save();
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(target).save();
       return true;
     } finally {
       host.remove();
+      headStyle.remove();
       window.scrollTo(prevScrollX, prevScrollY);
     }
   },
@@ -2025,6 +2086,7 @@ App.VoluntaryBkiQuote = {
         return;
       }
       toast?.(`สร้างใบเสนอราคา ${quote.id} แล้ว`);
+      App.QuoteNavBadge?.increment?.(1);
       this.showQuoteSuccess(form, quote, { toast });
     } catch (err) {
       toast?.(err?.message || 'บันทึกใบเสนอราคาไม่สำเร็จ', 'error');

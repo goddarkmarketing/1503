@@ -92,7 +92,7 @@ window.AGENT_SIDEBAR_NAV_HTML = `<div class="nav-group" data-nav-zone="main">
   </ul>
 </div>`;
 
-window.AGENT_SIDEBAR_NAV_VERSION = '20260903k';
+window.AGENT_SIDEBAR_NAV_VERSION = '20260906a';
 
 window.renderAgentSidebarNav = function renderAgentSidebarNav() {
   const navRoot = document.querySelector('.sidebar-nav[data-agent-sidebar]');

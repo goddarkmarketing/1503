@@ -1,7 +1,7 @@
 /** Synchronous core stack loader for agent pages — keep before app.js */
 (function () {
   const root = document.currentScript.src.replace(/load-agent\.js.*$/, '');
-  const cache = '20260903d';
+  const cache = '20260906a';
   document.write(`<script src="${root}core/favicon.js?v=${cache}"><\/script>`);
   [
     'vendor/lucide.min.js',
@@ -33,6 +33,7 @@
     'services/agent-service.js',
     'services/receipt-service.js',
     'services/notification-service.js',
+    'services/quote-nav-badge.js',
     'services/team-service.js',
     'ui/role-guard.js',
     'core/agent-onboarding.js',
