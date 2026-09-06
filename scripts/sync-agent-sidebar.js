@@ -7,7 +7,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const PARTIAL = path.join(ROOT, 'partials', 'agent-sidebar-nav.html');
-const CACHE = '20260816f';
+const CACHE = '20260906b';
 
 const PAGES = [
   'agent/index.html',
@@ -37,7 +37,9 @@ const PAGES = [
   'pa/axa.html',
   'pa/bki.html',
   'voluntary/axa.html',
+  'voluntary/bki.html',
   'voluntary/indara.html',
+  'agent/quotes.html',
   'travel/indara.html'
 ];
 
@@ -80,7 +82,7 @@ function syncFile(relPath) {
   html = html.replace(/(?:\s*<!-- AGENT_SIDEBAR_V3 -->)*\s*<nav class="sidebar-nav" data-agent-sidebar[\s\S]*?<\/nav>/, '\n' + newNav);
 
   html = html.replace(/js\/agent-sidebar-nav-template\.js(?:\?v=[^"']*)?/g, `js/agent-sidebar-nav-template.js?v=${CACHE}`);
-  html = html.replace(/js\/load-agent\.js(?:\?v=[^"']*)?/g, `js/load-agent.js?v=20260819k
+  html = html.replace(/js\/load-agent\.js(?:\?v=[^"']*)?/g, `js/load-agent.js?v=${CACHE}`);
   html = html.replace(/js\/app\.js(?:\?v=[^"']*)?/g, `js/app.js?v=${CACHE}`);
 
   const templateScript = `<script src="${base}js/agent-sidebar-nav-template.js?v=${CACHE}"></script>`;

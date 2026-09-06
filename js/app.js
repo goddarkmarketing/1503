@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await loadAgentSidebarNav();
+  App.QuoteNavBadge?.render?.();
   initLucideIcons();
   initSidebar();
   initNavDropdowns();
@@ -51,6 +52,7 @@ async function loadAgentSidebarNav() {
   }
 
   markAgentNavActive(navRoot);
+  App.QuoteNavBadge?.render?.(navRoot);
 }
 
 function bindDeniedNavLinks(navRoot) {

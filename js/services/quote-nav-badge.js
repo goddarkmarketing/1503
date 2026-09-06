@@ -8,7 +8,7 @@ App.QuoteNavBadge = {
   STORAGE_PREFIX: 'kladee_quote_unseen_',
 
   _userKey() {
-    const user = App.Session?.getUser?.();
+    const user = App.Session?.getUser?.() || App.AuthService?.getCurrentUser?.();
     const id = user?.id || user?.username || 'guest';
     return `${this.STORAGE_PREFIX}${id}`;
   },
@@ -43,19 +43,66 @@ App.QuoteNavBadge = {
     return this.setCount(0);
   },
 
+  /** Ensure quotes nav exists even if page has stale inline sidebar HTML. */
+  ensureNavLink(navRoot) {
+    const root = navRoot || document.querySelector('.sidebar-nav[data-agent-sidebar]');
+    if (!root) return null;
+
+    let link = root.querySelector('[data-nav="quotes"]');
+    if (link) return link;
+
+    const reportsZone = root.querySelector('[data-nav-zone="reports"] .nav-group__list')
+      || root.querySelector('[data-nav="inquiry"]')?.closest('ul');
+    if (!reportsZone) return null;
+
+    const base = document.body?.dataset?.basePath || '../';
+    const li = document.createElement('li');
+    li.className = 'nav-item';
+    const linkEl = document.createElement('a');
+    linkEl.href = `${base}agent/quotes`;
+    linkEl.className = 'nav-link';
+    linkEl.dataset.nav = 'quotes';
+    linkEl.setAttribute('data-nav', 'quotes');
+    const icon = document.createElement('i');
+    icon.setAttribute('data-lucide', 'file-text');
+    const text = document.createElement('span');
+    text.className = 'nav-link-text';
+    text.textContent = 'ประวัติใบเสนอราคา';
+    linkEl.appendChild(icon);
+    linkEl.appendChild(text);
+    li.appendChild(linkEl);
+    const inquiryRow = reportsZone.querySelector('[data-nav="inquiry"]')?.closest('li');
+    if (inquiryRow?.after) {
+      inquiryRow.after(li);
+    } else if (inquiryRow?.nextSibling) {
+      reportsZone.insertBefore(li, inquiryRow.nextSibling);
+    } else if (inquiryRow) {
+      inquiryRow.after?.(li);
+      if (!li.parent) reportsZone.appendChild(li);
+    } else {
+      reportsZone.appendChild(li);
+    }
+    if (typeof lucide !== 'undefined') {
+      try { lucide.createIcons({ icons: lucide, nodes: [li] }); } catch (_) { /* ignore */ }
+    }
+    return linkEl;
+  },
+
   render(navRoot) {
     const root = navRoot || document.querySelector('.sidebar-nav[data-agent-sidebar]');
-    if (!root) return;
-    const link = root.querySelector('[data-nav="quotes"]');
-    if (!link) return;
+    if (!root) return false;
+    const link = this.ensureNavLink(root);
+    if (!link) return false;
 
     const count = this.getCount();
     let badge = link.querySelector('.nav-count-badge[data-quote-badge]');
 
     if (count <= 0) {
       badge?.remove();
-      link.removeAttribute('aria-label');
-      return;
+      if (link.getAttribute('aria-label')?.includes('ใบใหม่')) {
+        link.removeAttribute('aria-label');
+      }
+      return true;
     }
 
     if (!badge) {
@@ -67,13 +114,14 @@ App.QuoteNavBadge = {
     }
     badge.textContent = count > 99 ? '99+' : String(count);
     link.setAttribute('aria-label', `ประวัติใบเสนอราคา มีใบใหม่ ${count} รายการ`);
+    return true;
   }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Sidebar may render sync before this; refresh after portal boot too.
   const paint = () => App.QuoteNavBadge?.render?.();
   paint();
   setTimeout(paint, 0);
-  setTimeout(paint, 400);
+  setTimeout(paint, 300);
+  setTimeout(paint, 1000);
 });

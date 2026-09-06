@@ -2087,6 +2087,9 @@ App.VoluntaryBkiQuote = {
       }
       toast?.(`สร้างใบเสนอราคา ${quote.id} แล้ว`);
       App.QuoteNavBadge?.increment?.(1);
+      // Sidebar may still be stale inline HTML — force paint after layout.
+      requestAnimationFrame(() => App.QuoteNavBadge?.render?.());
+      setTimeout(() => App.QuoteNavBadge?.render?.(), 50);
       this.showQuoteSuccess(form, quote, { toast });
     } catch (err) {
       toast?.(err?.message || 'บันทึกใบเสนอราคาไม่สำเร็จ', 'error');

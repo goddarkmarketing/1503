@@ -66,7 +66,8 @@ App.AgentFeatures = {
         { key: 'reports-daily-summary', label: 'สรุปการขายประจำวัน', page: 'agent/reports/daily-summary' },
         { key: 'reports-monthly', label: 'รายงานรายเดือน', page: 'agent/reports/monthly' },
         { key: 'reports-team', label: 'รายงานลูกทีม', page: 'agent/reports/team' },
-        { key: 'inquiry', label: 'สอบถามกรมธรรม์', page: 'agent/inquiry' }
+        { key: 'inquiry', label: 'สอบถามกรมธรรม์', page: 'agent/inquiry' },
+        { key: 'quotes', label: 'ประวัติใบเสนอราคา', page: 'agent/quotes' }
       ]
     },
     {
