@@ -2132,18 +2132,24 @@ App.VoluntaryBkiQuote = {
           height,
           windowWidth: width,
           windowHeight: height,
-          onclone: (clonedDoc) => {
-            const root = clonedDoc.querySelector('[data-bki-quote-pdf-host]');
-            if (root) {
-              // ตอนจับภาพต้องทึบ — ของจริงบนจอใช้ opacity ต่ำเพื่อไม่ให้เห็นแถบเอกสาร
-              root.style.opacity = '1';
-              root.style.visibility = 'visible';
-              root.style.left = '0';
-              root.style.top = '0';
-              root.style.zIndex = '1';
-              root.style.transform = 'none';
-              this.fitQuoteLogos(root);
-            }
+          onclone: (clonedDoc, el) => {
+            // ทึบทุกชั้นที่ html2pdf/html2canvas โคลนมา — กันหน้าขาวจาก opacity ต่ำบนจอจริง
+            const nodes = [
+              el,
+              ...clonedDoc.querySelectorAll('[data-bki-quote-pdf-host], .html2pdf__container, .html2pdf__overlay')
+            ].filter(Boolean);
+            nodes.forEach((node) => {
+              node.style.opacity = '1';
+              node.style.visibility = 'visible';
+              node.style.left = '0';
+              node.style.top = '0';
+              node.style.right = 'auto';
+              node.style.zIndex = '1';
+              node.style.transform = 'none';
+              node.style.clip = 'auto';
+              node.style.clipPath = 'none';
+            });
+            this.fitQuoteLogos(clonedDoc);
           }
         }
       })
@@ -2174,19 +2180,19 @@ App.VoluntaryBkiQuote = {
     const host = document.createElement('div');
     host.setAttribute('aria-hidden', 'true');
     host.setAttribute('data-bki-quote-pdf-host', '1');
+    // วางนอกจอแต่ทึบเต็มที่ — อย่าใช้ opacity ต่ำ (html2canvas ได้หน้าขาว)
     host.style.cssText = [
       'position:fixed',
-      'left:0',
+      'left:-12000px',
       'top:0',
       `width:${contentW}px`,
       'padding:0',
       'margin:0',
       'background:#ffffff',
       'color:#0f172a',
-      // ซ่อนจากสายตา — html2canvas จะทึบใน onclone
-      'opacity:0.01',
+      'opacity:1',
       'visibility:visible',
-      'z-index:-1',
+      'z-index:1',
       'pointer-events:none',
       'box-sizing:border-box',
       'overflow:visible'
