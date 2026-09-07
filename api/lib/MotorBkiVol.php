@@ -205,7 +205,10 @@ final class MotorBkiVol
       $named = false;
     }
 
-    $garage = self::normalizeGarageCode((string)($input['garage'] ?? $input['garageType'] ?? ''));
+    // BKI guidance: leave risk/garage empty on premium calculate so all packages return first.
+    // Filtering by garage/risk happens after the agent picks a package (transfer/issue).
+    $garage = '';
+    $risk = '';
     $plateJw = trim((string)($input['plate_jw'] ?? ''));
     if ($plateJw === '') {
       $province = trim((string)($input['regProvince'] ?? $input['licenseProvince'] ?? ''));
@@ -216,7 +219,7 @@ final class MotorBkiVol
 
     $body = [
       'eff_date' => $effDate,
-      'risk' => trim((string)($input['risk'] ?? '1')),
+      'risk' => $risk,
       'garage' => $garage,
       'car_type' => $carType,
       'car_use' => $carUse,

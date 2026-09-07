@@ -874,7 +874,8 @@
 }
 
 .nav-sub-link.active {
-  background: var(--bg-page);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
   font-weight: 600;
 }
 

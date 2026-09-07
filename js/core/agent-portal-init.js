@@ -12,6 +12,7 @@
 
     window.__agentPortalBooted = true;
     const basePath = App.Paths.detectBasePath();
+    App.Shell?.ensureBrandLogo?.();
 
     if (App.AuthService?.isAuthenticated?.()) {
       try {

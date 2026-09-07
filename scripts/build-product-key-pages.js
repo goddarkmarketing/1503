@@ -34,9 +34,11 @@ function pageHtml({ product, title }) {
   <div class="app form-page">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-logo">
+        <div class="sidebar-logo sidebar-logo--brand">
           <div class="sidebar-logo-icon"><i data-lucide="shield-check"></i></div>
-          <a href="../agent/index.html" class="sidebar-logo-text">KLADEE BROKER</a>
+          <a href="../agent/index.html" class="sidebar-logo-text sidebar-logo-link" aria-label="KLADEE BROKER">
+            <img class="sidebar-logo-img" src="../assets/logos/kladee-broker.png?v=20260906j" alt="KLADEE BROKER" width="200" height="44">
+          </a>
         </div>
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
       </div>

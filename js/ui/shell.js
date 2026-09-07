@@ -5,11 +5,12 @@ window.App = window.App || {};
 
 App.Shell = {
   async init(options = {}) {
-    const user = App.AuthService.getCurrentUser();
-    if (!user) return;
-
     this._options = options;
     this._basePath = App.Paths.normalizeBasePath(options.basePath || App.Paths.detectBasePath());
+    this.ensureBrandLogo();
+
+    const user = App.AuthService.getCurrentUser();
+    if (!user) return;
 
     this._bindUser(user);
     this._bindUserMenu(user, options);
@@ -17,11 +18,101 @@ App.Shell = {
     this._bindLogout(this._basePath);
 
     if (user.role === 'agent') {
+      this._ensureBalanceCoin();
       this._loadAgentBalance(user.id);
       this._bindCommissionPill();
     } else if (options.hideBalance) {
       document.querySelector('.balance-pill')?.style.setProperty('display', 'none');
     }
+  },
+
+  ensureBrandLogo() {
+    const wrap = document.querySelector('.sidebar-logo');
+    if (!wrap) return;
+
+    const base = App.Paths.normalizeBasePath(
+      this._basePath || App.Paths.detectBasePath?.() || document.body?.dataset?.basePath || '../'
+    );
+    const src = `${base}assets/logos/kladee-broker.png?v=20260906j`;
+    wrap.classList.add('sidebar-logo--brand');
+
+    const existing = wrap.querySelector('.sidebar-logo-img');
+    if (existing) {
+      existing.src = src;
+      existing.width = 200;
+      existing.height = 44;
+      return;
+    }
+
+    let el = wrap.querySelector('.sidebar-logo-text');
+    const homeHref = el?.tagName === 'A' && el.getAttribute('href')
+      ? el.getAttribute('href')
+      : `${base}agent/`;
+
+    if (!el) {
+      el = document.createElement('a');
+      el.href = homeHref;
+      el.className = 'sidebar-logo-text sidebar-logo-link';
+      wrap.appendChild(el);
+    } else if (el.tagName !== 'A') {
+      const a = document.createElement('a');
+      a.href = homeHref;
+      a.className = `${el.className} sidebar-logo-link`.trim();
+      el.replaceWith(a);
+      el = a;
+    } else {
+      el.classList.add('sidebar-logo-link');
+    }
+
+    el.setAttribute('aria-label', 'KLADEE BROKER');
+    el.innerHTML = `<img class="sidebar-logo-img" src="${src}?v=20260906j" alt="KLADEE BROKER" width="200" height="44">`;
+  },
+
+  _ensureBalanceCoin() {
+    if (!document.getElementById('balance-coin-anim-style')) {
+      const style = document.createElement('style');
+      style.id = 'balance-coin-anim-style';
+      style.textContent = `
+        .balance-pill--coin::before{display:none!important}
+        .balance-coin{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex-shrink:0;perspective:120px;line-height:0}
+        .balance-coin__spin{display:block;width:28px;height:28px;transform-style:preserve-3d;animation:balance-coin-spin 2.4s linear infinite}
+        .balance-coin svg{display:block;width:28px;height:28px}
+        @keyframes balance-coin-spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+        @media (prefers-reduced-motion:reduce){.balance-coin__spin{animation:none!important}}
+        @media (max-width:480px){.balance-coin{display:none}}
+      `;
+      document.head.appendChild(style);
+    }
+
+    document.querySelectorAll('.balance-pill').forEach((pill) => {
+      // Replace any previous/broken coin markup so upgrades apply after refresh
+      pill.querySelectorAll('.balance-coin').forEach((el) => el.remove());
+
+      const gid = `balCoinGrad-${Math.random().toString(36).slice(2, 9)}`;
+      const coin = document.createElement('span');
+      coin.className = 'balance-coin';
+      coin.setAttribute('aria-hidden', 'true');
+      coin.innerHTML = `
+        <span class="balance-coin__spin">
+          <svg viewBox="0 0 32 32" width="28" height="28" role="img" focusable="false">
+            <defs>
+              <radialGradient id="${gid}" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#fff6d0"/>
+                <stop offset="45%" stop-color="#ffd666"/>
+                <stop offset="75%" stop-color="#e0a820"/>
+                <stop offset="100%" stop-color="#b57a0c"/>
+              </radialGradient>
+            </defs>
+            <circle cx="16" cy="16" r="13.5" fill="url(#${gid})" stroke="#a87410" stroke-width="1.4"/>
+            <circle cx="16" cy="16" r="11.2" fill="none" stroke="#ffe9a8" stroke-width="1.1" opacity="0.9"/>
+            <text x="16" y="21" text-anchor="middle"
+              font-size="12" font-weight="800" font-family="Segoe UI, Tahoma, sans-serif" fill="#6b4508">฿</text>
+          </svg>
+        </span>
+      `;
+      pill.classList.add('balance-pill--coin');
+      pill.prepend(coin);
+    });
   },
 
   _bindUser(user) {

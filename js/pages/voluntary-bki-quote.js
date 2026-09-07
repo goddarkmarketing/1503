@@ -902,11 +902,10 @@ App.VoluntaryBkiQuote = {
     values.driverMode = form.querySelector('#driverMode')?.value || values.driverMode || 'unnamed';
     values.drv_flag = values.driverMode === 'named' ? 'Y' : 'N';
     values.consent_drv = values.consent_drv === 'Y' ? 'Y' : 'N';
-    const garageEl = form.querySelector(`#bkiQuoteResult select[data-plan="${plan}"][data-field="garageType"]`);
-    if (garageEl?.value) {
-      values.garage = garageEl.value;
-      values.garageType = garageEl.value;
-    }
+    // BKI: do not send risk/garage on premium calculate — leave empty for full package list.
+    values.risk = '';
+    values.garage = '';
+    values.garageType = '';
     return values;
   },
 

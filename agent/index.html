@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>แดชบอร์ด — KLADEE BROKER</title>
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/style.css?v=20260906m">
   <link rel="stylesheet" href="../css/portal.css">
   <script src="../js/vendor/lucide.min.js"></script>
   <script src="../js/vendor/chart.umd.min.js"></script>
@@ -13,9 +13,11 @@
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-logo">
+        <div class="sidebar-logo sidebar-logo--brand">
           <div class="sidebar-logo-icon"><i data-lucide="shield-check"></i></div>
-          <span class="sidebar-logo-text">KLADEE BROKER</span>
+          <a href="index" class="sidebar-logo-text sidebar-logo-link" aria-label="KLADEE BROKER">
+            <img class="sidebar-logo-img" src="../assets/logos/kladee-broker.png?v=20260906j" alt="KLADEE BROKER" width="200" height="44">
+          </a>
         </div>
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="สลับเมนู"><i data-lucide="menu"></i></button>
       </div>
@@ -161,9 +163,9 @@
       </footer>
     </div>
   </div>
-  <script src="../js/agent-sidebar-nav-template.js?v=20260906b"></script>
-  <script src="../js/load-agent.js?v=20260906b"></script>
-  <script src="../js/app.js?v=20260906b"></script>
+  <script src="../js/agent-sidebar-nav-template.js?v=20260906j"></script>
+  <script src="../js/load-agent.js?v=20260906j"></script>
+  <script src="../js/app.js?v=20260906j"></script>
   <script>
   (function() {
     const btn = document.getElementById('mobileMenuBtn');

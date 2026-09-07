@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await loadAgentSidebarNav();
+  App.Shell?.ensureBrandLogo?.();
   App.QuoteNavBadge?.render?.();
   initLucideIcons();
   initSidebar();
