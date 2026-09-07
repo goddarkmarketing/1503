@@ -1703,20 +1703,42 @@ App.VoluntaryBkiQuote = {
       </article>`;
   },
 
-  quotePrintCss() {
+  // A4 portrait: 210×297mm — ขอบมาตรฐานเอกสารธุรกิจ 15mm → พื้นที่เนื้อหา 180×267mm
+  quotePageMarginMm() { return 15; },
+  quoteContentWidthPx() { return 680; }, // ≈180mm @ 96dpi
+
+  quoteLogoCss() {
     return `
-      @page { size: A4; margin: 14mm 12mm; }
+      .bki-quote-doc__logo,
+      .bki-quote-doc__bki {
+        display: block;
+        flex-shrink: 0;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: center;
+        image-rendering: auto;
+      }
+      .bki-quote-doc__logo { max-height: 48px; max-width: 48px; }
+      .bki-quote-doc__bki { max-height: 56px; max-width: 110px; }
+    `;
+  },
+
+  quotePrintCss() {
+    const margin = this.quotePageMarginMm();
+    return `
+      @page { size: A4; margin: ${margin}mm; }
       * { box-sizing: border-box; }
       body { margin: 0; background: #fff; color: #0f172a; font-family: 'Sarabun', 'TH Sarabun New', sans-serif; }
-      .bki-quote-doc { max-width: 190mm; margin: 0 auto; color: #0f172a; }
+      .bki-quote-doc { max-width: 180mm; margin: 0 auto; color: #0f172a; }
       .bki-quote-doc__head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; border-bottom: 2px solid #0f766e; padding-bottom: 10px; }
-      .bki-quote-doc__brand { display: flex; gap: 10px; align-items: center; }
-      .bki-quote-doc__logo { width: 48px; height: 48px; object-fit: contain; }
-      .bki-quote-doc__bki { width: 72px; height: 36px; object-fit: contain; }
+      .bki-quote-doc__brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+      ${this.quoteLogoCss()}
       .bki-quote-doc__company { margin: 0; font-size: 16px; font-weight: 700; }
       .bki-quote-doc__addr { margin: 2px 0 0; font-size: 12px; color: #475569; }
-      .bki-quote-doc__insurer { text-align: right; font-size: 12px; font-weight: 600; color: #0f766e; }
-      .bki-quote-doc__insurer p { margin: 4px 0 0; }
+      .bki-quote-doc__insurer { text-align: right; font-size: 12px; font-weight: 600; color: #0f766e; flex-shrink: 0; }
+      .bki-quote-doc__insurer p { margin: 6px 0 0; }
       .bki-quote-doc__title { margin: 14px 0 10px; font-size: 20px; text-align: center; }
       .bki-quote-doc__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 14px; }
       .bki-quote-doc__meta div { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 10px; }
@@ -1733,7 +1755,7 @@ App.VoluntaryBkiQuote = {
       .bki-quote-doc__premium span { font-size: 13px; }
       .bki-quote-doc__premium strong { font-size: 22px; color: #0f766e; }
       .bki-quote-doc__premium small { font-size: 12px; color: #475569; }
-      .bki-quote-doc__note, .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; }
+      .bki-quote-doc__note, .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; line-height: 1.45; }
       @media print { .bki-quote-doc__premium { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     `;
   },
@@ -1757,16 +1779,18 @@ App.VoluntaryBkiQuote = {
 
   quoteExportCss() {
     // เลย์เอาต์แบบ flex/table — หลีกเลี่ยง CSS grid ที่ html2canvas มักเรนเดอร์พลาด/ว่าง
+    // ความกว้าง ≈ พื้นที่พิมพ์ A4 หลังหักขอบ 15mm (180mm)
     return `
       * { box-sizing: border-box; }
       .bki-quote-doc {
         width: 100%;
-        max-width: 190mm;
+        max-width: 180mm;
         margin: 0;
         padding: 0;
         color: #0f172a;
         background: #fff;
         font-family: 'Sarabun', 'TH Sarabun New', Tahoma, sans-serif;
+        line-height: 1.4;
       }
       .bki-quote-doc__head {
         display: flex;
@@ -1774,19 +1798,18 @@ App.VoluntaryBkiQuote = {
         gap: 16px;
         align-items: flex-start;
         border-bottom: 2px solid #0f766e;
-        padding-bottom: 10px;
+        padding-bottom: 12px;
       }
-      .bki-quote-doc__brand { display: flex; gap: 10px; align-items: center; }
-      .bki-quote-doc__logo { width: 48px; height: 48px; object-fit: contain; }
-      .bki-quote-doc__bki { width: 72px; height: 36px; object-fit: contain; }
+      .bki-quote-doc__brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+      ${this.quoteLogoCss()}
       .bki-quote-doc__company { margin: 0; font-size: 16px; font-weight: 700; }
       .bki-quote-doc__addr { margin: 2px 0 0; font-size: 12px; color: #475569; }
-      .bki-quote-doc__insurer { text-align: right; font-size: 12px; font-weight: 600; color: #0f766e; }
-      .bki-quote-doc__insurer p { margin: 4px 0 0; }
-      .bki-quote-doc__title { margin: 14px 0 10px; font-size: 20px; text-align: center; }
+      .bki-quote-doc__insurer { text-align: right; font-size: 12px; font-weight: 600; color: #0f766e; flex-shrink: 0; }
+      .bki-quote-doc__insurer p { margin: 6px 0 0; }
+      .bki-quote-doc__title { margin: 16px 0 12px; font-size: 20px; text-align: center; }
       .bki-quote-doc__meta {
         display: flex;
-        gap: 8px;
+        gap: 10px;
         margin: 0 0 14px;
       }
       .bki-quote-doc__meta > div {
@@ -1799,7 +1822,7 @@ App.VoluntaryBkiQuote = {
       .bki-quote-doc__meta dd { margin: 2px 0 0; font-weight: 700; font-size: 14px; }
       .bki-quote-doc__grid {
         display: flex;
-        gap: 12px;
+        gap: 14px;
         margin-bottom: 12px;
       }
       .bki-quote-doc__grid > div { flex: 1; min-width: 0; }
@@ -1826,8 +1849,35 @@ App.VoluntaryBkiQuote = {
       .bki-quote-doc__premium strong { display: block; font-size: 22px; color: #0f766e; }
       .bki-quote-doc__premium small { display: block; font-size: 12px; color: #475569; }
       .bki-quote-doc__note,
-      .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; }
+      .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; line-height: 1.45; }
     `;
+  },
+
+  /** ล็อกขนาดโลโก้ตามสัดส่วนจริง — html2canvas มักเพิกเฉย object-fit ถ้าบังคับทั้งกว้างและสูง */
+  fitQuoteLogos(root) {
+    const rules = [
+      { sel: 'img.bki-quote-doc__logo', maxH: 48, maxW: 48 },
+      { sel: 'img.bki-quote-doc__bki', maxH: 56, maxW: 110 }
+    ];
+    rules.forEach(({ sel, maxH, maxW }) => {
+      root.querySelectorAll(sel).forEach((img) => {
+        const nw = img.naturalWidth || 0;
+        const nh = img.naturalHeight || 0;
+        if (nw < 1 || nh < 1) return;
+        let h = maxH;
+        let w = (nw / nh) * h;
+        if (w > maxW) {
+          w = maxW;
+          h = (nh / nw) * w;
+        }
+        img.style.width = `${Math.round(w)}px`;
+        img.style.height = `${Math.round(h)}px`;
+        img.style.maxWidth = `${maxW}px`;
+        img.style.maxHeight = `${maxH}px`;
+        img.style.objectFit = 'contain';
+        img.style.flexShrink = '0';
+      });
+    });
   },
 
   ensureHtml2Pdf() {
@@ -1863,6 +1913,7 @@ App.VoluntaryBkiQuote = {
         setTimeout(done, 2500);
       });
     }));
+    this.fitQuoteLogos(root);
     if (document.fonts?.ready) {
       try { await document.fonts.ready; } catch (_) { /* ignore */ }
     }
@@ -1886,24 +1937,28 @@ App.VoluntaryBkiQuote = {
 
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
-    const margin = 8;
-    let w = pageW - (margin * 2);
+    const margin = this.quotePageMarginMm(); // 15mm มาตรฐาน
+    const maxW = pageW - (margin * 2);
+    const maxH = pageH - (margin * 2);
+    let w = maxW;
     let h = (canvas.height * w) / canvas.width;
-    if (h > pageH - (margin * 2)) {
-      h = pageH - (margin * 2);
+    if (h > maxH) {
+      h = maxH;
       w = (canvas.width * h) / canvas.height;
     }
 
-    // ล้างหน้าที่ html2pdf แบ่งอัตโนมัติ แล้วใส่ภาพพอดี 1 หน้า A4
+    // ล้างหน้าที่ html2pdf แบ่งอัตโนมัติ แล้ววางภาพตรงกลางในกรอบพิมพ์ A4
     const pages = pdf.internal.getNumberOfPages();
     for (let i = pages; i >= 1; i -= 1) pdf.deletePage(i);
     pdf.addPage([pageW, pageH], 'portrait');
-    pdf.addImage(imgData, 'JPEG', (pageW - w) / 2, margin, w, h, undefined, 'FAST');
+    const x = margin + ((maxW - w) / 2);
+    const y = margin;
+    pdf.addImage(imgData, 'JPEG', x, y, w, h, undefined, 'FAST');
     pdf.save(filename);
   },
 
   async captureQuoteCanvas(el) {
-    const width = Math.ceil(el.getBoundingClientRect().width) || el.offsetWidth || 794;
+    const width = Math.ceil(el.getBoundingClientRect().width) || el.offsetWidth || this.quoteContentWidthPx();
     const height = Math.max(
       Math.ceil(el.getBoundingClientRect().height) || el.offsetHeight || 0,
       Math.ceil(el.scrollHeight) || 0,
@@ -1935,6 +1990,7 @@ App.VoluntaryBkiQuote = {
               root.style.visibility = 'visible';
               root.style.left = '0';
               root.style.top = '0';
+              this.fitQuoteLogos(root);
             }
           }
         }
@@ -1955,6 +2011,7 @@ App.VoluntaryBkiQuote = {
     const prevScrollY = window.scrollY || 0;
     const stamp = String(quote.createdAt || '').slice(0, 10).replace(/-/g, '') || 'quote';
     const filename = `${quote.id || 'QT'}-${stamp}.pdf`;
+    const contentW = this.quoteContentWidthPx();
 
     await this.ensureHtml2Pdf();
     window.scrollTo(0, 0);
@@ -1966,8 +2023,8 @@ App.VoluntaryBkiQuote = {
       'position:fixed',
       'left:0',
       'top:0',
-      'width:794px',
-      'padding:16px',
+      `width:${contentW}px`,
+      'padding:0',
       'margin:0',
       'background:#ffffff',
       'color:#0f172a',
@@ -1984,7 +2041,8 @@ App.VoluntaryBkiQuote = {
 
     try {
       const target = host.querySelector('.bki-quote-doc') || host;
-      target.style.width = '762px';
+      target.style.width = `${contentW}px`;
+      target.style.maxWidth = '180mm';
       target.style.background = '#ffffff';
       target.style.color = '#0f172a';
       target.style.minHeight = '320px';
