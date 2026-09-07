@@ -1828,22 +1828,62 @@ App.VoluntaryBkiQuote = {
   },
 
   printQuoteDoc(quote) {
+    if (!quote) return false;
     const html = this.buildQuoteDocHtml(quote);
-    const win = window.open('', '_blank', 'noopener,width=900,height=1200');
-    if (!win) return false;
-    win.document.open();
-    win.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>${this.escapeHtml(quote.id || 'ใบเสนอราคา')}</title>
+    const docHtml = `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>${this.escapeHtml(quote.id || 'ใบเสนอราคา')}</title>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
       <style>${this.quotePrintCss()}</style></head>
-      <body class="bki-quote-print">${html}</body></html>`);
-    win.document.close();
-    win.focus();
-    const runPrint = () => {
+      <body class="bki-quote-print">${html}</body></html>`;
+
+    // ใช้ iframe ในหน้าเดิม — ไม่พึ่งป๊อปอัป และเรียก print() ทันทีใน user gesture
+    document.querySelectorAll('iframe[data-bki-quote-print]').forEach((node) => node.remove());
+    const frame = document.createElement('iframe');
+    frame.setAttribute('data-bki-quote-print', '1');
+    frame.setAttribute('title', 'พิมพ์ใบเสนอราคา');
+    frame.style.cssText = [
+      'position:fixed',
+      'left:0',
+      'top:0',
+      'width:210mm',
+      'height:297mm',
+      'border:0',
+      'opacity:0',
+      'pointer-events:none',
+      'z-index:-1'
+    ].join(';');
+    document.body.appendChild(frame);
+
+    const doc = frame.contentDocument || frame.contentWindow?.document;
+    if (!doc || !frame.contentWindow) {
+      frame.remove();
+      const win = window.open('', '_blank', 'noopener,width=900,height=1200');
+      if (!win) return false;
+      win.document.open();
+      win.document.write(docHtml);
+      win.document.close();
       try { this.fitQuoteLogos(win.document); } catch (_) { /* ignore */ }
-      try { win.print(); } catch (_) { /* ignore */ }
+      win.focus();
+      win.print();
+      return true;
+    }
+
+    doc.open();
+    doc.write(docHtml);
+    doc.close();
+    try { this.fitQuoteLogos(doc); } catch (_) { /* ignore */ }
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } catch (_) {
+      frame.remove();
+      return false;
+    }
+    // เก็บ iframe ไว้จนปิดไดอะล็อกพิมพ์ แล้วค่อยลบ
+    const cleanup = () => {
+      try { frame.remove(); } catch (_) { /* ignore */ }
     };
-    // รอรูป/ฟอนต์เล็กน้อยก่อนพิมพ์ เพื่อให้ขอบและโลโก้ครบ
-    setTimeout(runPrint, 400);
+    frame.contentWindow.addEventListener?.('afterprint', cleanup, { once: true });
+    setTimeout(cleanup, 120000);
     return true;
   },
 
@@ -2095,10 +2135,13 @@ App.VoluntaryBkiQuote = {
           onclone: (clonedDoc) => {
             const root = clonedDoc.querySelector('[data-bki-quote-pdf-host]');
             if (root) {
+              // ตอนจับภาพต้องทึบ — ของจริงบนจอใช้ opacity ต่ำเพื่อไม่ให้เห็นแถบเอกสาร
               root.style.opacity = '1';
               root.style.visibility = 'visible';
               root.style.left = '0';
               root.style.top = '0';
+              root.style.zIndex = '1';
+              root.style.transform = 'none';
               this.fitQuoteLogos(root);
             }
           }
@@ -2125,6 +2168,9 @@ App.VoluntaryBkiQuote = {
     await this.ensureHtml2Pdf();
     window.scrollTo(0, 0);
 
+    // ล้าง host ค้างจากรอบก่อน (กันแถบเอกสารค้างบนจอ)
+    document.querySelectorAll('[data-bki-quote-pdf-host]').forEach((node) => node.remove());
+
     const host = document.createElement('div');
     host.setAttribute('aria-hidden', 'true');
     host.setAttribute('data-bki-quote-pdf-host', '1');
@@ -2137,9 +2183,10 @@ App.VoluntaryBkiQuote = {
       'margin:0',
       'background:#ffffff',
       'color:#0f172a',
-      'opacity:1',
+      // ซ่อนจากสายตา — html2canvas จะทึบใน onclone
+      'opacity:0.01',
       'visibility:visible',
-      'z-index:2147483647',
+      'z-index:-1',
       'pointer-events:none',
       'box-sizing:border-box',
       'overflow:visible'
@@ -2182,6 +2229,7 @@ App.VoluntaryBkiQuote = {
       return true;
     } finally {
       host.remove();
+      document.querySelectorAll('[data-bki-quote-pdf-host]').forEach((node) => node.remove());
       window.scrollTo(prevScrollX, prevScrollY);
     }
   },
