@@ -1870,6 +1870,9 @@ App.VoluntaryBkiQuote = {
   },
 
   async saveQuoteCanvasAsPdf(canvas, filename) {
+    if (!canvas || typeof canvas.toDataURL !== 'function') {
+      throw new Error('สร้างภาพใบเสนอราคาไม่สำเร็จ');
+    }
     const imgData = canvas.toDataURL('image/jpeg', 0.98);
     const pdf = await window.html2pdf()
       .set({
@@ -1897,6 +1900,53 @@ App.VoluntaryBkiQuote = {
     pdf.addPage([pageW, pageH], 'portrait');
     pdf.addImage(imgData, 'JPEG', (pageW - w) / 2, margin, w, h, undefined, 'FAST');
     pdf.save(filename);
+  },
+
+  async captureQuoteCanvas(el) {
+    const width = Math.ceil(el.getBoundingClientRect().width) || el.offsetWidth || 794;
+    const height = Math.max(
+      Math.ceil(el.getBoundingClientRect().height) || el.offsetHeight || 0,
+      Math.ceil(el.scrollHeight) || 0,
+      320
+    );
+
+    // สำคัญ: await toCanvas() ไม่ได้คืน canvas — ต้อง .get('canvas')
+    const canvas = await window.html2pdf()
+      .set({
+        margin: 0,
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          x: 0,
+          y: 0,
+          width,
+          height,
+          windowWidth: width,
+          windowHeight: height,
+          onclone: (clonedDoc) => {
+            const root = clonedDoc.querySelector('[data-bki-quote-pdf-host]');
+            if (root) {
+              root.style.opacity = '1';
+              root.style.visibility = 'visible';
+              root.style.left = '0';
+              root.style.top = '0';
+            }
+          }
+        }
+      })
+      .from(el)
+      .toCanvas()
+      .get('canvas');
+
+    if (!canvas || typeof canvas.toDataURL !== 'function' || canvas.width < 20 || canvas.height < 20) {
+      throw new Error('สร้างภาพใบเสนอราคาไม่สำเร็จ');
+    }
+    return canvas;
   },
 
   async downloadQuoteDoc(quote) {
@@ -1955,49 +2005,7 @@ App.VoluntaryBkiQuote = {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       await new Promise((r) => setTimeout(r, 250));
 
-      const width = Math.ceil(host.getBoundingClientRect().width) || host.offsetWidth || 794;
-      const height = Math.max(
-        Math.ceil(host.getBoundingClientRect().height) || host.offsetHeight || 0,
-        Math.ceil(target.scrollHeight) + 32,
-        320
-      );
-
-      // จับเป็น canvas ก่อน แล้วค่อยวางลง PDF — วิธีเดียวกับ WHT50 ที่ใช้ได้จริง
-      const canvas = await window.html2pdf()
-        .set({
-          margin: 0,
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            scrollX: 0,
-            scrollY: 0,
-            x: 0,
-            y: 0,
-            width,
-            height,
-            windowWidth: width,
-            windowHeight: height,
-            onclone: (clonedDoc) => {
-              const root = clonedDoc.querySelector('[data-bki-quote-pdf-host]');
-              if (root) {
-                root.style.opacity = '1';
-                root.style.visibility = 'visible';
-                root.style.left = '0';
-                root.style.top = '0';
-              }
-            }
-          }
-        })
-        .from(host)
-        .toCanvas();
-
-      if (!canvas || canvas.width < 20 || canvas.height < 20) {
-        throw new Error('สร้างภาพใบเสนอราคาไม่สำเร็จ');
-      }
-
+      const canvas = await this.captureQuoteCanvas(host);
       await this.saveQuoteCanvasAsPdf(canvas, filename);
       return true;
     } finally {

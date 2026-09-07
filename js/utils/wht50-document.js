@@ -517,6 +517,7 @@
       const width = Math.ceil(host.getBoundingClientRect().width) || host.offsetWidth;
       const height = Math.ceil(host.getBoundingClientRect().height) || host.offsetHeight;
 
+      // สำคัญ: await toCanvas() ไม่คืน canvas — ต้อง .get('canvas')
       const canvas = await global.html2pdf()
         .set({
           margin: 0,
@@ -545,7 +546,12 @@
           }
         })
         .from(host)
-        .toCanvas();
+        .toCanvas()
+        .get('canvas');
+
+      if (!canvas || typeof canvas.toDataURL !== 'function' || canvas.width < 20 || canvas.height < 20) {
+        throw new Error('สร้างภาพเอกสารไม่สำเร็จ');
+      }
 
       await saveCanvasAsA4Pdf(canvas, filename);
 
