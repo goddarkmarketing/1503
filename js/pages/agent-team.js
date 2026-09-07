@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const tbody = document.getElementById('teamTableBody');
   if (!tbody) return;
 
-  document.getElementById('btnAddMember')?.addEventListener('click', () => openMemberModal());
   document.getElementById('btnTeamSearch')?.addEventListener('click', applySearch);
   document.getElementById('btnTeamShowAll')?.addEventListener('click', resetSearch);
   document.getElementById('searchKeyword')?.addEventListener('keydown', (e) => {
@@ -17,30 +16,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
   await loadTeam();
-  await updateAddButtonState();
 });
-
-async function updateAddButtonState() {
-  const btn = document.getElementById('btnAddMember');
-  if (!btn) return;
-  const full = App.TeamService?.isTeamFull?.(teamCache);
-  if (full) {
-    btn.disabled = true;
-    btn.title = `มีลูกทีมครบ ${App.TeamService.teamMemberLimit()} คนแล้ว`;
-    return;
-  }
-  if (!App.TeamService?.hasPendingRequest) return;
-  const hasPending = await App.TeamService.hasPendingRequest();
-  btn.disabled = hasPending;
-  btn.title = hasPending ? 'มีคำขอที่รอแอดมินอยู่แล้ว' : '';
-}
 
 async function loadTeam() {
   const tbody = document.getElementById('teamTableBody');
   App.TableUI.showLoading(tbody, 7);
   teamCache = await App.TeamService.getMembers();
   applySearch();
-  await updateAddButtonState();
 }
 
 function memberStatusLabel(m) {
