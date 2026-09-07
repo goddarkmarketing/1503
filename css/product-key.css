@@ -1752,14 +1752,31 @@
   color: #b91c1c;
 }
 
+/* แสดงพรีวิวคล้ายหน้ากระดาษ A4 (ขอบรอบใกล้เคียงตอนพิมพ์) */
+.bki-quote-history__preview #quotePreviewBody {
+  background: #eef2f6;
+  padding: 1rem;
+  border-radius: 10px;
+}
 
 .bki-quote-doc {
-  margin-top: 0.15rem;
-  padding: 1.2rem 1.15rem 1.05rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 210mm;
+  margin: 0.15rem auto 0;
+  /* จำลองขอบพิมพ์ A4 ~16mm โดยไม่บีบฟอนต์เดิมของระบบ */
+  padding: 16mm 15mm;
   background: #fff;
   border: 1px solid #d7e8ea;
   border-radius: 8px;
   color: #0f172a;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.bki-quote-history__preview .bki-quote-doc {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  border-radius: 2px;
 }
 
 .bki-quote-doc__head {
@@ -1775,18 +1792,27 @@
   display: flex;
   gap: 0.7rem;
   align-items: center;
+  min-width: 0;
+}
+
+.bki-quote-doc__logo,
+.bki-quote-doc__bki {
+  display: block;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
 }
 
 .bki-quote-doc__logo {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
+  max-width: 48px;
+  max-height: 48px;
 }
 
 .bki-quote-doc__bki {
-  width: 72px;
-  height: 36px;
-  object-fit: contain;
+  max-width: 110px;
+  max-height: 56px;
 }
 
 .bki-quote-doc__company {
@@ -1806,6 +1832,7 @@
   font-size: 0.78rem;
   font-weight: 600;
   color: #0f766e;
+  flex-shrink: 0;
 }
 
 .bki-quote-doc__insurer p {
@@ -1829,6 +1856,7 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   padding: 0.5rem 0.65rem;
+  min-width: 0;
 }
 
 .bki-quote-doc__meta dt {
@@ -1850,6 +1878,10 @@
   margin-bottom: 0.8rem;
 }
 
+.bki-quote-doc__grid > * {
+  min-width: 0;
+}
+
 .bki-quote-doc__grid h2 {
   margin: 0 0 0.35rem;
   font-size: 0.82rem;
@@ -1869,6 +1901,8 @@
 
 .bki-quote-doc__table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.84rem;
 }
@@ -1877,6 +1911,9 @@
 .bki-quote-doc__table td {
   border: 1px solid #cbd5e1;
   padding: 0.45rem 0.65rem;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .bki-quote-doc__table th {
@@ -1916,11 +1953,16 @@
   font-size: 0.75rem;
   color: #475569;
   margin: 0.75rem 0 0;
+  line-height: 1.45;
 }
 
 @media (max-width: 720px) {
   .bki-quote-panel__toolbar {
     flex-direction: column;
+  }
+
+  .bki-quote-doc {
+    padding: 1.25rem 1rem;
   }
 
   .bki-quote-doc__meta,
