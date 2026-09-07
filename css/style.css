@@ -264,13 +264,13 @@ a.sidebar-logo-text,
 }
 
 .nav-link:hover {
-  background: var(--bg-page);
+  background: var(--accent-green-soft);
   color: var(--text-dark);
 }
 
 .nav-link.active {
-  background: var(--bg-page);
-  color: var(--text-dark);
+  background: #d8f3e6;
+  color: #146c4a;
   font-weight: 600;
 }
 
@@ -381,7 +381,7 @@ a.sidebar-logo-text,
 }
 
 .sidebar.collapsed .nav-item.has-submenu.submenu-open > .nav-link {
-  background: var(--bg-page);
+  background: #d8f3e6;
 }
 
 .sidebar.collapsed .sidebar-footer {
@@ -522,13 +522,13 @@ a.sidebar-logo-text,
 }
 
 .nav-sub-link:hover {
-  background: var(--bg-page);
+  background: var(--accent-green-soft);
   color: var(--text-dark);
 }
 
 .nav-sub-link.active {
-  background: var(--bg-page);
-  color: var(--text-dark);
+  background: #d8f3e6;
+  color: #146c4a;
   font-weight: 600;
 }
 
