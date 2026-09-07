@@ -1802,7 +1802,7 @@ App.VoluntaryBkiQuote = {
         gap: 12px;
         margin-bottom: 12px;
       }
-      .bki-quote-doc__grid > section { flex: 1; }
+      .bki-quote-doc__grid > div { flex: 1; min-width: 0; }
       .bki-quote-doc__grid h2 { margin: 0 0 6px; font-size: 13px; color: #0f766e; }
       .bki-quote-doc__grid p { margin: 0 0 4px; font-size: 13px; }
       .bki-quote-doc__plan { margin: 0 0 10px; font-weight: 700; font-size: 14px; }
@@ -1869,6 +1869,36 @@ App.VoluntaryBkiQuote = {
     await new Promise((r) => setTimeout(r, 200));
   },
 
+  async saveQuoteCanvasAsPdf(canvas, filename) {
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = await window.html2pdf()
+      .set({
+        margin: 0,
+        filename,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      })
+      .from(canvas)
+      .toPdf()
+      .get('pdf');
+
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 8;
+    let w = pageW - (margin * 2);
+    let h = (canvas.height * w) / canvas.width;
+    if (h > pageH - (margin * 2)) {
+      h = pageH - (margin * 2);
+      w = (canvas.width * h) / canvas.height;
+    }
+
+    // ล้างหน้าที่ html2pdf แบ่งอัตโนมัติ แล้วใส่ภาพพอดี 1 หน้า A4
+    const pages = pdf.internal.getNumberOfPages();
+    for (let i = pages; i >= 1; i -= 1) pdf.deletePage(i);
+    pdf.addPage([pageW, pageH], 'portrait');
+    pdf.addImage(imgData, 'JPEG', (pageW - w) / 2, margin, w, h, undefined, 'FAST');
+    pdf.save(filename);
+  },
+
   async downloadQuoteDoc(quote) {
     if (!quote) return false;
     const prevScrollX = window.scrollX || 0;
@@ -1877,13 +1907,7 @@ App.VoluntaryBkiQuote = {
     const filename = `${quote.id || 'QT'}-${stamp}.pdf`;
 
     await this.ensureHtml2Pdf();
-
-    // สร้างเอกสารทึบที่ (0,0) เสมอ — ห้าม opacity ต่ำ / left ติดลบ (ได้หน้าขาว)
-    // และใช้ flex แทน grid เพื่อให้ html2canvas เรนเดอร์ครบ
-    const headStyle = document.createElement('style');
-    headStyle.setAttribute('data-bki-quote-pdf-style', '1');
-    headStyle.textContent = this.quoteExportCss();
-    document.head.appendChild(headStyle);
+    window.scrollTo(0, 0);
 
     const host = document.createElement('div');
     host.setAttribute('aria-hidden', 'true');
@@ -1895,40 +1919,89 @@ App.VoluntaryBkiQuote = {
       'width:794px',
       'padding:16px',
       'margin:0',
-      'background:#fff',
+      'background:#ffffff',
+      'color:#0f172a',
       'opacity:1',
+      'visibility:visible',
       'z-index:2147483647',
       'pointer-events:none',
-      'box-sizing:border-box'
+      'box-sizing:border-box',
+      'overflow:visible'
     ].join(';');
-    host.innerHTML = this.buildQuoteDocHtml(quote);
+    // ใส่ style ใน host ด้วย — ให้ html2canvas clone ได้สไตล์ครบ
+    host.innerHTML = `<style data-bki-quote-pdf-style="1">${this.quoteExportCss()}</style>${this.buildQuoteDocHtml(quote)}`;
     document.body.appendChild(host);
 
     try {
       const target = host.querySelector('.bki-quote-doc') || host;
-      if (!String(target.textContent || '').trim()) {
+      target.style.width = '762px';
+      target.style.background = '#ffffff';
+      target.style.color = '#0f172a';
+      target.style.minHeight = '320px';
+
+      // แปลง relative image → absolute (กัน canvas ว่างจากรูปโหลดไม่ได้)
+      host.querySelectorAll('img').forEach((img) => {
+        const src = img.getAttribute('src');
+        if (!src || /^(data:|https?:|blob:)/i.test(src)) return;
+        try { img.src = new URL(src, window.location.href).href; } catch (_) { /* keep */ }
+      });
+
+      const text = String(target.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!text || text.length < 20) {
         throw new Error('ไม่พบเนื้อหาใบเสนอราคาสำหรับสร้าง PDF');
       }
-      await this.waitQuoteExportReady(host);
 
-      await window.html2pdf().set({
-        margin: [10, 10, 10, 10],
-        filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-          scrollX: 0,
-          scrollY: -window.scrollY
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(target).save();
+      await this.waitQuoteExportReady(host);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await new Promise((r) => setTimeout(r, 250));
+
+      const width = Math.ceil(host.getBoundingClientRect().width) || host.offsetWidth || 794;
+      const height = Math.max(
+        Math.ceil(host.getBoundingClientRect().height) || host.offsetHeight || 0,
+        Math.ceil(target.scrollHeight) + 32,
+        320
+      );
+
+      // จับเป็น canvas ก่อน แล้วค่อยวางลง PDF — วิธีเดียวกับ WHT50 ที่ใช้ได้จริง
+      const canvas = await window.html2pdf()
+        .set({
+          margin: 0,
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            scrollX: 0,
+            scrollY: 0,
+            x: 0,
+            y: 0,
+            width,
+            height,
+            windowWidth: width,
+            windowHeight: height,
+            onclone: (clonedDoc) => {
+              const root = clonedDoc.querySelector('[data-bki-quote-pdf-host]');
+              if (root) {
+                root.style.opacity = '1';
+                root.style.visibility = 'visible';
+                root.style.left = '0';
+                root.style.top = '0';
+              }
+            }
+          }
+        })
+        .from(host)
+        .toCanvas();
+
+      if (!canvas || canvas.width < 20 || canvas.height < 20) {
+        throw new Error('สร้างภาพใบเสนอราคาไม่สำเร็จ');
+      }
+
+      await this.saveQuoteCanvasAsPdf(canvas, filename);
       return true;
     } finally {
       host.remove();
-      headStyle.remove();
       window.scrollTo(prevScrollX, prevScrollY);
     }
   },
