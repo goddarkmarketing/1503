@@ -1325,10 +1325,23 @@ App.VoluntaryBkiQuote = {
   readCustomerForm(form) {
     const panel = form.querySelector('#bkiIssuePanel');
     if (!panel) return {};
-    const fd = new FormData(panel);
-    const values = Object.fromEntries(fd.entries());
+    // ห้าม new FormData(panel) — panel เป็น div ไม่ใช่ <form> จะ throw ในเบราว์เซอร์
+    const values = {};
+    panel.querySelectorAll('input[name], select[name], textarea[name]').forEach((el) => {
+      const name = el.name;
+      if (!name) return;
+      if (el.type === 'radio') {
+        if (el.checked) values[name] = el.value;
+        return;
+      }
+      if (el.type === 'checkbox') {
+        values[name] = el.checked ? (el.value || 'Y') : '';
+        return;
+      }
+      values[name] = el.value;
+    });
     const idTypeEl = panel.querySelector('input[name="idType"]:checked');
-    values.idType = idTypeEl?.value || 'idcard';
+    values.idType = idTypeEl?.value || values.idType || 'idcard';
     values.consent_drv = panel.querySelector('#consentDrv')?.checked ? 'Y' : 'N';
     // Prefer Thai names for display fields while codes go in *Code fields.
     values.insuredProvince = panel.querySelector('#issueProvinceName')?.value
@@ -1347,6 +1360,32 @@ App.VoluntaryBkiQuote = {
       .filter(Boolean)
       .join(' ');
     return values;
+  },
+
+  notifyIssue(form, message, type = 'error', toast) {
+    const text = String(message || '').trim() || (type === 'error' ? 'เกิดข้อผิดพลาด' : 'สำเร็จ');
+    if (typeof toast === 'function') {
+      toast(text, type);
+    } else if (App.AdminUtils?.showToast) {
+      App.AdminUtils.showToast(text, type);
+    } else if (App.TableUI?.showToast) {
+      App.TableUI.showToast(text, type);
+    }
+    const panel = form?.querySelector?.('#bkiIssuePanel');
+    if (!panel) return;
+    let banner = panel.querySelector('[data-bki-issue-banner]');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.setAttribute('data-bki-issue-banner', '1');
+      banner.className = 'bki-issue__banner';
+      panel.prepend(banner);
+    }
+    banner.dataset.type = type;
+    banner.hidden = false;
+    banner.textContent = text;
+    if (type === 'error') {
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   },
 
   validateCustomerForm(form) {
@@ -2487,45 +2526,59 @@ App.VoluntaryBkiQuote = {
 
   async submitIssuePolicy(form, { toast } = {}) {
     const panel = form.querySelector('#bkiIssuePanel');
-    const valid = this.validateCustomerForm(form);
-    if (!valid.ok) {
-      toast?.(valid.message, 'error');
-      return;
-    }
-
-    const plan = panel?.dataset?.plan || this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
-    const packages = this.getPackagesByPlan(form);
-    const pkgPlan = panel?.dataset?.packagePlan || plan;
-    const pkg = packages[pkgPlan] || packages[plan] || {};
-    const premium = Number(panel?.dataset?.premium || this.resolvePlanPremium(form, plan) || 0);
-    const quote = this.readForm(form);
-    const customer = this.readCustomerForm(form);
-    const buyPrb = !!form.querySelector(`#bkiQuoteResult input[name="buyPrb_${plan}"]`)?.checked;
-
-    const payload = {
-      ...quote,
-      coverType: plan,
-      selected_plan: plan,
-      package: pkg || {},
-      premiumTotal: premium,
-      buyPrb,
-      comp_req: buyPrb ? 'Y' : 'N',
-      consent_drv: customer.consent_drv || 'N',
-      driverMode: form.querySelector('#driverMode')?.value || 'unnamed',
-      customer,
-      drivers: this.buildDrivers(form)
+    const btn = panel?.querySelector('#btnBkiIssueSubmit');
+    const setBusy = (busy) => {
+      if (!btn || !document.body.contains(btn)) return;
+      btn.disabled = !!busy;
+      btn.textContent = busy ? 'กำลังออกกรมธรรม์...' : 'ยืนยันออกกรมธรรม์';
     };
 
-    const btn = panel?.querySelector('#btnBkiIssueSubmit');
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = 'กำลังออกกรมธรรม์...';
-    }
-
     try {
+      const valid = this.validateCustomerForm(form);
+      if (!valid.ok) {
+        this.notifyIssue(form, valid.message, 'error', toast);
+        return;
+      }
+
+      const plan = panel?.dataset?.plan || this.getSelectedPlan(form.querySelector('#bkiQuoteResult'));
+      const packages = this.getPackagesByPlan(form);
+      const pkgPlan = panel?.dataset?.packagePlan || plan;
+      const pkg = packages[pkgPlan] || packages[plan] || {};
+      const premium = Number(panel?.dataset?.premium || this.resolvePlanPremium(form, plan) || 0);
+      const quote = this.readForm(form);
+      const customer = this.readCustomerForm(form);
+      const buyPrb = !!form.querySelector(`#bkiQuoteResult input[name="buyPrb_${plan}"]`)?.checked;
+
+      if (!(premium > 0)) {
+        this.notifyIssue(form, 'ไม่พบเบี้ยประกันสำหรับออกกรมธรรม์ — กรุณาตรวจสอบราคาอีกครั้ง', 'error', toast);
+        return;
+      }
+
+      const payload = {
+        ...quote,
+        coverType: plan,
+        selected_plan: plan,
+        package: pkg || {},
+        premiumTotal: premium,
+        buyPrb,
+        comp_req: buyPrb ? 'Y' : 'N',
+        consent_drv: customer.consent_drv || 'N',
+        driverMode: form.querySelector('#driverMode')?.value || 'unnamed',
+        customer,
+        drivers: this.buildDrivers(form)
+      };
+
+      setBusy(true);
+      this.notifyIssue(form, 'กำลังส่งข้อมูลไป BKI เพื่อออกกรมธรรม์...', 'success', toast);
+
       const result = await App.MotorBkiService.issuePolicy(payload);
       if (!result?.ok) {
-        toast?.(result?.message || result?.parsed?.status_message || 'ออกกรมธรรม์ไม่สำเร็จ', 'error');
+        this.notifyIssue(
+          form,
+          result?.message || result?.parsed?.status_message || 'ออกกรมธรรม์ไม่สำเร็จ',
+          'error',
+          toast
+        );
         return;
       }
 
@@ -2536,7 +2589,7 @@ App.VoluntaryBkiQuote = {
       const linkPolicy = links.policy || parsed.link_policy || '';
       const compNo = parsed.comp_policy_no || '';
       const linkComp = links.compPolicy || parsed.link_comp_policy || '';
-      toast?.(`ออกกรมธรรม์สำเร็จ ${policyNo}`.trim());
+      this.notifyIssue(form, `ออกกรมธรรม์สำเร็จ ${policyNo}`.trim(), 'success', toast);
       this.updateBalanceDisplay(result.balance);
 
       const printBtns = [
@@ -2548,23 +2601,24 @@ App.VoluntaryBkiQuote = {
           : ''
       ].filter(Boolean).join('');
 
-      panel.innerHTML = `
-        <div class="bki-issue__success">
-          <h3 class="bki-issue__title">ออกกรมธรรม์สำเร็จ</h3>
-          <p>เลขที่ระบบ: <strong>${this.escapeHtml(policy.id || '—')}</strong></p>
-          ${policyNo ? `<p>เลขกรมธรรม์ BKI: <strong>${this.escapeHtml(policyNo)}</strong></p>` : ''}
-          ${compNo ? `<p>เลข พ.ร.บ.: <strong>${this.escapeHtml(compNo)}</strong></p>` : ''}
-          <p>ทะเบียน: <strong>${this.escapeHtml(policy.plate || customer.licensePlate || '—')}</strong></p>
-          <p>เบี้ย: <strong>${this.money(policy.premium || premium)} บาท</strong></p>
-          ${printBtns ? `<div class="bki-issue__printActions">${printBtns}</div>` : '<p class="bki-issue__printHint">ยังไม่มีลิงก์พิมพ์จาก BKI — ใช้เลขกรมธรรม์ด้านบนติดตามกับบริษัท</p>'}
-        </div>`;
-    } catch (err) {
-      toast?.(err?.message || 'ออกกรมธรรม์ไม่สำเร็จ', 'error');
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'ยืนยันออกกรมธรรม์';
+      if (panel) {
+        panel.innerHTML = `
+          <div class="bki-issue__success">
+            <h3 class="bki-issue__title">ออกกรมธรรม์สำเร็จ</h3>
+            <p>เลขที่ระบบ: <strong>${this.escapeHtml(policy.id || '—')}</strong></p>
+            ${policyNo ? `<p>เลขกรมธรรม์ BKI: <strong>${this.escapeHtml(policyNo)}</strong></p>` : ''}
+            ${compNo ? `<p>เลข พ.ร.บ.: <strong>${this.escapeHtml(compNo)}</strong></p>` : ''}
+            <p>ทะเบียน: <strong>${this.escapeHtml(policy.plate || customer.licensePlate || '—')}</strong></p>
+            <p>เบี้ย: <strong>${this.money(policy.premium || premium)} บาท</strong></p>
+            ${printBtns ? `<div class="bki-issue__printActions">${printBtns}</div>` : '<p class="bki-issue__printHint">ยังไม่มีลิงก์พิมพ์จาก BKI — ใช้เลขกรมธรรม์ด้านบนติดตามกับบริษัท</p>'}
+          </div>`;
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    } catch (err) {
+      console.error('[bki] issue policy failed', err);
+      this.notifyIssue(form, err?.message || 'ออกกรมธรรม์ไม่สำเร็จ', 'error', toast);
+    } finally {
+      setBusy(false);
     }
   },
 

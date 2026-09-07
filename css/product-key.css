@@ -1266,6 +1266,27 @@
 }
 
 /* BKI issue — customer step after quote */
+.bki-issue__banner {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.bki-issue__banner[data-type="error"] {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.bki-issue__banner[data-type="success"] {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
 .bki-issue {
   margin-top: 1.25rem;
   padding: 1.35rem 1.25rem 1.5rem;
