@@ -905,6 +905,68 @@
   box-shadow: 0 2px 4px rgba(15, 118, 110, 0.22);
 }
 
+.axa-quote__checkBtn:disabled,
+.axa-quote__checkBtn.is-loading {
+  opacity: 0.78;
+  cursor: wait;
+  box-shadow: none;
+}
+
+.bki-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: bkiLoadingFadeIn 0.18s ease;
+}
+
+.bki-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: min(280px, 86vw);
+  padding: 1.35rem 1.5rem 1.25rem;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.22);
+  text-align: center;
+}
+
+.bki-loading-spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid #d8f3e6;
+  border-top-color: #0f766e;
+  animation: spin 0.75s linear infinite;
+}
+
+.bki-loading-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bki-loading-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+@keyframes bkiLoadingFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .axa-result {
   margin-top: 1.25rem;
   max-width: none;

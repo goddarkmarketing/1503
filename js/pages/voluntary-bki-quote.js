@@ -403,7 +403,6 @@ App.VoluntaryBkiQuote = {
             <select id="regType" name="reg_type" class="form-input" required>
               ${this.optionsHtml(this.REG_TYPES, { selected: '110' })}
             </select>
-            <p class="form-hint" id="regTypeHint">ดึงจากรหัสรถ BKI อัตโนมัติ (110/210/320) — ไม่ใช่ค่า car_use ของ API</p>
           </div>
           <div class="form-field axa-quote__field axa-quote__field--submodel">
             <label for="carSubmodel">รุ่นย่อยรถยนต์ <span class="form-req">*</span></label>
@@ -1201,10 +1200,6 @@ App.VoluntaryBkiQuote = {
         regType.disabled = false;
         regType.value = '110';
       }
-      const hint = form.querySelector('#regTypeHint');
-      if (hint) {
-        hint.textContent = 'ดึงจากรหัสรถ BKI อัตโนมัติ (110/210/320) — ไม่ใช่ค่า car_use ของ API';
-      }
       if (sumEl) sumEl.value = '';
       return;
     }
@@ -1242,13 +1237,6 @@ App.VoluntaryBkiQuote = {
       // Keep aligned with BKI lookup for the selected make_code.
       regType.disabled = true;
       regType.title = 'ล็อกตามรหัสรถจาก lookup BKI';
-    }
-    const hint = form.querySelector('#regTypeHint');
-    if (hint) {
-      const typeLabel = carType === '3' ? 'กระบะ' : (carType === '2' ? 'โดยสาร' : 'รถนั่ง');
-      hint.textContent = carType === '3'
-        ? `ตาม lookup BKI: car_type=3 (กระบะ) · ทะเบียน ${resolvedReg} · API car_use=2 (BKI กำหนดสำหรับกระบะ)`
-        : `ตาม lookup BKI: car_type=${carType} (${typeLabel}) · ทะเบียน ${resolvedReg} · API car_use=${apiCarUse}`;
     }
 
     const min = Number(variant.sum_ins_min) || 0;
@@ -2849,6 +2837,29 @@ App.VoluntaryBkiQuote = {
     wrap?.classList.add('is-visible');
   },
 
+  showPremiumLoading(message = 'กำลังดึงราคาจาก BKI...') {
+    this.hidePremiumLoading();
+    const overlay = document.createElement('div');
+    overlay.id = 'bkiPremiumLoading';
+    overlay.className = 'bki-loading-overlay';
+    overlay.setAttribute('role', 'status');
+    overlay.setAttribute('aria-live', 'polite');
+    overlay.innerHTML = `
+      <div class="bki-loading-card">
+        <div class="bki-loading-spinner" aria-hidden="true"></div>
+        <p class="bki-loading-title">${this.escapeHtml(message)}</p>
+        <p class="bki-loading-text">กรุณารอสักครู่ ระบบกำลังขอแพ็กเกจจากบริษัทประกัน</p>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    return overlay;
+  },
+
+  hidePremiumLoading() {
+    document.getElementById('bkiPremiumLoading')?.remove();
+    document.body.style.overflow = '';
+  },
+
   clearQuoteState(form, premiumEl) {
     this._packagesByPlan = {};
     this._premiumsByPlan = {};
@@ -2875,10 +2886,13 @@ App.VoluntaryBkiQuote = {
     }
 
     const btn = form.querySelector('#btnCheckPrice');
+    const btnDefaultLabel = 'ตรวจสอบราคา';
     if (btn) {
       btn.disabled = true;
-      btn.textContent = 'กำลังตรวจสอบ...';
+      btn.classList.add('is-loading');
+      btn.textContent = 'กำลังดึงราคา...';
     }
+    this.showPremiumLoading('กำลังดึงราคาจาก BKI...');
 
     let result = null;
     let errorMessage = null;
@@ -2890,6 +2904,8 @@ App.VoluntaryBkiQuote = {
     } catch (err) {
       errorMessage = this.formatApiError(err, null);
       result = { ok: false, parsed: { packages: [] }, message: errorMessage };
+    } finally {
+      this.hidePremiumLoading();
     }
 
     this.showResult(form, { toast, result, errorMessage });
@@ -2947,7 +2963,8 @@ App.VoluntaryBkiQuote = {
 
     if (btn) {
       btn.disabled = false;
-      btn.textContent = 'ตรวจสอบราคา';
+      btn.classList.remove('is-loading');
+      btn.textContent = btnDefaultLabel;
     }
     return result;
   },
@@ -2959,8 +2976,28 @@ App.VoluntaryBkiQuote = {
     this.syncCoverageEnd(form);
     this.syncZoneFromProvince(form);
 
-    this.ensureLookups().catch(() => {});
-    this.loadMakes(form).catch((err) => {
+    const bootQuoteData = async () => {
+      // Wait for agent portal auth refresh so we don't race with expired tokens.
+      if (App.AgentPortal?.whenReady) {
+        await App.AgentPortal.whenReady();
+      }
+      if (!App.AuthService?.isAuthenticated?.()) {
+        throw Object.assign(new Error('กรุณาเข้าสู่ระบบใหม่'), { status: 401 });
+      }
+      await this.ensureLookups();
+      await this.loadMakes(form);
+    };
+
+    bootQuoteData().catch((err) => {
+      const unauthorized = err?.status === 401 || err?.status === 403
+        || /unauthorized|unauthorised|กรุณาเข้าสู่ระบบ/i.test(String(err?.message || ''));
+      if (unauthorized) {
+        toast?.('เซสชันหมดอายุหรือยังไม่ได้เข้าสู่ระบบ — กรุณาล็อกอินใหม่', 'error');
+        const next = encodeURIComponent(App.RoleGuard?.currentPagePath?.() || 'voluntary/bki');
+        const login = App.RoleGuard?.loginPath?.() || '../login';
+        setTimeout(() => window.location.replace(`${login}?next=${next}`), 600);
+        return;
+      }
       toast?.(err.message || 'โหลดข้อมูลรถไม่สำเร็จ', 'error');
     });
 

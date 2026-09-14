@@ -50,9 +50,16 @@ App.AuthService = {
     const session = App.Session.get();
     if (!session) return null;
     if (this._useRealAuth()) {
-      const user = this._enrichAgentUser(await App.API.request('/auth/me'));
-      App.Session.updateUser(user);
-      return user;
+      try {
+        const user = this._enrichAgentUser(await App.API.request('/auth/me'));
+        App.Session.updateUser(user);
+        return user;
+      } catch (err) {
+        if (err?.status === 401 || err?.status === 403) {
+          App.Session.clear();
+        }
+        throw err;
+      }
     }
     const user = await App.MockAPI.getCurrentUser(session.user.id);
     App.Session.updateUser(user);
