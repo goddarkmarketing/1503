@@ -157,6 +157,92 @@ final class MotorBkiVol
   }
 
   /**
+   * Map UI / catalog values to BKI API car_use (1=personal, 2=commercial).
+   *
+   * Catalog column "car_use" is an OIC registration code (110/210/320), not API car_use.
+   * BKI guidance (2026-09): pickup/truck car_type=3 must use car_use=2 to return packages.
+   *
+   * @param array<string,mixed> $input
+   * @param array<string,mixed>|null $variant
+   */
+  public static function resolveApiCarUse(array $input, ?array $variant, string $carType = ''): string
+  {
+    if ($carType === '') {
+      $carType = trim((string)($input['car_type'] ?? ($variant['car_type'] ?? '')));
+    }
+    // Partner confirmed: car_type=3 (pickup) rates are under commercial use = 2.
+    if ($carType === '3') {
+      return '2';
+    }
+
+    $usage = strtolower(trim((string)($input['usageType'] ?? $input['usage_type'] ?? '')));
+    if ($usage === 'commercial' || $usage === '2') {
+      return '2';
+    }
+    if ($usage === 'personal' || $usage === '1') {
+      return '1';
+    }
+
+    $raw = trim((string)($input['car_use'] ?? ''));
+    if ($raw === '1' || $raw === '2') {
+      return $raw;
+    }
+
+    // Catalog stores OIC registration codes (110/210/320) in car_use — treat as personal.
+    return '1';
+  }
+
+  /**
+   * Pickup/truck (car_type=3) requires weight; passenger may send 0.
+   *
+   * @param array<string,mixed> $input
+   * @param array<string,mixed>|null $variant
+   */
+  public static function resolveWeight(array $input, ?array $variant, string $carType): string
+  {
+    $weight = trim((string)($input['weight'] ?? ($variant['weight'] ?? '0')));
+    if ($weight === '' || !preg_match('/^\d+$/', $weight)) {
+      $weight = '0';
+    }
+
+    if ($carType === '3') {
+      if ($weight === '0') {
+        $fromVariant = trim((string)($variant['weight'] ?? ''));
+        if ($fromVariant !== '' && preg_match('/^\d+$/', $fromVariant) && $fromVariant !== '0') {
+          return $fromVariant;
+        }
+        return '3000';
+      }
+      return $weight;
+    }
+
+    return $weight;
+  }
+
+  /**
+   * Seat: required for bus (car_type=2); passenger/pickup use lookup values.
+   *
+   * @param array<string,mixed> $input
+   * @param array<string,mixed>|null $variant
+   */
+  public static function resolveSeat(array $input, ?array $variant, string $carType): string
+  {
+    $seat = trim((string)($input['seat'] ?? ($variant['seat'] ?? '')));
+    if ($seat === '' || !preg_match('/^\d+$/', $seat) || (int)$seat <= 0) {
+      $seat = '';
+    }
+
+    if ($carType === '2') {
+      return $seat !== '' ? $seat : '7';
+    }
+    if ($carType === '3') {
+      return $seat !== '' ? $seat : '0';
+    }
+    return $seat !== '' ? $seat : '5';
+  }
+
+
+  /**
    * Build BKI vol/premium/calculate body (legacy + v1.4 field names).
    *
    * Spec v1.4 requires consent_drv + drv_flag on every premium request.
@@ -188,10 +274,9 @@ final class MotorBkiVol
     }
 
     $carType = trim((string)($input['car_type'] ?? ($variant['car_type'] ?? '1')));
-    $carUse = trim((string)($input['car_use'] ?? ($variant['car_use'] ?? '1')));
-    if (preg_match('/^\d{3,}$/', $carUse)) {
-      $carUse = '1';
-    }
+    // BKI API car_use = personal(1) / commercial(2). Catalog column "car_use" is OIC reg
+    // code (110/210/320) and must not be sent as-is. Pickup car_type=3 requires car_use=2.
+    $carUse = self::resolveApiCarUse($input, $variant, $carType);
 
     $named = strtolower(trim((string)($input['driverMode'] ?? $input['driver_mode'] ?? ''))) === 'named'
       || strtoupper(trim((string)($input['drv_flag'] ?? ''))) === 'Y';
@@ -229,8 +314,8 @@ final class MotorBkiVol
       'car_code' => $makeCode,
       'car_year' => $carYear,
       'cc' => trim((string)($input['cc'] ?? ($variant['cc'] ?? '0'))),
-      'seat' => trim((string)($input['seat'] ?? ($variant['seat'] ?? '5'))),
-      'weight' => trim((string)($input['weight'] ?? ($variant['weight'] ?? '0'))),
+      'seat' => self::resolveSeat($input, $variant, $carType),
+      'weight' => self::resolveWeight($input, $variant, $carType),
       'zone_use' => trim((string)($input['zone_use'] ?? '1')),
       'ncb' => trim((string)($input['ncb'] ?? '0')),
       'deduct' => trim((string)($input['deduct'] ?? '0')),

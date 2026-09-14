@@ -9,13 +9,19 @@ declare(strict_types=1);
  *   php api/tools/probe-bki-premium-via-prod.php --limit=50 --per-brand=3
  */
 $apiRoot = dirname(__DIR__);
-$opts = getopt('', ['limit::', 'brand::', 'per-brand::', 'base::', 'user::', 'pass::']);
+$opts = getopt('', ['limit::', 'brand::', 'per-brand::', 'base::', 'user::', 'pass::', 'all', 'csv::']);
 $limit = max(1, (int)($opts['limit'] ?? 45));
 $brandFilter = strtoupper(trim((string)($opts['brand'] ?? '')));
 $perBrand = max(1, (int)($opts['per-brand'] ?? 3));
 $base = rtrim((string)($opts['base'] ?? 'https://www.kladeebroker.co.th/api/v1'), '/');
 $user = (string)($opts['user'] ?? 'admin');
 $pass = (string)($opts['pass'] ?? 'demo');
+$allUnique = array_key_exists('all', $opts);
+$csvPath = trim((string)($opts['csv'] ?? ''));
+if ($allUnique) {
+  $limit = 100000;
+  $perBrand = 100000;
+}
 
 $dataPath = $apiRoot . '/data/bki-vol-car-codes.json';
 $payload = json_decode((string)file_get_contents($dataPath), true);
@@ -103,19 +109,19 @@ foreach ($sample as $row) {
     'car_code' => $code,
     'car_year' => $year,
     'car_type' => (string)($row['car_type'] ?? '1'),
-    'car_use' => '1',
+    'car_use' => ((string)($row['car_type'] ?? '1') === '3') ? '2' : '1',
     'cc' => (string)($row['cc'] ?? '1500'),
     'seat' => (string)($row['seat'] ?? '5'),
     'weight' => $weight,
     'sum_ins' => (string)$sum,
-    'garage' => 'G',
+    'garage' => '',
     'ncb' => '0',
     'deduct' => '0',
     'deduct_lib' => '0',
     'comp_req' => 'N',
     'drv_flag' => 'N',
     'consent_drv' => 'N',
-    'risk' => '1',
+    'risk' => '',
     'agent_ref_no' => 'PROBE-' . preg_replace('/[^A-Z0-9]/', '', $code) . '-' . $year,
   ];
 
@@ -177,24 +183,46 @@ foreach ($sample as $row) {
     $errList[] = $entry + ['raw' => substr((string)$resp['raw'], 0, 180)];
   }
 
-  usleep(150000);
+  $done = count($okList) + count($zeroList) + count($errList);
+  if ($allUnique && ($done % 25 === 0 || $done === count($sample))) {
+    fwrite(STDERR, sprintf(
+      "[%s] %d/%d OK=%d ZERO=%d ERR=%d last=%s %s\n",
+      date('H:i:s'),
+      $done,
+      count($sample),
+      count($okList),
+      count($zeroList),
+      count($errList),
+      $make,
+      $code
+    ));
+  }
+
+  usleep(80000);
 }
 
+// Keep console summary short when probing everything.
+$verbose = !$allUnique;
 echo "BKI premium probe via {$base}\n";
 echo 'Sampled: ' . count($sample) . " codes\n";
+echo 'OK=' . count($okList) . ' ZERO=' . count($zeroList) . ' ERR=' . count($errList) . PHP_EOL;
 echo str_repeat('-', 72) . PHP_EOL;
 
-echo "\n[WITH PREMIUM] " . count($okList) . PHP_EOL;
-foreach ($okList as $r) {
-  echo sprintf(
-    "  %-10s %-12s %s  sum=%s  prem=%s\n  %s\n",
-    $r['make'],
-    $r['make_code'],
-    $r['car_year'],
-    number_format($r['sum_ins']),
-    number_format($r['premium'], 2),
-    mb_strimwidth($r['desc'], 0, 70, '…')
-  );
+if ($verbose) {
+  echo "\n[WITH PREMIUM] " . count($okList) . PHP_EOL;
+  foreach ($okList as $r) {
+    echo sprintf(
+      "  %-10s %-12s %s  sum=%s  prem=%s\n  %s\n",
+      $r['make'],
+      $r['make_code'],
+      $r['car_year'],
+      number_format($r['sum_ins']),
+      number_format($r['premium'], 2),
+      mb_strimwidth($r['desc'], 0, 70, '…')
+    );
+  }
+} else {
+  echo "\n[WITH PREMIUM] " . count($okList) . " (details in CSV)\n";
 }
 
 echo "\n[ZERO / UNAVAILABLE] " . count($zeroList) . PHP_EOL;
@@ -202,21 +230,76 @@ $counts = [];
 foreach ($zeroList as $r) {
   $counts[$r['make']] = ($counts[$r['make']] ?? 0) + 1;
 }
-foreach ($counts as $m => $n) echo "  {$m}: {$n}\n";
-echo "  examples:\n";
-foreach (array_slice($zeroList, 0, 12) as $r) {
-  echo sprintf(
-    "    %-10s %-12s status=%s pack=%s\n",
-    $r['make'],
-    $r['make_code'],
-    $r['status'] !== '' ? $r['status'] : '-',
-    mb_strimwidth($r['packname'] !== '' ? $r['packname'] : '-', 0, 48, '…')
-  );
+ksort($counts);
+foreach ($counts as $m => $n) {
+  echo "  {$m}: {$n}\n";
+}
+if ($verbose) {
+  echo "  examples:\n";
+  foreach (array_slice($zeroList, 0, 12) as $r) {
+    echo sprintf(
+      "    %-10s %-12s status=%s pack=%s\n",
+      $r['make'],
+      $r['make_code'],
+      $r['status'] !== '' ? $r['status'] : '-',
+      mb_strimwidth($r['packname'] !== '' ? $r['packname'] : '-', 0, 48, '…')
+    );
+  }
 }
 
 echo "\n[ERRORS] " . count($errList) . PHP_EOL;
-foreach (array_slice($errList, 0, 8) as $r) {
-  echo sprintf("  %-10s %-12s http=%s bki=%s\n", $r['make'], $r['make_code'], $r['http'], $r['bki_http']);
+if ($verbose) {
+  foreach (array_slice($errList, 0, 8) as $r) {
+    echo sprintf("  %-10s %-12s http=%s bki=%s\n", $r['make'], $r['make_code'], $r['http'], $r['bki_http']);
+  }
+} else {
+  $errCounts = [];
+  foreach ($errList as $r) {
+    $errCounts[$r['make']] = ($errCounts[$r['make']] ?? 0) + 1;
+  }
+  ksort($errCounts);
+  foreach ($errCounts as $m => $n) {
+    echo "  {$m}: {$n}\n";
+  }
+}
+
+if ($csvPath === '') {
+  $csvPath = dirname($apiRoot) . '/docs/bki-premium-probe-results-' . date('Ymd-His') . '.csv';
+}
+$fh = fopen($csvPath, 'wb');
+if ($fh !== false) {
+  fwrite($fh, "\xEF\xBB\xBF");
+  fputcsv($fh, [
+    'make', 'make_code', 'car_year', 'desc', 'sum_ins',
+    'premium_ok', 'premium_amount', 'status', 'packname', 'http', 'bki_http', 'note'
+  ]);
+  $writeRow = static function ($fh, array $r, string $ok, string $note = '') {
+    fputcsv($fh, [
+      $r['make'],
+      $r['make_code'],
+      $r['car_year'],
+      $r['desc'],
+      $r['sum_ins'],
+      $ok,
+      $r['premium'] ?? '',
+      $r['status'] ?? '',
+      $r['packname'] ?? '',
+      $r['http'] ?? '',
+      $r['bki_http'] ?? '',
+      $note,
+    ]);
+  };
+  foreach ($okList as $r) {
+    $writeRow($fh, $r, 'Y');
+  }
+  foreach ($zeroList as $r) {
+    $writeRow($fh, $r, 'N', 'zero_or_unavailable');
+  }
+  foreach ($errList as $r) {
+    $writeRow($fh, $r, 'N', 'http_error');
+  }
+  fclose($fh);
+  echo "\nCSV: {$csvPath}\n";
 }
 
 echo "\nDone.\n";

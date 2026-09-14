@@ -778,6 +778,20 @@
   border-color: #e2e8f0;
 }
 
+.axa-quote__field .form-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.axa-quote__field select.form-input:disabled {
+  background: #f4f7fb;
+  color: #475569;
+  cursor: default;
+  border-color: #e2e8f0;
+}
+
 .axa-quote__seg {
   display: grid;
   grid-template-columns: 1fr 1fr;

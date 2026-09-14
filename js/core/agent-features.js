@@ -52,7 +52,7 @@ App.AgentFeatures = {
         { key: 'voluntary-chubb', label: '2+/3+ — CHUBB' },
         { key: 'voluntary-indara', label: '2+/3+ — อินทรประกันภัย' },
         { key: 'pa-axa', label: 'อุบัติเหตุ — AXA' },
-        { key: 'pa-bki', label: 'อุบัติเหตุ — BKI กรุงเทพ' },
+        { key: 'pa-bki', label: 'อุบัติเหตุ — BKI กรุงเทพ', page: 'pa/bki' },
         { key: 'travel-axa', label: 'เดินทาง — AXA' },
         { key: 'travel-bki', label: 'เดินทาง — BKI กรุงเทพ' },
         { key: 'renew', label: 'ต่ออายุกรมธรรม์', page: 'agent/renew' }

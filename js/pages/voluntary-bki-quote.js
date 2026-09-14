@@ -351,7 +351,9 @@ App.VoluntaryBkiQuote = {
         <input type="hidden" id="deduct" name="deduct" value="0">
         <input type="hidden" id="cc" name="cc">
         <input type="hidden" id="seat" name="seat">
+        <input type="hidden" id="weight" name="weight">
         <input type="hidden" id="carType" name="car_type">
+        <input type="hidden" id="carUse" name="car_use" value="1">
 
         <div class="axa-quote__row axa-quote__row--policy">
           <div class="form-field axa-quote__field axa-quote__field--agent">
@@ -401,6 +403,7 @@ App.VoluntaryBkiQuote = {
             <select id="regType" name="reg_type" class="form-input" required>
               ${this.optionsHtml(this.REG_TYPES, { selected: '110' })}
             </select>
+            <p class="form-hint" id="regTypeHint">ดึงจากรหัสรถ BKI อัตโนมัติ (110/210/320) — ไม่ใช่ค่า car_use ของ API</p>
           </div>
           <div class="form-field axa-quote__field axa-quote__field--submodel">
             <label for="carSubmodel">รุ่นย่อยรถยนต์ <span class="form-req">*</span></label>
@@ -892,7 +895,18 @@ App.VoluntaryBkiQuote = {
     this.syncZoneFromProvince(form);
     const fd = new FormData(form);
     const values = Object.fromEntries(fd.entries());
+    // Disabled controls are omitted from FormData — copy them explicitly.
+    form.querySelectorAll('input[disabled], select[disabled], textarea[disabled]').forEach((el) => {
+      if (!el.name) return;
+      values[el.name] = el.value;
+    });
     values.zone_use = form.querySelector('#zoneUse')?.value || this.resolveZone(values.regProvince);
+    values.car_type = form.querySelector('#carType')?.value || values.car_type || '';
+    values.car_use = form.querySelector('#carUse')?.value || values.car_use || '1';
+    values.weight = form.querySelector('#weight')?.value || values.weight || '';
+    values.seat = form.querySelector('#seat')?.value || values.seat || '';
+    values.cc = form.querySelector('#cc')?.value || values.cc || '';
+    values.reg_type = form.querySelector('#regType')?.value || values.reg_type || '';
     const plan = this.getSelectedPlan(form.querySelector('#bkiQuoteResult')) || values.coverType || '3plus';
     const buyPrb = !!form.querySelector(`#bkiQuoteResult input[name="buyPrb_${plan}"]`)?.checked
       || !!form.querySelector(`input[name="buyPrb_${plan}"]`)?.checked;
@@ -1179,7 +1193,18 @@ App.VoluntaryBkiQuote = {
       }
       form.querySelector('#cc').value = '';
       form.querySelector('#seat').value = '';
+      form.querySelector('#weight').value = '';
       form.querySelector('#carType').value = '';
+      form.querySelector('#carUse').value = '1';
+      const regType = form.querySelector('#regType');
+      if (regType) {
+        regType.disabled = false;
+        regType.value = '110';
+      }
+      const hint = form.querySelector('#regTypeHint');
+      if (hint) {
+        hint.textContent = 'ดึงจากรหัสรถ BKI อัตโนมัติ (110/210/320) — ไม่ใช่ค่า car_use ของ API';
+      }
       if (sumEl) sumEl.value = '';
       return;
     }
@@ -1194,7 +1219,37 @@ App.VoluntaryBkiQuote = {
 
     form.querySelector('#cc').value = variant.cc || '';
     form.querySelector('#seat').value = variant.seat || '';
+    form.querySelector('#weight').value = variant.weight || '';
     form.querySelector('#carType').value = variant.car_type || '';
+    const carType = String(variant.car_type || '1');
+    const usageEl = form.querySelector('#usageType');
+    // BKI: pickup (car_type=3) packages require API car_use=2 (commercial).
+    if (carType === '3' && usageEl) {
+      usageEl.value = 'commercial';
+    }
+    const usage = usageEl?.value || 'personal';
+    const apiCarUse = carType === '3' ? '2' : (usage === 'commercial' ? '2' : '1');
+    form.querySelector('#carUse').value = apiCarUse;
+
+    const regType = form.querySelector('#regType');
+    const catalogUse = String(variant.car_use || '');
+    const resolvedReg = /^\d{3}$/.test(catalogUse)
+      ? catalogUse
+      : (carType === '3' ? '320' : (carType === '2' ? '210' : '110'));
+    if (regType) {
+      const hasOpt = [...regType.options].some((o) => o.value === resolvedReg);
+      if (hasOpt) regType.value = resolvedReg;
+      // Keep aligned with BKI lookup for the selected make_code.
+      regType.disabled = true;
+      regType.title = 'ล็อกตามรหัสรถจาก lookup BKI';
+    }
+    const hint = form.querySelector('#regTypeHint');
+    if (hint) {
+      const typeLabel = carType === '3' ? 'กระบะ' : (carType === '2' ? 'โดยสาร' : 'รถนั่ง');
+      hint.textContent = carType === '3'
+        ? `ตาม lookup BKI: car_type=3 (กระบะ) · ทะเบียน ${resolvedReg} · API car_use=2 (BKI กำหนดสำหรับกระบะ)`
+        : `ตาม lookup BKI: car_type=${carType} (${typeLabel}) · ทะเบียน ${resolvedReg} · API car_use=${apiCarUse}`;
+    }
 
     const min = Number(variant.sum_ins_min) || 0;
     if (sumEl && min > 0) sumEl.value = String(min);
@@ -2725,7 +2780,10 @@ App.VoluntaryBkiQuote = {
         : cleanDesc;
       codes.push({
         value: key,
-        label: shortDesc ? `${key} — ${shortDesc}` : key
+        label: shortDesc
+          ? `${key} — ${shortDesc}${String(row.car_type) === '3' ? ' (กระบะ)' : ''}`
+          : key,
+        carType: row.car_type
       });
     });
     codeEl.innerHTML = this.optionsHtml(codes, { placeholder: 'โปรดเลือก' });
@@ -2861,19 +2919,27 @@ App.VoluntaryBkiQuote = {
       const pkgStatus = dbg?.status != null ? String(dbg.status) : '';
       const unavailable = /unavailable|underwriter|ไม่พร้อม|ไม่มีแพ|ติดต่อ/i.test(packname)
         || (pkgStatus === '01' && Number(dbg?.total_prem_vol || 0) <= 0);
+      const carType = String(form.querySelector('#carType')?.value || this.selectedVariant()?.car_type || '');
+      const isPickup = carType === '3';
       const sample = dbg
         ? `premium_total=${dbg.premium_total ?? 'null'}, total_prem_vol=${dbg.total_prem_vol ?? 'null'}, status=${dbg.status ?? 'null'}, remark=${dbg.remark ?? 'null'}, packname=${packname || '-'}`
         : this.describePackagePremium(rawPackages[0]);
       if (noteEl) {
         noteEl.hidden = false;
-        noteEl.textContent = unavailable
-          ? (packname
-            ? `BKI: ${packname} (status=${pkgStatus || '01'})`
-            : `BKI ยังไม่เปิดแพ็กเกจ/เรทสำหรับ agent นี้ (status=${pkgStatus || '01'})`)
-          : `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (${sample})`;
+        if (unavailable && isPickup) {
+          noteEl.textContent = 'BKI ยังไม่มีแพ็กสำหรับรุ่นนี้ — ตรวจว่าส่ง car_use=2 สำหรับกระบะ (type=3) แล้ว หรือติดต่อ Underwriter';
+        } else {
+          noteEl.textContent = unavailable
+            ? (packname
+              ? `BKI: ${packname} (status=${pkgStatus || '01'})`
+              : `BKI ยังไม่เปิดแพ็กเกจ/เรทสำหรับ agent นี้ (status=${pkgStatus || '01'})`)
+            : `อ่านเบี้ยไม่สำเร็จจากแพ็กเกจ BKI (${sample})`;
+        }
       }
       toast?.(unavailable
-        ? 'BKI ยังไม่เปิดแพ็กเกจให้ agent นี้ — ต้องให้ทีม Underwriter/BKI เปิดเรทก่อน'
+        ? (isPickup
+          ? 'กระบะยังไม่มีแพ็กจาก BKI — ระบบส่ง car_use=2 แล้ว ถ้ายังไม่ได้ให้ติดต่อ Underwriter'
+          : 'BKI ยังไม่เปิดแพ็กเกจให้ agent นี้ — ต้องให้ทีม Underwriter/BKI เปิดเรทก่อน')
         : 'ได้แพ็กเกจจาก BKI แล้ว แต่ยังอ่านเบี้ยไม่ได้ — ลองเปลี่ยนทุนประกัน/รุ่นรถแล้วตรวจราคาอีกครั้ง', 'error');
     } else {
       toast?.('ตรวจสอบราคาจาก BKI แล้ว');
@@ -2934,6 +3000,20 @@ App.VoluntaryBkiQuote = {
     form.querySelector('#carYear')?.addEventListener('change', () => {
       this.clearQuoteState(form, premiumEl);
       this.applyVariantToForm(form, this.selectedVariant());
+    });
+
+    form.querySelector('#usageType')?.addEventListener('change', () => {
+      const carType = form.querySelector('#carType')?.value || '';
+      const usageEl = form.querySelector('#usageType');
+      const usage = usageEl?.value || 'personal';
+      const carUseEl = form.querySelector('#carUse');
+      // Pickup rates require car_use=2 even if agent picks personal.
+      if (carType === '3') {
+        if (usageEl && usage !== 'commercial') usageEl.value = 'commercial';
+        if (carUseEl) carUseEl.value = '2';
+        return;
+      }
+      if (carUseEl) carUseEl.value = usage === 'commercial' ? '2' : '1';
     });
 
     ['#sumInsured', '#deduct'].forEach((sel) => {

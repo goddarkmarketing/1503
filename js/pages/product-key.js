@@ -308,7 +308,11 @@
     const brochureRoot = document.getElementById('brochurePanel');
     const titleEl = document.getElementById('productKeyPageTitle');
 
-    if (titleEl) titleEl.textContent = `${product.typeLabel} — ${product.insurer}`;
+    if (titleEl) {
+      titleEl.textContent = product.productName
+        ? `${product.typeLabel} — ${product.productName}`
+        : `${product.typeLabel} — ${product.insurer}`;
+    }
 
     if (header) {
       header.innerHTML = `
@@ -322,6 +326,7 @@
         hintEl.hidden = true;
         hintEl.textContent = '';
       } else {
+        hintEl.hidden = false;
         hintEl.textContent = product.notes || '';
       }
     }

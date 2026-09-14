@@ -7,7 +7,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const PARTIAL = path.join(ROOT, 'partials', 'agent-sidebar-nav.html');
-const CACHE = '20260906b';
+const CACHE = '20260909b';
 
 const PAGES = [
   'agent/index.html',

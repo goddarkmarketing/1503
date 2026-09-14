@@ -89,18 +89,19 @@ foreach ($sample as $i => $row) {
     'seat' => (string)($row['seat'] ?? '5'),
     'weight' => (string)(($row['weight'] ?? '0') === '0' || ($row['weight'] ?? '') === '' ? '1200' : $row['weight']),
     'car_type' => (string)($row['car_type'] ?? '1'),
-    'car_use' => '1', // BKI use type personal
+    // BKI: pickup car_type=3 packages require car_use=2
+    'car_use' => ((string)($row['car_type'] ?? '1') === '3') ? '2' : '1',
     'reg_type' => (string)($row['car_use'] ?? '110'),
     'sum_ins' => $sum,
     'coverage_start' => $eff,
-    'garage' => 'G',
+    'garage' => '',
     'deduct' => '0',
     'ncb' => '0',
     'comp_req' => 'N',
     'driverMode' => 'unnamed',
     'drv_flag' => 'N',
     'consent_drv' => 'N',
-    'risk' => '1',
+    'risk' => '',
   ];
 
   $body = MotorBkiVol::buildPremiumPayload($input);
