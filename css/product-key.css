@@ -1903,13 +1903,15 @@
 }
 
 .bki-quote-doc__logo {
-  max-width: 48px;
-  max-height: 48px;
+  max-width: 56px;
+  max-height: 56px;
 }
 
 .bki-quote-doc__bki {
-  max-width: 110px;
-  max-height: 56px;
+  max-width: 64px;
+  max-height: 64px;
+  /* โลโก้เป็นบล็อก — ดันชิดขวาให้ตรงกับข้อความใต้ภาพ */
+  margin-left: auto;
 }
 
 .bki-quote-doc__company {
@@ -2053,6 +2055,127 @@
   line-height: 1.45;
 }
 
+/* หน้าที่ 2 ขึ้นไปของเอกสาร — บนจอคั่นด้วยเส้นประ, ตอนพิมพ์ขึ้นแผ่นใหม่ */
+.bki-quote-doc__page--break {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.bki-quote-doc__pageRef {
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.bki-quote-cmp {
+  margin-top: 0.9rem;
+}
+
+.bki-quote-cmp__title {
+  margin: 0 0 0.4rem;
+  font-size: 0.8125rem;
+  color: #0f766e;
+}
+
+.bki-quote-cmp__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.bki-quote-cmp__table th,
+.bki-quote-cmp__table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  text-align: center;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.bki-quote-cmp__table tbody th {
+  width: 40%;
+  text-align: left;
+  font-weight: 600;
+  background: #f8fafc;
+}
+
+.bki-quote-cmp__corner {
+  background: #f8fafc;
+  text-align: left;
+}
+
+.bki-quote-cmp__table thead th {
+  background: #f1f5f9;
+}
+
+.bki-quote-cmp__table thead th.is-picked,
+.bki-quote-cmp__table td.is-picked {
+  background: #ecfdf5;
+}
+
+.bki-quote-cmp__plan {
+  display: block;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+.bki-quote-cmp__price {
+  display: block;
+  margin-top: 2px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.bki-quote-cmp__tag {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.625rem;
+}
+
+@media print {
+  .bki-quote-doc__page--break {
+    break-before: page;
+    page-break-before: always;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .bki-quote-cmp__title,
+  .bki-quote-cmp__table tr,
+  .bki-quote-doc__table tr,
+  .bki-quote-doc__premium,
+  .bki-quote-doc__note,
+  .bki-quote-doc__foot {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .bki-quote-cmp__table,
+  .bki-quote-doc__table {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .bki-quote-cmp__table th,
+  .bki-quote-cmp__table td.is-picked,
+  .bki-quote-cmp__tag,
+  .bki-quote-doc__table th,
+  .bki-quote-doc__meta div,
+  .bki-quote-doc__premium {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 @media (max-width: 720px) {
   .bki-quote-panel__toolbar {
     flex-direction: column;
@@ -2062,8 +2185,12 @@
     padding: 1.25rem 1rem;
   }
 
-  .bki-quote-doc__meta,
-  .bki-quote-doc__grid {
-    grid-template-columns: 1fr;
+  /* คงคอลัมน์ซ้าย-ขวาไว้เสมอ ให้หน้าจอตรงกับไฟล์ที่พิมพ์ออกมา */
+  .bki-quote-doc__meta dd {
+    font-size: 0.82rem;
+  }
+
+  .bki-quote-doc__grid p {
+    font-size: 0.78rem;
   }
 }

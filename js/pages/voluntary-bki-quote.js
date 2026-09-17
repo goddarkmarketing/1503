@@ -1597,6 +1597,35 @@ App.VoluntaryBkiQuote = {
     delete panel.dataset.premium;
   },
 
+  /** Every plan that returned a premium — used for the comparison table on the quote doc. */
+  collectPlanComparison(form, selectedPlan) {
+    const root = form.querySelector('#bkiQuoteResult');
+    const display = (key) => root?.querySelector(`[data-display="${key}"]`)?.textContent?.trim() || '';
+    const optLabel = (plan, field) =>
+      this.optionLabel(root?.querySelector(`select[data-plan="${plan}"][data-field="${field}"]`));
+
+    return ['2plus', '3plus', '3'].map((plan) => {
+      const premium = this.resolvePlanPremium(form, plan);
+      if (premium == null) return null;
+      return {
+        plan,
+        label: this.planLabel(plan),
+        premium,
+        selected: plan === selectedPlan,
+        coverage: {
+          ownDamage: display(`${plan}-sum`),
+          fire: display(`${plan}-fire`),
+          nature: display(`${plan}-nature`),
+          tpPerson: display(`${plan}-tp-person`),
+          tpEvent: display(`${plan}-tp-event`),
+          tpProperty: display(`${plan}-tp-property`),
+          deductible: optLabel(plan, 'deductible'),
+          garage: optLabel(plan, 'garageType')
+        }
+      };
+    }).filter(Boolean);
+  },
+
   collectQuoteSnapshot(form, plan) {
     this.refreshResultPrices(form);
     const root = form.querySelector('#bkiQuoteResult');
@@ -1667,7 +1696,8 @@ App.VoluntaryBkiQuote = {
         tpPerson: display(`${plan}-tp-person`),
         tpEvent: display(`${plan}-tp-event`),
         tpProperty: display(`${plan}-tp-property`)
-      }
+      },
+      comparison: this.collectPlanComparison(form, plan)
     };
   },
 
@@ -1705,6 +1735,46 @@ App.VoluntaryBkiQuote = {
       </div>`;
   },
 
+  buildQuoteComparisonHtml(comparison, selectedPlan) {
+    const plans = Array.isArray(comparison) ? comparison.filter(Boolean) : [];
+    if (plans.length < 2) return '';
+
+    const rows = [
+      ['ความเสียหายต่อรถยนต์', (c) => c.ownDamage],
+      ['สูญหาย / ไฟไหม้', (c) => c.fire],
+      ['ภัยธรรมชาติ', (c) => c.nature],
+      ['บุคคลภายนอก บาดเจ็บ/เสียชีวิต ต่อคน', (c) => c.tpPerson],
+      ['บุคคลภายนอก บาดเจ็บ/เสียชีวิต ต่อครั้ง', (c) => c.tpEvent],
+      ['ทรัพย์สินบุคคลภายนอก ต่อครั้ง', (c) => c.tpProperty],
+      ['ค่าเสียหายส่วนแรก', (c) => c.deductible],
+      ['ประเภทอู่ซ่อม', (c) => c.garage]
+    ];
+    const cell = (value) => this.escapeHtml(String(value ?? '').trim() || '—');
+    const isPicked = (p) => (selectedPlan ? p.plan === selectedPlan : !!p.selected);
+
+    const head = plans.map((p) => `
+      <th scope="col" class="${isPicked(p) ? 'is-picked' : ''}">
+        <span class="bki-quote-cmp__plan">${this.escapeHtml(p.label || this.planLabel(p.plan))}</span>
+        <span class="bki-quote-cmp__price">${this.money(p.premium)} บาท/ปี</span>
+        ${isPicked(p) ? '<span class="bki-quote-cmp__tag">แผนที่เลือก</span>' : ''}
+      </th>`).join('');
+
+    const body = rows.map(([label, pick]) => `
+      <tr>
+        <th scope="row">${this.escapeHtml(label)}</th>
+        ${plans.map((p) => `<td class="${isPicked(p) ? 'is-picked' : ''}">${cell(pick(p.coverage || {}))}</td>`).join('')}
+      </tr>`).join('');
+
+    return `
+      <section class="bki-quote-cmp">
+        <h2 class="bki-quote-cmp__title">เปรียบเทียบแผนความคุ้มครอง</h2>
+        <table class="bki-quote-cmp__table">
+          <thead><tr><th scope="col" class="bki-quote-cmp__corner">ความคุ้มครอง</th>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </section>`;
+  },
+
   buildQuoteDocHtml(quote) {
     const snap = quote.snapshot || {};
     const vehicle = snap.vehicle || {};
@@ -1732,9 +1802,12 @@ App.VoluntaryBkiQuote = {
     if (breakdown.net != null) extraPrem.push(`เบี้ยสุทธิ ${this.money(breakdown.net)}`);
     if (breakdown.stamp != null) extraPrem.push(`อากร ${this.money(breakdown.stamp)}`);
     if (breakdown.vat != null) extraPrem.push(`VAT ${this.money(breakdown.vat)}`);
+    const comparisonHtml = this.buildQuoteComparisonHtml(snap.comparison, quote.planCode || snap.plan);
+    const tailHtml = `
+        ${quote.note ? `<p class="bki-quote-doc__note">หมายเหตุ: ${this.escapeHtml(quote.note)}</p>` : ''}
+        <p class="bki-quote-doc__foot">เอกสารนี้เป็นใบเสนอราคาของนายหน้า ไม่ใช่กรมธรรม์ ราคาและเงื่อนไขอาจเปลี่ยนแปลงตามหลักเกณฑ์ของบริษัทประกันภัย จนกว่าจะออกกรมธรรม์สำเร็จ ใบเสนอราคามีผล 15 วันนับจากวันที่ออก</p>`;
 
-    return `
-      <article class="bki-quote-doc">
+    const mainHtml = `
         <header class="bki-quote-doc__head">
           <div class="bki-quote-doc__brand">
             <img src="${this.escapeAttr(logoKladee)}" alt="KLADEE BROKER" class="bki-quote-doc__logo">
@@ -1779,9 +1852,23 @@ App.VoluntaryBkiQuote = {
           <span>เบี้ยประกันภัยรวม (โดยประมาณ)</span>
           <strong>${this.money(premium)} บาท/ปี</strong>
           ${extraPrem.length ? `<small>${this.escapeHtml(extraPrem.join(' · '))}</small>` : ''}
-        </div>
-        ${quote.note ? `<p class="bki-quote-doc__note">หมายเหตุ: ${this.escapeHtml(quote.note)}</p>` : ''}
-        <p class="bki-quote-doc__foot">เอกสารนี้เป็นใบเสนอราคาของนายหน้า ไม่ใช่กรมธรรม์ ราคาและเงื่อนไขอาจเปลี่ยนแปลงตามหลักเกณฑ์ของบริษัทประกันภัย จนกว่าจะออกกรมธรรม์สำเร็จ ใบเสนอราคามีผล 15 วันนับจากวันที่ออก</p>
+        </div>`;
+
+    // ตารางเปรียบเทียบยาว — แยกขึ้นแผ่นใหม่ ไม่ให้แทรกท้ายหน้าแรก
+    const pages = comparisonHtml
+      ? [
+        mainHtml,
+        `<p class="bki-quote-doc__pageRef">ใบเสนอราคาเลขที่ ${this.escapeHtml(quote.id || '—')} · ${this.escapeHtml(quote.customerName || '')}</p>
+        ${comparisonHtml}
+        ${tailHtml}`
+      ]
+      : [`${mainHtml}${tailHtml}`];
+
+    return `
+      <article class="bki-quote-doc">
+        ${pages.map((html, i) =>
+          `<section class="bki-quote-doc__page${i > 0 ? ' bki-quote-doc__page--break' : ''}">${html}</section>`
+        ).join('')}
       </article>`;
   },
 
@@ -1802,8 +1889,66 @@ App.VoluntaryBkiQuote = {
         object-position: center;
         image-rendering: auto;
       }
-      .bki-quote-doc__logo { max-height: 48px; max-width: 48px; }
-      .bki-quote-doc__bki { max-height: 56px; max-width: 110px; }
+      .bki-quote-doc__logo { max-height: 56px; max-width: 56px; }
+      .bki-quote-doc__bki { max-height: 64px; max-width: 64px; margin-left: auto; }
+    `;
+  },
+
+  // ใช้ฟอนต์เดียวกับหลังบ้าน (--font-ui) ไม่โหลดเว็บฟอนต์เพิ่ม
+  quoteFontStack() {
+    const fromTheme = getComputedStyle(document.documentElement)
+      .getPropertyValue('--font-ui').trim();
+    return fromTheme || "system-ui, -apple-system, 'Segoe UI', 'Leelawadee UI', Tahoma, sans-serif";
+  },
+
+  quoteComparisonCss() {
+    return `
+      .bki-quote-doc__pageRef {
+        margin: 0 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #cbd5e1;
+        font-size: 12px;
+        color: #475569;
+      }
+      .bki-quote-cmp { margin-top: 14px; }
+      .bki-quote-cmp__title { margin: 0 0 6px; font-size: 13px; color: #0f766e; }
+      .bki-quote-cmp__table {
+        width: 100%;
+        max-width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .bki-quote-cmp__table th,
+      .bki-quote-cmp__table td {
+        border: 1px solid #cbd5e1;
+        padding: 6px 8px;
+        font-size: 12px;
+        text-align: center;
+        vertical-align: middle;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .bki-quote-cmp__table tbody th {
+        width: 40%;
+        text-align: left;
+        font-weight: 600;
+        background: #f8fafc;
+      }
+      .bki-quote-cmp__corner { background: #f8fafc; text-align: left; }
+      .bki-quote-cmp__table thead th { background: #f1f5f9; }
+      .bki-quote-cmp__table thead th.is-picked,
+      .bki-quote-cmp__table td.is-picked { background: #ecfdf5; }
+      .bki-quote-cmp__plan { display: block; font-weight: 700; font-size: 13px; }
+      .bki-quote-cmp__price { display: block; margin-top: 2px; font-weight: 700; color: #0f766e; }
+      .bki-quote-cmp__tag {
+        display: inline-block;
+        margin-top: 3px;
+        padding: 1px 6px;
+        border-radius: 999px;
+        background: #0f766e;
+        color: #fff;
+        font-size: 10px;
+      }
     `;
   },
 
@@ -1817,7 +1962,7 @@ App.VoluntaryBkiQuote = {
         padding: 0;
         background: #fff;
         color: #0f172a;
-        font-family: 'Sarabun', 'TH Sarabun New', sans-serif;
+        font-family: ${this.quoteFontStack()};
       }
       body.bki-quote-print {
         width: 100%;
@@ -1886,10 +2031,14 @@ App.VoluntaryBkiQuote = {
       .bki-quote-doc__premium small { font-size: 12px; color: #475569; }
       .bki-quote-doc__note,
       .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; line-height: 1.45; }
+      ${this.quoteComparisonCss()}
       @media print {
         .bki-quote-doc__premium,
         .bki-quote-doc__meta div,
-        .bki-quote-doc__table th {
+        .bki-quote-doc__table th,
+        .bki-quote-cmp__table th,
+        .bki-quote-cmp__table td.is-picked,
+        .bki-quote-cmp__tag {
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
@@ -1900,11 +2049,18 @@ App.VoluntaryBkiQuote = {
         .bki-quote-doc__premium,
         .bki-quote-doc__note,
         .bki-quote-doc__foot,
-        .bki-quote-doc__table tr {
+        .bki-quote-doc__table tr,
+        .bki-quote-cmp__table tr,
+        .bki-quote-cmp__title {
           break-inside: avoid;
           page-break-inside: avoid;
         }
         .bki-quote-doc__table { break-inside: auto; page-break-inside: auto; }
+        .bki-quote-cmp__table { break-inside: auto; page-break-inside: auto; }
+        .bki-quote-doc__page--break {
+          break-before: page;
+          page-break-before: always;
+        }
       }
     `;
   },
@@ -1913,7 +2069,6 @@ App.VoluntaryBkiQuote = {
     if (!quote) return false;
     const html = this.buildQuoteDocHtml(quote);
     const docHtml = `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>${this.escapeHtml(quote.id || 'ใบเสนอราคา')}</title>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
       <style>${this.quotePrintCss()}</style></head>
       <body class="bki-quote-print">${html}</body></html>`;
 
@@ -1981,7 +2136,7 @@ App.VoluntaryBkiQuote = {
         padding: 0;
         color: #0f172a;
         background: #fff;
-        font-family: 'Sarabun', 'TH Sarabun New', Tahoma, sans-serif;
+        font-family: ${this.quoteFontStack()};
         line-height: 1.4;
         overflow-wrap: anywhere;
         word-break: break-word;
@@ -2055,6 +2210,7 @@ App.VoluntaryBkiQuote = {
       .bki-quote-doc__premium span { display: block; font-size: 13px; }
       .bki-quote-doc__premium strong { display: block; font-size: 22px; color: #0f766e; }
       .bki-quote-doc__premium small { display: block; font-size: 12px; color: #475569; }
+      ${this.quoteComparisonCss()}
       .bki-quote-doc__note,
       .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; line-height: 1.45; }
     `;
@@ -2063,8 +2219,8 @@ App.VoluntaryBkiQuote = {
   /** ล็อกขนาดโลโก้ตามสัดส่วนจริง — html2canvas มักเพิกเฉย object-fit ถ้าบังคับทั้งกว้างและสูง */
   fitQuoteLogos(root) {
     const rules = [
-      { sel: 'img.bki-quote-doc__logo', maxH: 48, maxW: 48 },
-      { sel: 'img.bki-quote-doc__bki', maxH: 56, maxW: 110 }
+      { sel: 'img.bki-quote-doc__logo', maxH: 56, maxW: 56 },
+      { sel: 'img.bki-quote-doc__bki', maxH: 64, maxW: 64 }
     ];
     rules.forEach(({ sel, maxH, maxW }) => {
       root.querySelectorAll(sel).forEach((img) => {
@@ -2127,8 +2283,10 @@ App.VoluntaryBkiQuote = {
     await new Promise((r) => setTimeout(r, 200));
   },
 
-  async saveQuoteCanvasAsPdf(canvas, filename) {
-    if (!canvas || typeof canvas.toDataURL !== 'function') {
+  async saveQuoteCanvasAsPdf(canvases, filename) {
+    const sheets = (Array.isArray(canvases) ? canvases : [canvases])
+      .filter((c) => c && typeof c.toDataURL === 'function');
+    if (!sheets.length) {
       throw new Error('สร้างภาพใบเสนอราคาไม่สำเร็จ');
     }
 
@@ -2138,7 +2296,7 @@ App.VoluntaryBkiQuote = {
         filename,
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       })
-      .from(canvas)
+      .from(sheets[0])
       .toPdf()
       .get('pdf');
 
@@ -2150,40 +2308,43 @@ App.VoluntaryBkiQuote = {
 
     // กว้างเต็มพื้นที่พิมพ์ — ไม่ย่อทั้งเอกสารลงหน้าเดียว (หลายหน้าได้ตามธรรมชาติ)
     const drawW = maxW;
-    const pxPerPage = Math.max(1, Math.floor((canvas.width * maxH) / drawW));
 
     const pages = pdf.internal.getNumberOfPages();
     for (let i = pages; i >= 1; i -= 1) pdf.deletePage(i);
 
-    let srcY = 0;
+    // แต่ละ canvas = 1 แผ่นของเอกสาร (แผ่นไหนยาวเกินหน้า A4 จึงค่อยตัดต่อหน้า)
     let pageIndex = 0;
-    while (srcY < canvas.height) {
-      const sliceH = Math.min(pxPerPage, canvas.height - srcY);
-      const slice = document.createElement('canvas');
-      slice.width = canvas.width;
-      slice.height = sliceH;
-      const ctx = slice.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, slice.width, slice.height);
-      ctx.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+    sheets.forEach((canvas) => {
+      const pxPerPage = Math.max(1, Math.floor((canvas.width * maxH) / drawW));
+      let srcY = 0;
+      while (srcY < canvas.height) {
+        const sliceH = Math.min(pxPerPage, canvas.height - srcY);
+        const slice = document.createElement('canvas');
+        slice.width = canvas.width;
+        slice.height = sliceH;
+        const ctx = slice.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, slice.width, slice.height);
+        ctx.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
 
-      const drawH = (sliceH * drawW) / canvas.width;
-      pdf.addPage([pageW, pageH], 'portrait');
-      pdf.addImage(
-        slice.toDataURL('image/jpeg', 0.98),
-        'JPEG',
-        margin + ((maxW - drawW) / 2),
-        margin,
-        drawW,
-        drawH,
-        undefined,
-        'FAST'
-      );
+        const drawH = (sliceH * drawW) / canvas.width;
+        pdf.addPage([pageW, pageH], 'portrait');
+        pdf.addImage(
+          slice.toDataURL('image/jpeg', 0.98),
+          'JPEG',
+          margin + ((maxW - drawW) / 2),
+          margin,
+          drawW,
+          drawH,
+          undefined,
+          'FAST'
+        );
 
-      srcY += sliceH;
-      pageIndex += 1;
-      if (pageIndex > 20) break; // กันลูปพลาด
-    }
+        srcY += sliceH;
+        pageIndex += 1;
+        if (pageIndex > 20) return; // กันลูปพลาด
+      }
+    });
 
     pdf.save(filename);
   },
@@ -2312,8 +2473,16 @@ App.VoluntaryBkiQuote = {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       await new Promise((r) => setTimeout(r, 250));
 
-      const canvas = await this.captureQuoteCanvas(host);
-      await this.saveQuoteCanvasAsPdf(canvas, filename);
+      const blocks = [...host.querySelectorAll('.bki-quote-doc__page')];
+      const canvases = [];
+      if (blocks.length) {
+        for (const block of blocks) {
+          canvases.push(await this.captureQuoteCanvas(block));
+        }
+      } else {
+        canvases.push(await this.captureQuoteCanvas(host));
+      }
+      await this.saveQuoteCanvasAsPdf(canvases, filename);
       return true;
     } finally {
       host.remove();

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตัวอย่างใบเสนอราคา BKI (ข้อมูลสมมติ)</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/product-key.css?v=20260916f">
+  <style>
+    body {
+      margin: 0;
+      padding: 1.5rem 1rem 3rem;
+      background: #eef2f5;
+    }
+    .sample-bar {
+      max-width: 210mm;
+      margin: 0 auto 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border: 1px solid #d7e8ea;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+    .sample-bar p { margin: 0; font-size: 0.8125rem; color: #475569; }
+    .sample-bar strong { color: #0f172a; }
+    .sample-bar button {
+      border: 0;
+      border-radius: 8px;
+      background: #0f766e;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      font: inherit;
+      cursor: pointer;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .sample-bar { display: none; }
+      .bki-quote-doc { border: 0; }
+    }
+  </style>
+</head>
+<body data-base-path="../">
+  <div class="sample-bar">
+    <p><strong>ตัวอย่างใบเสนอราคา</strong> — ข้อมูลสมมติทั้งหมด ใช้ดูหน้าตาเอกสารเท่านั้น</p>
+    <button type="button" id="btnPrintSample">พิมพ์ / บันทึก PDF</button>
+  </div>
+  <div id="sampleHost"></div>
+
+  <script src="../js/config/app-config.js"></script>
+  <script src="../js/pages/voluntary-bki-quote.js?v=20260916f"></script>
+  <script>
+  (function () {
+    const Q = App.VoluntaryBkiQuote;
+    const coverage = {
+      '2plus': {
+        ownDamage: '300,000 บาท',
+        fire: '300,000 บาท',
+        nature: '300,000 บาท',
+        tpPerson: '1,000,000 บาท',
+        tpEvent: '10,000,000 บาท',
+        tpProperty: '1,000,000 บาท',
+        deductible: 'ไม่มีค่าเสียหายส่วนแรก',
+        garage: 'ซ่อมอู่ในเครือ'
+      },
+      '3plus': {
+        ownDamage: '200,000 บาท',
+        fire: '-',
+        nature: '-',
+        tpPerson: '1,000,000 บาท',
+        tpEvent: '10,000,000 บาท',
+        tpProperty: '1,000,000 บาท',
+        deductible: 'ไม่มีค่าเสียหายส่วนแรก',
+        garage: 'ซ่อมอู่ในเครือ'
+      },
+      '3': {
+        ownDamage: '-',
+        fire: '-',
+        nature: '-',
+        tpPerson: '500,000 บาท',
+        tpEvent: '10,000,000 บาท',
+        tpProperty: '600,000 บาท',
+        deductible: '-',
+        garage: '-'
+      }
+    };
+
+    const quote = {
+      id: 'QT-BKI-25690917-0001',
+      createdAt: '2026-09-17',
+      validUntil: '2026-10-02',
+      customerName: 'นายสมชาย ใจดี',
+      customerPhone: '0812345678',
+      plate: 'กข 1234',
+      planCode: '2plus',
+      planLabel: 'ชั้น 2+',
+      premiumTotal: 9850,
+      note: 'ตัวอย่างเอกสาร ข้อมูลสมมติ',
+      coverageStart: '2026-10-01',
+      coverageEnd: '2027-10-01',
+      snapshot: {
+        company: App.Config.COMPANY,
+        agent: { code: 'AG0001', label: 'AG0001 — ตัวอย่าง นายหน้า' },
+        plan: '2plus',
+        planLabel: 'ชั้น 2+',
+        premium: 9850,
+        breakdown: { net: 9000, stamp: 36, vat: 814, total: 9850 },
+        buyPrb: true,
+        driverLabel: 'ไม่ระบุชื่อผู้ขับขี่ (Unnamed)',
+        coverageStart: '2026-10-01',
+        coverageEnd: '2027-10-01',
+        vehicle: {
+          desc: 'TOYOTA YARIS 1.2 ปี 2020',
+          regType: 'รถยนต์นั่งส่วนบุคคลไม่เกิน 7 คน (110)',
+          usage: 'ใช้ส่วนบุคคล',
+          province: 'นครสวรรค์',
+          dashcam: 'มีกล้องหน้ารถ',
+          sumInsured: '300,000 บาท',
+          deductible: 'ไม่มีค่าเสียหายส่วนแรก',
+          garage: 'ซ่อมอู่ในเครือ'
+        },
+        coverage: coverage['2plus'],
+        comparison: [
+          { plan: '2plus', label: 'ชั้น 2+', premium: 9850, selected: true, coverage: coverage['2plus'] },
+          { plan: '3plus', label: 'ชั้น 3+', premium: 8200, selected: false, coverage: coverage['3plus'] },
+          { plan: '3', label: 'ชั้น 3', premium: 2700, selected: false, coverage: coverage['3'] }
+        ]
+      }
+    };
+
+    document.getElementById('sampleHost').innerHTML = Q.buildQuoteDocHtml(quote);
+    document.getElementById('btnPrintSample').addEventListener('click', () => window.print());
+  })();
+  </script>
+</body>
+</html>
