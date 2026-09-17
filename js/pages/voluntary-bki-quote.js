@@ -2211,6 +2211,13 @@ App.VoluntaryBkiQuote = {
       .bki-quote-doc__premium strong { display: block; font-size: 22px; color: #0f766e; }
       .bki-quote-doc__premium small { display: block; font-size: 12px; color: #475569; }
       ${this.quoteComparisonCss()}
+      /* แต่ละแผ่นถ่ายภาพแยกกัน — ไม่ต้องมีเส้นคั่น/ระยะห่างแบบบนจอ */
+      .bki-quote-doc__page { display: block; }
+      .bki-quote-doc__page--break {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+      }
       .bki-quote-doc__note,
       .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; line-height: 1.45; }
     `;
@@ -2473,12 +2480,16 @@ App.VoluntaryBkiQuote = {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       await new Promise((r) => setTimeout(r, 250));
 
+      // html2canvas จับภาพจากมุมบนซ้ายของ host เสมอ — จึงต้องโชว์ทีละแผ่น ไม่ใช่จับ element ที่อยู่ล่าง
       const blocks = [...host.querySelectorAll('.bki-quote-doc__page')];
       const canvases = [];
-      if (blocks.length) {
+      if (blocks.length > 1) {
         for (const block of blocks) {
-          canvases.push(await this.captureQuoteCanvas(block));
+          blocks.forEach((b) => { b.style.display = b === block ? 'block' : 'none'; });
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+          canvases.push(await this.captureQuoteCanvas(target));
         }
+        blocks.forEach((b) => { b.style.display = ''; });
       } else {
         canvases.push(await this.captureQuoteCanvas(host));
       }
