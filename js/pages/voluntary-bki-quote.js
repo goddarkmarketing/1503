@@ -1597,14 +1597,25 @@ App.VoluntaryBkiQuote = {
     delete panel.dataset.premium;
   },
 
-  /** Every plan that returned a premium — used for the comparison table on the quote doc. */
-  collectPlanComparison(form, selectedPlan) {
+  /** Plans the agent ticked for the quote-doc comparison (empty = none). */
+  readQuoteComparePlans(panel, availablePlans = []) {
+    const boxes = [...(panel?.querySelectorAll('input[name="quoteComparePlan"]:checked') || [])];
+    const picked = boxes.map((el) => el.value).filter(Boolean);
+    if (!picked.length) return [];
+    const allow = new Set(availablePlans.length ? availablePlans : ['2plus', '3plus', '3']);
+    return ['2plus', '3plus', '3'].filter((plan) => picked.includes(plan) && allow.has(plan));
+  },
+
+  /** Plans with a premium, optionally filtered to those the agent chose to compare. */
+  collectPlanComparison(form, selectedPlan, includePlans = null) {
     const root = form.querySelector('#bkiQuoteResult');
     const display = (key) => root?.querySelector(`[data-display="${key}"]`)?.textContent?.trim() || '';
     const optLabel = (plan, field) =>
       this.optionLabel(root?.querySelector(`select[data-plan="${plan}"][data-field="${field}"]`));
+    const filter = Array.isArray(includePlans) ? new Set(includePlans) : null;
 
     return ['2plus', '3plus', '3'].map((plan) => {
+      if (filter && !filter.has(plan)) return null;
       const premium = this.resolvePlanPremium(form, plan);
       if (premium == null) return null;
       return {
@@ -1626,7 +1637,7 @@ App.VoluntaryBkiQuote = {
     }).filter(Boolean);
   },
 
-  collectQuoteSnapshot(form, plan) {
+  collectQuoteSnapshot(form, plan, includePlans = null) {
     this.refreshResultPrices(form);
     const root = form.querySelector('#bkiQuoteResult');
     const packages = this.getPackagesByPlan(form);
@@ -1697,16 +1708,35 @@ App.VoluntaryBkiQuote = {
         tpEvent: display(`${plan}-tp-event`),
         tpProperty: display(`${plan}-tp-property`)
       },
-      comparison: this.collectPlanComparison(form, plan)
+      comparison: this.collectPlanComparison(form, plan, includePlans)
     };
   },
 
-  buildQuoteFormHtml({ planLabel, premiumText } = {}) {
+  buildQuoteFormHtml({ planLabel, premiumText, comparePlans = [] } = {}) {
+    const plans = Array.isArray(comparePlans) ? comparePlans : [];
+    const compareBlock = plans.length
+      ? `
+      <div class="bki-issue__compare">
+        <p class="bki-issue__compareTitle">แผนที่แสดงในใบเสนอราคา <span class="form-hint">(เลือกได้ 1–${plans.length} แผน)</span></p>
+        <p class="bki-issue__compareHint">ติ๊กแผนที่ต้องการให้ลูกค้าเห็นเทียบกัน — ไม่ติ๊กเลย = ไม่มีตารางเปรียบเทียบ</p>
+        <div class="bki-issue__compareList" role="group" aria-label="เลือกแผนเปรียบเทียบ">
+          ${plans.map((p) => `
+            <label class="bki-issue__compareItem">
+              <input type="checkbox" name="quoteComparePlan" value="${this.escapeAttr(p.plan)}" checked>
+              <span>
+                <strong>${this.escapeHtml(p.label || this.planLabel(p.plan))}</strong>
+                <small>${this.money(p.premium)} บาท/ปี</small>
+              </span>
+            </label>`).join('')}
+        </div>
+      </div>`
+      : '';
+
     return `
       <div class="bki-issue__head">
         <div>
           <h3 class="bki-issue__title">สร้างใบเสนอราคา</h3>
-          <p class="bki-issue__sub">แผน <strong>${this.escapeHtml(planLabel || '—')}</strong> · เบี้ย <strong>${this.escapeHtml(premiumText || '—')}</strong> · ไม่ตัดวงเงิน</p>
+          <p class="bki-issue__sub">แผนหลัก <strong>${this.escapeHtml(planLabel || '—')}</strong> · เบี้ย <strong>${this.escapeHtml(premiumText || '—')}</strong> · ไม่ตัดวงเงิน</p>
         </div>
         <button type="button" class="bki-issue__back" id="btnBkiQuoteBack">กลับไปตารางเปรียบเทียบ</button>
       </div>
@@ -1728,6 +1758,7 @@ App.VoluntaryBkiQuote = {
           <input type="text" id="quoteNote" name="quoteNote" class="form-input" maxlength="200">
         </div>
       </div>
+      ${compareBlock}
       <div class="bki-issue__actions">
         <button type="button" class="axa-result__btn axa-result__btn--quote" id="btnBkiQuoteSubmit">
           ยืนยันสร้างใบเสนอราคา
@@ -1737,7 +1768,7 @@ App.VoluntaryBkiQuote = {
 
   buildQuoteComparisonHtml(comparison, selectedPlan) {
     const plans = Array.isArray(comparison) ? comparison.filter(Boolean) : [];
-    if (plans.length < 2) return '';
+    if (!plans.length) return '';
 
     const rows = [
       ['ความเสียหายต่อรถยนต์', (c) => c.ownDamage],
@@ -1751,6 +1782,7 @@ App.VoluntaryBkiQuote = {
     ];
     const cell = (value) => this.escapeHtml(String(value ?? '').trim() || '—');
     const isPicked = (p) => (selectedPlan ? p.plan === selectedPlan : !!p.selected);
+    const title = plans.length > 1 ? 'เปรียบเทียบแผนความคุ้มครอง' : 'แผนความคุ้มครองที่เลือกแสดง';
 
     const head = plans.map((p) => `
       <th scope="col" class="${isPicked(p) ? 'is-picked' : ''}">
@@ -1767,7 +1799,7 @@ App.VoluntaryBkiQuote = {
 
     return `
       <section class="bki-quote-cmp">
-        <h2 class="bki-quote-cmp__title">เปรียบเทียบแผนความคุ้มครอง</h2>
+        <h2 class="bki-quote-cmp__title">${title}</h2>
         <table class="bki-quote-cmp__table">
           <thead><tr><th scope="col" class="bki-quote-cmp__corner">ความคุ้มครอง</th>${head}</tr></thead>
           <tbody>${body}</tbody>
@@ -1894,11 +1926,13 @@ App.VoluntaryBkiQuote = {
     `;
   },
 
-  // ใช้ฟอนต์เดียวกับหลังบ้าน (--font-ui) ไม่โหลดเว็บฟอนต์เพิ่ม
+  /**
+   * ฟอนต์สำหรับพิมพ์/สร้าง PDF — ไม่โหลดเว็บฟอนต์เพิ่ม
+   * ต้องเป็นฟอนต์ไทยที่ canvas วาดได้ตรงกับที่วัดตำแหน่งไว้ (Tahoma) มิฉะนั้นตัวอักษรจะซ้อนกัน
+   * — system-ui/Segoe UI/Leelawadee UI ใช้ไม่ได้กับขั้นตอนแปลงเอกสารเป็นภาพ
+   */
   quoteFontStack() {
-    const fromTheme = getComputedStyle(document.documentElement)
-      .getPropertyValue('--font-ui').trim();
-    return fromTheme || "system-ui, -apple-system, 'Segoe UI', 'Leelawadee UI', Tahoma, sans-serif";
+    return "Tahoma, 'Leelawadee UI', Arial, sans-serif";
   },
 
   quoteComparisonCss() {
@@ -1925,8 +1959,8 @@ App.VoluntaryBkiQuote = {
         font-size: 12px;
         text-align: center;
         vertical-align: middle;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
       .bki-quote-cmp__table tbody th {
         width: 40%;
@@ -1973,8 +2007,8 @@ App.VoluntaryBkiQuote = {
         margin: 0 auto;
         padding: 0;
         color: #0f172a;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
       .bki-quote-doc__head {
         display: flex;
@@ -2012,8 +2046,8 @@ App.VoluntaryBkiQuote = {
         border: 1px solid #cbd5e1;
         padding: 7px 10px;
         vertical-align: top;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
       .bki-quote-doc__table th { text-align: left; font-weight: 600; width: 62%; background: #f8fafc; }
       .bki-quote-doc__premium {
@@ -2138,8 +2172,8 @@ App.VoluntaryBkiQuote = {
         background: #fff;
         font-family: ${this.quoteFontStack()};
         line-height: 1.4;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
       .bki-quote-doc__head {
         display: flex;
@@ -2191,8 +2225,8 @@ App.VoluntaryBkiQuote = {
         border: 1px solid #cbd5e1;
         padding: 7px 10px;
         vertical-align: top;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
       .bki-quote-doc__table th {
         text-align: left;
@@ -2218,8 +2252,16 @@ App.VoluntaryBkiQuote = {
         padding-top: 0;
         border-top: 0;
       }
+      /* ตัวเรนเดอร์ภาพวางข้อความเป็นช่วง ๆ — ห้ามตัดกลางคำ/ใช้ line-height เศษส่วน กันบรรทัดซ้อนกัน */
       .bki-quote-doc__note,
-      .bki-quote-doc__foot { font-size: 12px; color: #475569; margin: 12px 0 0; line-height: 1.45; }
+      .bki-quote-doc__foot {
+        font-size: 12px;
+        color: #475569;
+        margin: 12px 0 0;
+        line-height: 18px;
+        word-break: normal;
+        overflow-wrap: normal;
+      }
     `;
   },
 
@@ -2574,11 +2616,17 @@ App.VoluntaryBkiQuote = {
 
     plan = picked.plan;
     const premium = picked.premium;
+    const comparePlans = this.plansWithPremium(form).map((p) => ({
+      plan: p,
+      label: this.planLabel(p),
+      premium: this.resolvePlanPremium(form, p)
+    }));
 
     this.hidePanel(form.querySelector('#bkiIssuePanel'));
     panel.innerHTML = this.buildQuoteFormHtml({
       planLabel: this.planLabel(plan),
-      premiumText: `${this.money(premium)} บาท/ปี`
+      premiumText: `${this.money(premium)} บาท/ปี`,
+      comparePlans
     });
     panel.hidden = false;
     panel.dataset.plan = plan;
@@ -2621,7 +2669,11 @@ App.VoluntaryBkiQuote = {
       return;
     }
 
-    const snapshot = this.collectQuoteSnapshot(form, plan);
+    const snapshot = this.collectQuoteSnapshot(
+      form,
+      plan,
+      this.readQuoteComparePlans(panel, this.plansWithPremium(form))
+    );
     const payload = {
       customerName,
       customerPhone: customerPhone.replace(/[-\s]/g, ''),

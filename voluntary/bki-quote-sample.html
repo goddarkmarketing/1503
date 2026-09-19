@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ตัวอย่างใบเสนอราคา BKI (ข้อมูลสมมติ)</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/product-key.css?v=20260917a">
+  <link rel="stylesheet" href="../css/product-key.css?v=20260919a">
   <style>
     body {
       margin: 0;
@@ -27,6 +27,7 @@
     }
     .sample-bar p { margin: 0; font-size: 0.8125rem; color: #475569; }
     .sample-bar strong { color: #0f172a; }
+    .sample-bar__actions { display: flex; gap: 0.5rem; }
     .sample-bar button {
       border: 0;
       border-radius: 8px;
@@ -36,6 +37,12 @@
       font: inherit;
       cursor: pointer;
     }
+    .sample-bar button.is-ghost {
+      background: #fff;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+    .sample-bar button[disabled] { opacity: 0.6; cursor: wait; }
     @media print {
       body { background: #fff; padding: 0; }
       .sample-bar { display: none; }
@@ -46,12 +53,15 @@
 <body data-base-path="../">
   <div class="sample-bar">
     <p><strong>ตัวอย่างใบเสนอราคา</strong> — ข้อมูลสมมติทั้งหมด ใช้ดูหน้าตาเอกสารเท่านั้น</p>
-    <button type="button" id="btnPrintSample">พิมพ์ / บันทึก PDF</button>
+    <span class="sample-bar__actions">
+      <button type="button" id="btnDownloadSample">ดาวน์โหลด PDF (แบบเดียวกับในระบบ)</button>
+      <button type="button" id="btnPrintSample" class="is-ghost">พิมพ์</button>
+    </span>
   </div>
   <div id="sampleHost"></div>
 
   <script src="../js/config/app-config.js"></script>
-  <script src="../js/pages/voluntary-bki-quote.js?v=20260917a"></script>
+  <script src="../js/pages/voluntary-bki-quote.js?v=20260919a"></script>
   <script>
   (function () {
     const Q = App.VoluntaryBkiQuote;
@@ -132,7 +142,22 @@
     };
 
     document.getElementById('sampleHost').innerHTML = Q.buildQuoteDocHtml(quote);
-    document.getElementById('btnPrintSample').addEventListener('click', () => window.print());
+    document.getElementById('btnPrintSample').addEventListener('click', () => Q.printQuoteDoc(quote));
+
+    const btnDownload = document.getElementById('btnDownloadSample');
+    btnDownload.addEventListener('click', async () => {
+      const label = btnDownload.textContent;
+      btnDownload.disabled = true;
+      btnDownload.textContent = 'กำลังสร้าง PDF...';
+      try {
+        await Q.downloadQuoteDoc(quote);
+      } catch (err) {
+        alert(err?.message || 'สร้าง PDF ไม่สำเร็จ');
+      } finally {
+        btnDownload.disabled = false;
+        btnDownload.textContent = label;
+      }
+    });
   })();
   </script>
 </body>

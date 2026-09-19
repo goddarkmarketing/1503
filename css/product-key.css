@@ -1,4 +1,4 @@
-﻿/* Product key-in page: brochure left + form right (layout A) */
+/* Product key-in page: brochure left + form right (layout A) */
 
 .form-page .main-content:has(.product-key) {
   padding: 0.75rem 1rem 1rem;
@@ -48,7 +48,7 @@
   border-radius: 0;
 }
 
-/* Indara PRB form beside brochure â€” tighter columns, no label wrap */
+/* Indara PRB form beside brochure — tighter columns, no label wrap */
 .product-key__form {
   container-type: inline-size;
   container-name: pkForm;
@@ -501,7 +501,7 @@
   }
 }
 
-/* ── AXA motor quote form ── */
+/* -- AXA motor quote form -- */
 .form-req {
   color: #dc2626;
   font-weight: 700;
@@ -559,7 +559,7 @@
   display: flex;
 }
 
-/* ── BKI voluntary quote (axa-quote layout + axa-cmp table) ── */
+/* -- BKI voluntary quote (axa-quote layout + axa-cmp table) -- */
 .bki-quote__field-hint {
   margin: 0.25rem 0 0;
   font-size: 0.72rem;
@@ -1341,7 +1341,7 @@
   background: #b91c1c;
 }
 
-/* BKI issue — customer step after quote */
+/* BKI issue � customer step after quote */
 .bki-issue__banner {
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
@@ -1496,6 +1496,85 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.9rem 0.85rem;
+}
+
+.bki-issue__compare {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d7e8ea;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.bki-issue__compareTitle {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.bki-issue__compareTitle .form-hint {
+  font-weight: 500;
+  color: #64748b;
+}
+
+.bki-issue__compareHint {
+  margin: 0 0 0.75rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.bki-issue__compareList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.bki-issue__compareItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.bki-issue__compareItem:has(input:checked) {
+  border-color: #0f766e;
+  background: #ecfdf5;
+  box-shadow: inset 0 0 0 1px #99f6e4;
+}
+
+.bki-issue__compareItem input {
+  margin-top: 0.2rem;
+  accent-color: #0f766e;
+}
+
+.bki-issue__compareItem span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.bki-issue__compareItem strong {
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.bki-issue__compareItem small {
+  font-size: 0.75rem;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .bki-issue__compareList {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bki-issue__field--full,
@@ -1849,7 +1928,7 @@
   color: #b91c1c;
 }
 
-/* แสดงพรีวิวคล้ายหน้ากระดาษ A4 (ขอบรอบใกล้เคียงตอนพิมพ์) */
+/* ????????????????????????? A4 (???????????????????????) */
 .bki-quote-history__preview #quotePreviewBody {
   background: #eef2f6;
   padding: 1rem;
@@ -1861,14 +1940,14 @@
   width: 100%;
   max-width: 210mm;
   margin: 0.15rem auto 0;
-  /* จำลองขอบพิมพ์ A4 ~16mm โดยไม่บีบฟอนต์เดิมของระบบ */
+  /* ????????????? A4 ~16mm ????????????????????????? */
   padding: 16mm 15mm;
   background: #fff;
   border: 1px solid #d7e8ea;
   border-radius: 8px;
   color: #0f172a;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .bki-quote-history__preview .bki-quote-doc {
@@ -1910,7 +1989,7 @@
 .bki-quote-doc__bki {
   max-width: 64px;
   max-height: 64px;
-  /* โลโก้เป็นบล็อก — ดันชิดขวาให้ตรงกับข้อความใต้ภาพ */
+  /* ?????????????? � ??????????????????????????????? */
   margin-left: auto;
 }
 
@@ -2011,8 +2090,8 @@
   border: 1px solid #cbd5e1;
   padding: 0.45rem 0.65rem;
   vertical-align: top;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .bki-quote-doc__table th {
@@ -2055,7 +2134,7 @@
   line-height: 1.45;
 }
 
-/* หน้าที่ 2 ขึ้นไปของเอกสาร — บนจอคั่นด้วยเส้นประ, ตอนพิมพ์ขึ้นแผ่นใหม่ */
+/* ??????? 2 ??????????????? � ???????????????????, ???????????????????? */
 .bki-quote-doc__page--break {
   margin-top: 1.5rem;
   padding-top: 1.25rem;
@@ -2093,7 +2172,7 @@
   font-size: 0.75rem;
   text-align: center;
   vertical-align: middle;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .bki-quote-cmp__table tbody th {
@@ -2185,7 +2264,7 @@
     padding: 1.25rem 1rem;
   }
 
-  /* คงคอลัมน์ซ้าย-ขวาไว้เสมอ ให้หน้าจอตรงกับไฟล์ที่พิมพ์ออกมา */
+  /* ?????????????-?????????? ???????????????????????????????? */
   .bki-quote-doc__meta dd {
     font-size: 0.82rem;
   }
